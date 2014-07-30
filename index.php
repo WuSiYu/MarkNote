@@ -1,0 +1,288 @@
+<?php
+	/*
+	 *	NotePad 轻量级云记事本系统
+	 */
+
+	if( !file_exists("NoteData") ){
+		mkdir("NoteData");
+		$init_file = fopen("NoteData/index.html", "w+");
+		fclose($init_file);
+		$init_file = fopen("NoteData/passwd.data", "w+");
+		fclose($init_file);
+	}
+
+	if( $_GET["n"] == "" ){
+		//如果访问主页
+
+		if( isset($_COOKIE['myNote']) ){
+			header("location:?n=".$_COOKIE['myNote']);
+		}else{
+			$this_name = rand(100000,999999);
+			while( file_exists("NoteData/".$this_name) ){
+				$this_name = rand(100000,999999);
+			}
+			setcookie("myNote", $this_name, time()+31536000000);
+			header("location:?n=".$this_name);
+		}
+
+	}else{
+		//如果指定了ID
+
+		if( preg_match('/[.]|[?]|[$]|[<]|[>]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
+			//如果ID不符合规范
+			exit("错误：请检查地址栏");
+		}
+
+		if( file_exists("NoteData/".$_GET["n"]) ){
+			//如果ID已有笔记
+
+			if( isset($_POST['GiveYouPasswd']) ){
+				//如果输入了密码
+				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+3600);
+				echo "正在检查...";
+				header("location:?n=".$_GET['n']);
+			}
+
+			//打开密码文件
+			$passwd_file = fopen("NoteData/passwd.data","r");
+
+			//读取密码文件
+			while( !feof($passwd_file) ){
+				//读取一行
+				$passwd_file_this_line = fgets($passwd_file);
+
+				//把这行分为两段
+				$this_line_array = explode(" ",$passwd_file_this_line);
+				
+				if( $this_line_array[0] == $_GET['n'] ){
+					//如果这个ID有密码并在这一行中
+
+					//有密码标记为真
+					$passwd = true;
+
+					//判断是否已输入密码
+					if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $this_line_array[1] ) {
+						//如果没有输入密码
+						?>
+							<title>输入密码</title>
+							<meta charset="utf-8" />
+							<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
+								<h3 style="font-weight:400;">请输入密码</h3>
+								<form action="?n=<?php echo $_GET['n']; ?>" method="post">
+									<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
+									<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
+								</form>
+							</body>
+						<?php
+						//显示输入密码框后终止执行
+						exit();
+					}
+				}
+			}
+
+			fclose($passwd_file);
+
+			if( $_POST['delete_passwd'] == 'yes' ){
+				$passwd_file = fopen("NoteData/passwd.data","a+");
+
+				//读取密码文件
+				while( !feof($passwd_file) ){
+					//读取一行
+					$passwd_file_this_line = fgets($passwd_file);
+
+					//把这行分为两段
+					$this_line_array = explode(" ",$passwd_file_this_line);
+					
+					if( $this_line_array[0] == $_GET['n'] ){
+						//如果这个ID有密码并在这一行中
+						$passwd_file_content = file_get_contents("NoteData/passwd.data");
+						$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
+						$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
+						file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
+						
+						setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()-1);
+
+						echo "<script>alert('密码已删除');</script>";
+
+						$passwd = false;
+					}
+				}
+
+				fclose($passwd_file);
+			}
+
+			if( isset($_POST['the_set_passwd']) ){
+				$passwd_file = fopen("NoteData/passwd.data","a+");
+				fputs($passwd_file,$_GET['n'].' '.md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang").' ' );
+				fputs($passwd_file,"\n");
+				fclose($passwd_file);
+
+				setcookie("myNodePasswdFor".$_GET['n'], $_POST['the_set_passwd'], time()+3600);
+				echo "<script>alert('密码已设置');</script>";
+
+				//有密码标记为真
+				$passwd = true;
+
+				
+			}
+
+			if( $_POST["save"] == "yes"){
+				if( isset($_POST['the_note']) ){
+					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+				} 				
+			}
+
+		}else{
+			$note_file = fopen("NoteData/".$_GET['n'], "w+");
+			fclose($note_file);
+			$passwd = false;
+		}
+		?>
+
+		<!DOCTYPE html>
+		
+
+		<head>
+
+			<title>NotePad 云记事本系统</title>
+			<meta charset="utf-8" />
+
+			<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.js"></script>
+
+			<script type="text/javascript">
+
+				var is_passwd_set_show = false;
+
+				function psaawd_set_display(){
+
+					if( is_passwd_set_show == false ){
+						$('#passwd-set-form').slideDown(500);
+						$('textarea').animate({height:'-=57px'},500);
+						is_passwd_set_show = true;
+					}else{
+						$('#passwd-set-form').slideUp(500);
+						$('textarea').animate({height:'+=57px'},500);
+						is_passwd_set_show = false;
+					}
+				}
+
+			</script>
+
+			<style type="text/css">
+				body{
+					color: #555;
+					font-size: 14px;
+					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+				}
+				:focus {
+				    border: none;
+				    outline: 0;
+				}
+				.btn{
+					padding: 9px 20px;
+					color: #555;
+					background: #fff;
+					border: 0;
+					box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
+					cursor: pointer;
+					font-size: 14px;
+				}
+				.btn:hover{
+					background: #fafafa;
+				}
+				textarea{
+					width: 960px;
+					height: 500px;
+					padding: 0;
+					margin: 10px;
+					color: #555;background:#fff;
+					border: 0;
+					resize: none;
+				}
+				.input{
+					font-size: 14px;
+					color: #555;
+					background: #fff;
+					border: 0;
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					padding: 10px;
+				}
+				#show_url_background{
+					position: fixed;
+					width: 100%;
+					height: 100%;
+					top: 0;
+					left: 0;
+					background-color: rgba(0,0,0,0.2);
+					z-index: 10;
+				}
+				#show_url{
+					position: fixed;
+					width: 300px;
+					height: 400px;
+					top: 50%;
+					left: 50%;
+					background-color: #fff;
+					z-index: 11;
+					margin: -200px 0 0 -150px;
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				}
+				.divhr{
+					width: 100%;
+					height: 1px;
+					background-color: #aaa;
+				}
+			</style>
+		</head>
+
+		<body style="background:#eee;width:980px;margin:10px auto 10px auto;">
+
+			<h1 style="margin:0 0 10px 0;font-weight:100;display:inline-block;">NotePad</h1>
+			<h2 style="margin:5px 0 0 0;font-weight:100;float:right;">云记事本系统</h2>
+
+	 		<div id="show_url_background" style="display:none;">
+				<div id="show_url">
+					<div style="background:#eee;padding:10px 0px 8px 10px;"><h4 style="margin:0;">在其他设备上访问此记事本</h4></div>
+					<div class="divhr" style="margin:0 0 8px 0;"></div>
+					<span style="margin:0 0 0 10px;"><?php echo $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?></span>
+					<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>" style="margin:10px 30px 27px 30px;"/>
+					<div class="divhr"></div>
+					<div style="background-color:#eee;height:57px;">
+						<button class="btn" style="float:right;margin:10px 10px 10px 0;" onclick="$('#show_url_background').fadeOut();">关闭</button>
+					</div>
+				</div>
+			</div>
+
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0;">
+				<div style="width:980px;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);background:#fff;">
+					<textarea autofocus="autofocus" name="the_note"><?php echo file_get_contents("NoteData/".$_GET['n']); ?></textarea>
+				</div>
+				<input type="hidden" name="save" value="yes" />
+			</form>
+
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-set-form" style="display:none;margin:0;">
+				<input type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;margin:20px 0 0 0;" />
+				<input type="submit" value="设置" class="btn" style="float:right;margin:20px 0 0 0" />
+			</form>
+
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-delete-form" style="display:none;margin:0;">
+				<input type="hidden" name="delete_passwd" value="yes" />
+			</form>
+
+			<?php //echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING']; ?>
+
+			<button style="margin:20px 0 0 0;float:right;" class="btn" onclick="$('#note-form').submit();">保存</button>
+			
+			<?php if(!$passwd) : ?>
+				<button class="btn" style="margin:20px 0 0 0;" onclick="psaawd_set_display();">设置密码</button>
+			<?php else : ?>
+				<button class="btn" style="margin:20px 0 0 0;" onclick="$('#passwd-delete-form').submit();">删除密码</button>
+			<?php endif; ?>
+
+			<button style="margin:20px 0 0 20px;" class="btn" onclick="$('#show_url_background').fadeIn();">在其它设备上访问</button>
+		
+		</body>
+
+		<?php
+	}
+?>
