@@ -17,12 +17,15 @@
 		if( isset($_COOKIE['myNote']) ){
 			header("location:?n=".$_COOKIE['myNote']);
 		}else{
-			$this_name = rand(100000,999999);
-			while( file_exists("NoteData/".$this_name) ){
+			$is_home = true;
+			if( $_GET['new'] == 'yes' ){
 				$this_name = rand(100000,999999);
+				while( file_exists("NoteData/".$this_name) ){
+					$this_name = rand(100000,999999);
+				}
+				setcookie("myNote", $this_name, time()+31536000000);
+				header("location:?n=".$this_name);
 			}
-			setcookie("myNote", $this_name, time()+31536000000);
-			header("location:?n=".$this_name);
 		}
 
 	}else{
@@ -137,114 +140,184 @@
 			fclose($note_file);
 			$passwd = false;
 		}
-		?>
+		$is_home = false;
+	}
+?>
 
-		<!DOCTYPE html>
-		
+<!DOCTYPE html>
 
-		<head>
 
-			<title>NotePad 云记事本系统</title>
-			<meta charset="utf-8" />
+	<head>
 
-			<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.js"></script>
+		<title>NotePad 云记事本系统</title>
+		<meta charset="utf-8" />
 
-			<script type="text/javascript">
+		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.js"></script>
 
-				var is_passwd_set_show = false;
+		<script type="text/javascript">
 
-				function psaawd_set_display(){
+			var is_passwd_set_show = false;
 
-					if( is_passwd_set_show == false ){
-						$('#passwd-set-form').slideDown(500);
-						$('textarea').animate({height:'-=57px'},500);
-						is_passwd_set_show = true;
-					}else{
-						$('#passwd-set-form').slideUp(500);
-						$('textarea').animate({height:'+=57px'},500);
-						is_passwd_set_show = false;
-					}
+			function psaawd_set_display(){
+
+				if( is_passwd_set_show == false ){
+					$('#passwd-set-form').slideDown(500);
+					$('textarea').animate({height:'-=57px'},500);
+					is_passwd_set_show = true;
+				}else{
+					$('#passwd-set-form').slideUp(500);
+					$('textarea').animate({height:'+=57px'},500);
+					is_passwd_set_show = false;
 				}
+			}
 
-			</script>
+		</script>
 
-			<style type="text/css">
-				body{
-					color: #555;
-					font-size: 14px;
-					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
-				}
-				:focus {
-				    border: none;
-				    outline: 0;
-				}
-				.btn{
-					padding: 9px 20px;
-					color: #555;
-					background: #fff;
-					border: 0;
-					box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
-					cursor: pointer;
-					font-size: 14px;
-				}
-				.btn:hover{
-					background: #fafafa;
-				}
-				textarea{
-					width: 960px;
-					height: 500px;
-					padding: 0;
-					margin: 10px;
-					color: #555;background:#fff;
-					border: 0;
-					resize: none;
-				}
-				.input{
-					font-size: 14px;
-					color: #555;
-					background: #fff;
-					border: 0;
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-					padding: 10px;
-				}
-				#show_url_background{
-					position: fixed;
-					width: 100%;
-					height: 100%;
-					top: 0;
-					left: 0;
-					background-color: rgba(0,0,0,0.2);
-					z-index: 10;
-				}
-				#show_url{
-					position: fixed;
-					width: 300px;
-					height: 400px;
-					top: 50%;
-					left: 50%;
-					background-color: #fff;
-					z-index: 11;
-					margin: -200px 0 0 -150px;
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-				}
-				.divhr{
-					width: 100%;
-					height: 1px;
-					background-color: #aaa;
-				}
-			</style>
-		</head>
+		<style type="text/css">
+			body{
+				color: #555;
+				font-size: 14px;
+				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+			}
+			:focus {
+			    border: none;
+			    outline: 0;
+			}
+			h1,h2,h3{
+				font-weight:100;
+			}
+			.btn{
+				padding: 9px 20px;
+				color: #555;
+				background: #fff;
+				border: 0;
+				box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
+				cursor: pointer;
+				font-size: 14px;
+			}
+			.btn:hover{
+				background: #fafafa;
+			}
+			textarea{
+				width: 960px;
+				height: 500px;
+				padding: 0;
+				margin: 10px;
+				color: #555;background:#fff;
+				border: 0;
+				resize: none;
+			}
+			.input{
+				font-size: 14px;
+				color: #555;
+				background: #fff;
+				border: 0;
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				padding: 10px;
+			}
+			#show_url_background{
+				position: fixed;
+				width: 100%;
+				height: 100%;
+				top: 0;
+				left: 0;
+				background-color: rgba(0,0,0,0.2);
+				z-index: 10;
+			}
+			#show_url{
+				position: fixed;
+				width: 300px;
+				height: 400px;
+				top: 50%;
+				left: 50%;
+				background-color: #fff;
+				z-index: 11;
+				margin: -200px 0 0 -150px;
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+			}
+			.divhr{
+				width: 100%;
+				height: 1px;
+				background-color: #aaa;
+			}
+			.homediv{
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				background: #fff;
+				display: inline-block;
+			}
 
-		<body style="background:#eee;width:980px;margin:10px auto 10px auto;">
+			.icon {
+				/* don't change width and height in order to change the size of the icon,
+				you can control the size with font-size for different class(es) - below */
+				line-height: 100%;
+				width: 1em;
+				height: 1em;
+				position: relative;
+				display: block;
+				float: left;
+			}
+			/* Icon Plus */
+			.icon-plus,
+			.icon-plus:after {
+				position: absolute;
+				width: .375em;
+				height: .375em;
+				border-style: solid;
+				border-color: rgb(102, 102, 102); /* #666 */
+				font-size: 300px;
+			}
+			.icon-plus {
+				top: 80px;
+				left: 114px;
+				border-width: 0 .10em .10em 0;
+			}
+			.icon-plus:after {
+				content: "";
+				top: .375em;
+				left: .375em;
+				border-width: .10em 0 0 .10em;
+			}
+			/* Icon File */
+			/* File */
+			.icon-file {
+				position: absolute;
+				top: 60px;
+				left: 135px;
+				width: .5em;
+				height: .75em;
+				border-width: .1em;
+				border-style: solid;
+				border-color: rgb(102, 102, 102); /* #666 */
+				background-color: rgb(249, 249, 249); /* #f9f9f9 */
+				/* for browsers that supports */
+				/*border-radius: .0625em;*/
+				font-size: 300px;
+			}
+			.icon-file:before {
+				content: "";
+				position: absolute;
+				top: -.1em;
+				left: -.1em;
+				width: 0;
+				height: 0;
+				border-width: .1em;
+				border-style: solid;
+				border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
+			}
+		</style>
+	</head>
 
-			<h1 style="margin:0 0 10px 0;font-weight:100;display:inline-block;">NotePad</h1>
-			<h2 style="margin:5px 0 0 0;font-weight:100;float:right;">云记事本系统</h2>
+	<body style="background:#eee;width:980px;margin:10px auto 10px auto;">
 
+		<h1 style="margin:0 0 10px 0;display:inline-block;">NotePad</h1>
+		<h2 style="margin:5px 0 0 0;float:right;">云记事本系统</h2>
+
+		<?php if( $is_home == false ) : ?>
 	 		<div id="show_url_background" style="display:none;">
 				<div id="show_url">
 					<div style="background:#eee;padding:10px 0px 8px 10px;"><h4 style="margin:0;">在其他设备上访问此记事本</h4></div>
 					<div class="divhr" style="margin:0 0 8px 0;"></div>
-					<span style="margin:0 0 0 10px;"><?php echo $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?></span>
+					<span style="margin:0 0 0 10px;">记事本ID: <strong><?php echo $_GET['n']; ?></strong></span>
 					<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>" style="margin:10px 30px 27px 30px;"/>
 					<div class="divhr"></div>
 					<div style="background-color:#eee;height:57px;">
@@ -269,9 +342,7 @@
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 
-			<?php //echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING']; ?>
-
-			<button style="margin:20px 0 0 0;float:right;" class="btn" onclick="$('#note-form').submit();">保存</button>
+			<button style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;" class="btn" onclick="$('#note-form').submit();">保存</button>
 			
 			<?php if(!$passwd) : ?>
 				<button class="btn" style="margin:20px 0 0 0;" onclick="psaawd_set_display();">设置密码</button>
@@ -280,9 +351,31 @@
 			<?php endif; ?>
 
 			<button style="margin:20px 0 0 20px;" class="btn" onclick="$('#show_url_background').fadeIn();">在其它设备上访问</button>
-		
-		</body>
 
-		<?php
-	}
-?>
+		<?php else : ?>
+
+			<div style="clear:both;"></div>
+
+			<div style="width:480px;height:550px;" class="homediv">
+				<h2 style="margin:20px 0 0 20px;">还没有记事本?</h2>
+				<span class="icon icon-mid">
+					<span class="icon-plus"></span>
+				</span>
+				<form action="?new=yes" method="post">
+					<button style="margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;" class="btn">立刻创建</button>
+				</form>
+			</div>
+
+			<div style="width:480px;height:550px;float:right;" class="homediv">
+				<h2 style="margin:20px 0 0 20px;">已有记事本</h2>
+				<span class="icon icon-mid">
+					<span class="icon-file"></span>
+				</span>
+				<form action=" " method="get">
+					<input name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" style="margin:419px 0px 0px 20px;font-size:24px;width:255px;background:#C6E8FF;" />
+					<button style="margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;" class="btn">访问</button>
+				</form>
+			</div>
+
+		<?php endif; ?>
+	</body>
