@@ -41,7 +41,7 @@
 
 			if( isset($_POST['GiveYouPasswd']) ){
 				//如果输入了密码
-				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+3600);
+				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+31536000000);
 				echo "正在检查...";
 				header("location:?n=".$_GET['n']);
 			}
@@ -102,25 +102,32 @@
 						$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
 						$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
 						file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
-						
+						//删除Cookie
 						setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()-1);
-
+						//提示信息
 						echo "<script>alert('密码已删除');</script>";
-
+						//有密码标记为假
 						$passwd = false;
 					}
 				}
-
+				//关闭文件
 				fclose($passwd_file);
 			}
 
 			if( isset($_POST['the_set_passwd']) ){
+				//如果要设置密码
+
+				//打开密码文件
 				$passwd_file = fopen("NoteData/passwd.data","a+");
+
+				//写入密码信息
 				fputs($passwd_file,$_GET['n'].' '.md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang").' ' );
 				fputs($passwd_file,"\n");
 				fclose($passwd_file);
 
+				//设置Cookie
 				setcookie("myNodePasswdFor".$_GET['n'], $_POST['the_set_passwd'], time()+3600);
+				//提示信息
 				echo "<script>alert('密码已设置');</script>";
 
 				//有密码标记为真
@@ -130,16 +137,33 @@
 			}
 
 			if( $_POST["save"] == "yes"){
+				//如果是普通保存
 				if( isset($_POST['the_note']) ){
 					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
-				} 				
+				}
+			}
+
+			if( $_POST["ajax_save"] == "yes"){
+				//如果是ajax保存
+				if( isset($_POST['the_note']) ){
+					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					echo "ok";
+					//使用ajax时无需再输出HTML,任务已完成,终止执行.
+					exit();
+				}
 			}
 
 		}else{
+			//如果是新记事本
+
+			//创建新新文件
 			$note_file = fopen("NoteData/".$_GET['n'], "w+");
 			fclose($note_file);
+
 			$passwd = false;
 		}
+
+		//在记事本编辑页
 		$is_home = false;
 	}
 ?>
@@ -157,6 +181,12 @@
 		<script type="text/javascript">
 
 			var is_passwd_set_show = false;
+			var is_need_save = true;
+
+			$(document).ready(function(){
+				$("#save-form").hide();
+				$("#save-ajax").show();
+			});
 
 			function psaawd_set_display(){
 
@@ -171,6 +201,26 @@
 				}
 			}
 
+			function ajax_save(){
+				if( is_need_save == true ){
+					$("#save-ajax").css({"background-color":"#ccc","cursor":"wait"}).html("正在保存");
+					$.post("?n=<?php echo $_GET['n']; ?>",
+					{
+						ajax_save:"yes",
+						the_note:$("textarea").val()
+					},
+					function(data,status){
+						$("#save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+						is_need_save = false;
+					});
+				}
+			}
+
+			function note_change(){
+				$("#save-ajax").css({"background-color":"#58BCFF","cursor":"pointer"}).html("保存");
+				is_need_save = true;
+			}
+
 		</script>
 
 		<style type="text/css">
@@ -179,9 +229,27 @@
 				font-size: 14px;
 				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
 			}
+			input,button{
+				outline: none !important ;
+			}
+			.btn::-moz-focus-inner{
+				border-color:transparent!important;
+			}  
 			:focus {
 			    border: none;
 			    outline: 0;
+			}
+			::selection {
+				background:#58BCFF;
+				color:#fff;
+			}
+			::-moz-selection {
+				background:#58BCFF;
+				color:#fff;
+			}
+			::-webkit-selection {
+				background:#58BCFF;
+				color:#fff;
 			}
 			h1,h2,h3{
 				font-weight:100;
@@ -245,7 +313,6 @@
 				background: #fff;
 				display: inline-block;
 			}
-
 			.icon {
 				/* don't change width and height in order to change the size of the icon,
 				you can control the size with font-size for different class(es) - below */
@@ -278,7 +345,6 @@
 				border-width: .10em 0 0 .10em;
 			}
 			/* Icon File */
-			/* File */
 			.icon-file {
 				position: absolute;
 				top: 60px;
@@ -315,20 +381,27 @@
 		<?php if( $is_home == false ) : ?>
 	 		<div id="show_url_background" style="display:none;">
 				<div id="show_url">
+
 					<div style="background:#eee;padding:10px 0px 8px 10px;"><h4 style="margin:0;">在其他设备上访问此记事本</h4></div>
+
 					<div class="divhr" style="margin:0 0 8px 0;"></div>
+
 					<span style="margin:0 0 0 10px;">记事本ID: <strong><?php echo $_GET['n']; ?></strong></span>
 					<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>" style="margin:10px 30px 27px 30px;"/>
+					
 					<div class="divhr"></div>
+
 					<div style="background-color:#eee;height:57px;">
 						<button class="btn" style="float:right;margin:10px 10px 10px 0;" onclick="$('#show_url_background').fadeOut();">关闭</button>
 					</div>
+
 				</div>
+
 			</div>
 
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0;">
 				<div style="width:980px;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);background:#fff;">
-					<textarea autofocus="autofocus" name="the_note"><?php echo file_get_contents("NoteData/".$_GET['n']); ?></textarea>
+					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" ><?php echo file_get_contents("NoteData/".$_GET['n']); ?></textarea>
 				</div>
 				<input type="hidden" name="save" value="yes" />
 			</form>
@@ -342,7 +415,9 @@
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 
-			<button style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;" class="btn" onclick="$('#note-form').submit();">保存</button>
+			<button id="save-form" style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;" class="btn" onclick="$('#note-form').submit();">保存</button>
+
+			<button id="save-ajax" style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;display:none;" class="btn" onclick="ajax_save();">保存</button>
 			
 			<?php if(!$passwd) : ?>
 				<button class="btn" style="margin:20px 0 0 0;" onclick="psaawd_set_display();">设置密码</button>
@@ -357,24 +432,32 @@
 			<div style="clear:both;"></div>
 
 			<div style="width:480px;height:550px;" class="homediv">
+
 				<h2 style="margin:20px 0 0 20px;">还没有记事本?</h2>
+
 				<span class="icon icon-mid">
 					<span class="icon-plus"></span>
 				</span>
+
 				<form action="?new=yes" method="post">
 					<button style="margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;" class="btn">立刻创建</button>
 				</form>
+
 			</div>
 
 			<div style="width:480px;height:550px;float:right;" class="homediv">
+
 				<h2 style="margin:20px 0 0 20px;">已有记事本</h2>
+
 				<span class="icon icon-mid">
 					<span class="icon-file"></span>
 				</span>
+
 				<form action=" " method="get">
-					<input name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" style="margin:419px 0px 0px 20px;font-size:24px;width:255px;background:#C6E8FF;" />
+					<input name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" style="margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;" />
 					<button style="margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;" class="btn">访问</button>
 				</form>
+
 			</div>
 
 		<?php endif; ?>
