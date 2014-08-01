@@ -2,6 +2,16 @@
 	/*
 	 *	NotePad 轻量级云记事本系统
 	 */
+	function better_exit($output){
+		echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
+		echo '<body style="background-color:#eee;margin:8px;">';
+		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
+		echo $output;
+		echo "</div></body>";
+		exit();
+		die(1);
+	}
+
 
 	if( !file_exists("NoteData") ){
 		mkdir("NoteData");
@@ -9,6 +19,9 @@
 		fclose($init_file);
 		$init_file = fopen("NoteData/passwd.data", "w+");
 		fclose($init_file);
+		if( !file_exists("NoteData") ){
+			better_exit("服务器错误：无法创建文件,请检查文件系统权限");
+		}
 	}
 
 	if( $_GET["n"] == "" ){
@@ -33,7 +46,7 @@
 
 		if( preg_match('/[.]|[?]|[$]|[<]|[>]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
 			//如果ID不符合规范
-			exit("错误：请检查地址栏");
+			better_exit("错误：请检查地址栏");
 		}
 
 		if( file_exists("NoteData/".$_GET["n"]) ){
