@@ -2,6 +2,32 @@
 	/*
 	 *	NotePad 轻量级云记事本系统
 	 */
+
+	/**** Server Config ****/
+
+	$use_sql = true; //是否使用Mysql
+
+
+	/***********************/
+
+
+
+	/***** SQL Config  *****/
+
+	$sql_host = "localhost";	//Mysql服务器地址
+
+	$sql_user = "root";			//Mysql用户名
+
+	$sql_passwd = "wsy";		//Mysql密码
+
+	$sql_name = "notepad";		//notepad使用的数据库名
+
+	$sql_table = "note_data";	//notepad使用的表名
+
+	/***********************/
+
+
+
 	function better_exit($output){
 		echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
 		echo '<body style="background-color:#eee;margin:8px;">';
@@ -12,15 +38,33 @@
 		die(1);
 	}
 
-
-	if( !file_exists("NoteData") ){
-		mkdir("NoteData");
-		$init_file = fopen("NoteData/index.html", "w+");
-		fclose($init_file);
-		$init_file = fopen("NoteData/passwd.data", "w+");
-		fclose($init_file);
+	if( $use_sql == false ){
 		if( !file_exists("NoteData") ){
-			better_exit("服务器错误：无法创建文件,请检查文件系统权限");
+			mkdir("NoteData");
+			$init_file = fopen("NoteData/index.html", "w+");
+			fclose($init_file);
+			$init_file = fopen("NoteData/passwd.data", "w+");
+			fclose($init_file);
+			if( !file_exists("NoteData") ){
+				better_exit("服务器错误：无法创建文件,请检查文件系统权限");
+			}
+		}
+	}else{
+		$notesql = mysql_connect($sql_host ,$sql_user ,$sql_passwd);
+		mysql_select_db($sql_name, $notesql);
+
+		if( !mysql_query("SELECT * FROM ".$sql_table, $notesql) ){
+
+			$is_ok = mysql_query("CREATE TABLE ".$sql_table." ( 
+				ID int NOT NULL AUTO_INCREMENT, 
+				PRIMARY KEY(ID), 
+				passwd varchar(40), 
+				content longtext 
+			)",$notesql);
+
+			if(!$is_ok){
+				better_exit("Mysql Error");
+			}
 		}
 	}
 
@@ -33,9 +77,17 @@
 			$is_home = true;
 			if( $_GET['new'] == 'yes' ){
 				$this_name = rand(100000,999999);
-				while( file_exists("NoteData/".$this_name) ){
-					$this_name = rand(100000,999999);
+
+				if( $use_sql == false ){
+					while( file_exists("NoteData/".$this_name) ){
+						$this_name = rand(100000,999999);
+					}
+				}else{
+					while( mysql_query("SELECT * FROM Persons WHERE ID='".$this_name."'",$notesql) ){
+						$this_name = rand(100000,999999);
+					}
 				}
+
 				setcookie("myNote", $this_name, time()+31536000000);
 				header("location:?n=".$this_name);
 			}
@@ -49,7 +101,23 @@
 			better_exit("错误：请检查地址栏");
 		}
 
-		if( file_exists("NoteData/".$_GET["n"]) ){
+		if( $use_sql == false ){
+			if( file_exists("NoteData/".$_GET["n"]) ){
+				$this_ID_have_note = true;
+			}else{
+				$this_ID_have_note = false;
+			}
+		}else{
+			$sql_return = mysql_query("SELECT * FROM ".$sql_table." WHERE ID='".$_GET['n']."'",$notesql);
+			$the_content = mysql_fetch_array($sql_return);
+			if( $the_content['ID'] ){
+				$this_ID_have_note = true;
+			}else{
+				$this_ID_have_note = false;
+			}
+		}
+
+		if( $this_ID_have_note ){
 			//如果ID已有笔记
 
 			if( isset($_POST['GiveYouPasswd']) ){
@@ -59,25 +127,54 @@
 				header("location:?n=".$_GET['n']);
 			}
 
-			//打开密码文件
-			$passwd_file = fopen("NoteData/passwd.data","r");
+			if( $use_sql == false ){
 
-			//读取密码文件
-			while( !feof($passwd_file) ){
-				//读取一行
-				$passwd_file_this_line = fgets($passwd_file);
+				//打开密码文件
+				$passwd_file = fopen("NoteData/passwd.data","r");
 
-				//把这行分为两段
-				$this_line_array = explode(" ",$passwd_file_this_line);
-				
-				if( $this_line_array[0] == $_GET['n'] ){
-					//如果这个ID有密码并在这一行中
+				//读取密码文件
+				while( !feof($passwd_file) ){
+					//读取一行
+					$passwd_file_this_line = fgets($passwd_file);
 
+					//把这行分为两段
+					$this_line_array = explode(" ",$passwd_file_this_line);
+					
+					if( $this_line_array[0] == $_GET['n'] ){
+						//如果这个ID有密码并在这一行中
+
+						//有密码标记为真
+						$passwd = true;
+
+						//判断是否已输入密码
+						if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $this_line_array[1] ) {
+							//如果没有输入密码
+							?>
+								<title>输入密码</title>
+								<meta charset="utf-8" />
+								<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
+									<h3 style="font-weight:400;">请输入密码</h3>
+									<form action="?n=<?php echo $_GET['n']; ?>" method="post">
+										<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
+										<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
+									</form>
+								</body>
+							<?php
+							//显示输入密码框后终止执行
+							exit();
+						}
+					}
+				}
+
+				fclose($passwd_file);
+			}else{
+				$sql_return = mysql_query("SELECT passwd FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+				$the_passwd = mysql_fetch_array($sql_return);
+				if( $the_passwd['passwd'] ){
 					//有密码标记为真
 					$passwd = true;
 
-					//判断是否已输入密码
-					if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $this_line_array[1] ) {
+					if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $the_passwd['passwd'] ) {
 						//如果没有输入密码
 						?>
 							<title>输入密码</title>
@@ -96,47 +193,57 @@
 				}
 			}
 
-			fclose($passwd_file);
-
 			if( $_POST['delete_passwd'] == 'yes' ){
-				$passwd_file = fopen("NoteData/passwd.data","a+");
 
-				//读取密码文件
-				while( !feof($passwd_file) ){
-					//读取一行
-					$passwd_file_this_line = fgets($passwd_file);
+				if( $use_sql == false ){
 
-					//把这行分为两段
-					$this_line_array = explode(" ",$passwd_file_this_line);
-					
-					if( $this_line_array[0] == $_GET['n'] ){
-						//如果这个ID有密码并在这一行中
-						$passwd_file_content = file_get_contents("NoteData/passwd.data");
-						$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
-						$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
-						file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
-						//删除Cookie
-						setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()-1);
-						//提示信息
-						echo "<script>alert('密码已删除');</script>";
-						//有密码标记为假
-						$passwd = false;
+					$passwd_file = fopen("NoteData/passwd.data","a+");
+
+					//读取密码文件
+					while( !feof($passwd_file) ){
+						//读取一行
+						$passwd_file_this_line = fgets($passwd_file);
+
+						//把这行分为两段
+						$this_line_array = explode(" ",$passwd_file_this_line);
+						
+						if( $this_line_array[0] == $_GET['n'] ){
+							//如果这个ID有密码并在这一行中
+							$passwd_file_content = file_get_contents("NoteData/passwd.data");
+							$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
+							$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
+							file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
+							//删除Cookie
+							setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()-1);
+							//提示信息
+							echo "<script>alert('密码已删除');</script>";
+							//有密码标记为假
+							$passwd = false;
+						}
 					}
+					//关闭文件
+					fclose($passwd_file);
+				}else{
+					mysql_query("UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$_GET['n']."'",$notesql);
+					//有密码标记为假
+					$passwd = false;
 				}
-				//关闭文件
-				fclose($passwd_file);
 			}
 
 			if( isset($_POST['the_set_passwd']) ){
 				//如果要设置密码
 
-				//打开密码文件
-				$passwd_file = fopen("NoteData/passwd.data","a+");
+				if( $use_sql == false ){
+					//打开密码文件
+					$passwd_file = fopen("NoteData/passwd.data","a+");
 
-				//写入密码信息
-				fputs($passwd_file,$_GET['n'].' '.md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang").' ' );
-				fputs($passwd_file,"\n");
-				fclose($passwd_file);
+					//写入密码信息
+					fputs($passwd_file,$_GET['n'].' '.md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang").' ' );
+					fputs($passwd_file,"\n");
+					fclose($passwd_file);
+				}else{
+					mysql_query("UPDATE ".$sql_table." SET passwd = '".md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang")."' WHERE ID = '".$_GET['n']."'",$notesql);
+				}
 
 				//设置Cookie
 				setcookie("myNodePasswdFor".$_GET['n'], $_POST['the_set_passwd'], time()+3600);
@@ -151,16 +258,28 @@
 
 			if( $_POST["save"] == "yes"){
 				//如果是普通保存
+				
 				if( isset($_POST['the_note']) ){
-					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+
+					if( $use_sql == false ){
+						file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					}else{
+						mysql_query("UPDATE ".$sql_table." SET content = '".$_POST['the_note']."' WHERE ID = '".$_GET['n']."'",$notesql);
+					}
 				}
+				
 			}
 
 			if( $_POST["ajax_save"] == "yes"){
 				//如果是ajax保存
 				if( isset($_POST['the_note']) ){
-					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					if( $use_sql == false ){
+						file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					}else{
+						mysql_query("UPDATE ".$sql_table." SET content = '".$_POST['the_note']."' WHERE ID = '".$_GET['n']."'",$notesql);
+					}
 					echo "ok";
+
 					//使用ajax时无需再输出HTML,任务已完成,终止执行.
 					exit();
 				}
@@ -170,8 +289,12 @@
 			//如果是新记事本
 
 			//创建新新文件
-			$note_file = fopen("NoteData/".$_GET['n'], "w+");
-			fclose($note_file);
+			if( $use_sql == false ){
+				$note_file = fopen("NoteData/".$_GET['n'], "w+");
+				fclose($note_file);
+			}else{
+				mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
+			}
 
 			$passwd = false;
 		}
@@ -189,7 +312,7 @@
 		<title>NotePad 云记事本系统</title>
 		<meta charset="utf-8" />
 
-		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.js"></script>
+		<script src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
 
 		<script type="text/javascript">
 
@@ -414,7 +537,16 @@
 
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0;">
 				<div style="width:980px;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);background:#fff;">
-					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" ><?php echo file_get_contents("NoteData/".$_GET['n']); ?></textarea>
+					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" ><?php
+						if( $use_sql == false ){
+							echo file_get_contents("NoteData/".$_GET['n']); 
+						}else{
+							$sql_return = mysql_query("SELECT content FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+
+							$the_content = mysql_fetch_array($sql_return);
+							echo $the_content['content'];
+						}
+					?></textarea>
 				</div>
 				<input type="hidden" name="save" value="yes" />
 			</form>
