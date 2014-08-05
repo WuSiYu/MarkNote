@@ -71,7 +71,7 @@
 	if( $_GET["n"] == "" ){
 		//如果访问主页
 
-		if( isset($_COOKIE['myNote']) ){
+		if( isset($_COOKIE['myNote']) && $_POST['force_home'] != 'yes' ){
 			header("location:?n=".$_COOKIE['myNote']);
 		}else{
 			$is_home = true;
@@ -96,7 +96,7 @@
 	}else{
 		//如果指定了ID
 
-		if( preg_match('/[.]|[?]|[$]|[<]|[>]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
+		if( preg_match('/[.]|[?]|[$]|[<]|[>][\'][\"]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
 			//如果ID不符合规范
 			better_exit("错误：请检查地址栏");
 		}
@@ -276,7 +276,15 @@
 					if( $use_sql == false ){
 						file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
 					}else{
-						mysql_query("UPDATE ".$sql_table." SET content = '".$_POST['the_note']."' WHERE ID = '".$_GET['n']."'",$notesql);
+						$to_save_tmp = $_POST['the_note'];
+						$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
+						$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+						$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+						$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
+						$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
+						$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
+						$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
+						mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
 					}
 					echo "ok";
 
@@ -309,20 +317,55 @@
 
 	<head>
 
-		<title>NotePad 云记事本系统</title>
+		<title>记事本</title>
 		<meta charset="utf-8" />
 
-		<script src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 
 		<script type="text/javascript">
 
 			var is_passwd_set_show = false;
-			var is_need_save = true;
+			var is_need_save = false;
+
+
 
 			$(document).ready(function(){
 				$("#save-form").hide();
 				$("#save-ajax").show();
+				$("#save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+
+				var winh=window.innerHeight
+					|| document.documentElement.clientHeight
+					|| document.body.clientHeight;
+
+				var winw=window.innerWidth
+					|| document.documentElement.clientWidth
+					|| document.body.clientWidth;
+
+				if( winw > 990 ){
+					$("textarea,#homediv").height(winh-150);
+				}else{
+					$("textarea,#homediv").height(winh-165);
+				}
 			});
+
+			window.onresize = function (){
+				var winh=window.innerHeight
+					|| document.documentElement.clientHeight
+					|| document.body.clientHeight;
+
+				var winw=window.innerWidth
+					|| document.documentElement.clientWidth
+					|| document.body.clientWidth;
+
+				$("textarea").height(winh-150);
+				
+				if( winw > 990 ){
+					$("textarea,#homediv").height(winh-150);
+				}else{
+					$("textarea,#homediv").height(winh-165);
+				}
+			}
 
 			function psaawd_set_display(){
 
@@ -357,6 +400,14 @@
 				is_need_save = true;
 			}
 
+			window.onbeforeunload = onbeforeunload_handler;  
+			function onbeforeunload_handler(){
+				if(is_need_save){
+					var warning="您输入的内容还没有保存,请确认您是否真的要离开.";      
+					return warning;
+				}
+			}
+
 		</script>
 
 		<style type="text/css">
@@ -364,11 +415,14 @@
 				color: #555;
 				font-size: 14px;
 				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+				background:#eee;
+				width:980px;
+				margin:0px auto 10px auto;
 			}
 			input,button{
 				outline: none !important ;
 			}
-			.btn::-moz-focus-inner{
+			.btn::-moz-focus-inner,input::-moz-focus-inner{
 				border-color:transparent!important;
 			}  
 			:focus {
@@ -506,14 +560,54 @@
 				border-style: solid;
 				border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
 			}
+			#save-ajax ,#save-ajax{
+				margin: 20px 0 0 0;
+				float: right;
+				background: #58BCFF;
+				color: #fff;
+			}
+			#textdiv{
+				width: 980px;
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				background: #fff;
+			}
+			#back-to-note{
+				float: right;
+				text-decoration: none;
+				background: #58BCFF;
+				color: #fff;
+				font-size: 15px;
+				margin: 8px 0 10px 0;
+				box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
+			}
+
+			@media (max-width: 990px){
+				body{
+					margin: 0 30px 0 30px;
+					width: auto;
+				}
+				#textdiv{
+					width: auto;
+					padding: 18px;
+				}
+				textarea{
+					width: 100%;
+					margin: 0;
+				}
+			}
 		</style>
 	</head>
 
-	<body style="background:#eee;width:980px;margin:10px auto 10px auto;">
+	<body>
 
-		<h1 style="margin:0 0 10px 0;display:inline-block;">NotePad</h1>
-		<h2 style="margin:5px 0 0 0;float:right;">云记事本系统</h2>
-
+		<form action="./" method="post" style="display:inline-block;margin:0px 0px 8px -3px;">
+			<input type="hidden" name="force_home" value="yes">
+			<input type="submit" value="NotePad" style="margin:8px 0 0 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;">
+		</form>
+		<?php if( isset($_COOKIE['myNote']) && $is_home == true ) : ?>
+			<a href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
+		<?php endif; ?>
+		<!-- <h1 style="margin:0 0 10px 0;display:inline-block;">NotePad</h1> -->
 		<?php if( $is_home == false ) : ?>
 	 		<div id="show_url_background" style="display:none;">
 				<div id="show_url">
@@ -535,8 +629,8 @@
 
 			</div>
 
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0;">
-				<div style="width:980px;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);background:#fff;">
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0 auto;">
+				<div id="textdiv">
 					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" ><?php
 						if( $use_sql == false ){
 							echo file_get_contents("NoteData/".$_GET['n']); 
@@ -560,9 +654,9 @@
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 
-			<button id="save-form" style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;" class="btn" onclick="$('#note-form').submit();">保存</button>
+			<button id="save-form" class="btn" onclick="$('#note-form').submit();">保存</button>
 
-			<button id="save-ajax" style="margin:20px 0 0 0;float:right;background:#58BCFF;color:#fff;display:none;" class="btn" onclick="ajax_save();">保存</button>
+			<button id="save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
 			
 			<?php if(!$passwd) : ?>
 				<button class="btn" style="margin:20px 0 0 0;" onclick="psaawd_set_display();">设置密码</button>
@@ -607,3 +701,5 @@
 
 		<?php endif; ?>
 	</body>
+
+<?php if($use_sql == true){ mysql_close($notesql); }?>
