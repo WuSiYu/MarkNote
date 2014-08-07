@@ -319,6 +319,8 @@
 
 		<title>记事本</title>
 		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 
@@ -342,10 +344,13 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
+				// alert(winh);
+				// alert(winw);
+
 				if( winw > 990 ){
-					$("textarea,#homediv").height(winh-150);
+					$("textarea").height(winh-150);
 				}else{
-					$("textarea,#homediv").height(winh-165);
+					$("textarea").height(winh-165);
 				}
 			});
 
@@ -357,13 +362,19 @@
 				var winw=window.innerWidth
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
-
-				$("textarea").height(winh-150);
 				
 				if( winw > 990 ){
-					$("textarea,#homediv").height(winh-150);
+					if( is_passwd_set_show == true ){
+						$("textarea").height(winh-207);
+					}else{
+						$("textarea").height(winh-150);
+					}
 				}else{
-					$("textarea,#homediv").height(winh-165);
+					if( is_passwd_set_show == true ){
+						$("textarea").height(winh-217);
+					}else{
+						$("textarea").height(winh-165);
+					}
 				}
 			}
 
@@ -411,6 +422,7 @@
 		</script>
 
 		<style type="text/css">
+
 			body{
 				color: #555;
 				font-size: 14px;
@@ -419,31 +431,41 @@
 				width:980px;
 				margin:0px auto 10px auto;
 			}
+
 			input,button{
-				outline: none !important ;
+				outline: none !important;
+				-webkit-appearance:none;
+				border-radius: 0;
 			}
+
 			.btn::-moz-focus-inner,input::-moz-focus-inner{
 				border-color:transparent!important;
-			}  
-			:focus {
-			    border: none;
-			    outline: 0;
 			}
+
+			:focus {
+				border: none;
+				outline: 0;
+			}
+
 			::selection {
 				background:#58BCFF;
 				color:#fff;
 			}
+
 			::-moz-selection {
 				background:#58BCFF;
 				color:#fff;
 			}
+
 			::-webkit-selection {
 				background:#58BCFF;
 				color:#fff;
 			}
+
 			h1,h2,h3{
 				font-weight:100;
 			}
+
 			.btn{
 				padding: 9px 20px;
 				color: #555;
@@ -453,9 +475,11 @@
 				cursor: pointer;
 				font-size: 14px;
 			}
+
 			.btn:hover{
 				background: #fafafa;
 			}
+
 			textarea{
 				width: 960px;
 				height: 500px;
@@ -464,7 +488,9 @@
 				color: #555;background:#fff;
 				border: 0;
 				resize: none;
+				font-size: 16px !important;
 			}
+
 			.input{
 				font-size: 14px;
 				color: #555;
@@ -473,6 +499,7 @@
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 				padding: 10px;
 			}
+
 			#show_url_background{
 				position: fixed;
 				width: 100%;
@@ -482,6 +509,7 @@
 				background-color: rgba(0,0,0,0.2);
 				z-index: 10;
 			}
+
 			#show_url{
 				position: fixed;
 				width: 300px;
@@ -493,17 +521,22 @@
 				margin: -200px 0 0 -150px;
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 			}
+
 			.divhr{
 				width: 100%;
 				height: 1px;
 				background-color: #aaa;
 			}
+
 			.homediv{
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 				background: #fff;
 				display: inline-block;
+				width: 480px;
+				height: 550px;
 			}
-			.icon {
+
+			.icon{
 				/* don't change width and height in order to change the size of the icon,
 				you can control the size with font-size for different class(es) - below */
 				line-height: 100%;
@@ -513,6 +546,7 @@
 				display: block;
 				float: left;
 			}
+
 			/* Icon Plus */
 			.icon-plus,
 			.icon-plus:after {
@@ -523,17 +557,20 @@
 				border-color: rgb(102, 102, 102); /* #666 */
 				font-size: 300px;
 			}
+
 			.icon-plus {
 				top: 80px;
 				left: 114px;
 				border-width: 0 .10em .10em 0;
 			}
+
 			.icon-plus:after {
 				content: "";
 				top: .375em;
 				left: .375em;
 				border-width: .10em 0 0 .10em;
 			}
+
 			/* Icon File */
 			.icon-file {
 				position: absolute;
@@ -549,6 +586,7 @@
 				/*border-radius: .0625em;*/
 				font-size: 300px;
 			}
+
 			.icon-file:before {
 				content: "";
 				position: absolute;
@@ -560,17 +598,20 @@
 				border-style: solid;
 				border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
 			}
+
 			#save-ajax ,#save-ajax{
 				margin: 20px 0 0 0;
 				float: right;
 				background: #58BCFF;
 				color: #fff;
 			}
+
 			#textdiv{
 				width: 980px;
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 				background: #fff;
 			}
+
 			#back-to-note{
 				float: right;
 				text-decoration: none;
@@ -581,29 +622,102 @@
 				box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
 			}
 
-			@media (max-width: 990px){
+			#home-input{
+				margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;
+			}
+
+			#home-btn-new{
+				margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;
+			}
+
+			#home-btn-go{
+				margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;
+			}
+
+
+			@media screen and (max-width: 990px){
+
 				body{
-					margin: 0 30px 0 30px;
+					margin: 0 20px 0 20px;
 					width: auto;
 				}
+
 				#textdiv{
 					width: auto;
 					padding: 18px;
 				}
+
 				textarea{
 					width: 100%;
 					margin: 0;
+					font-size: 16px !important;
 				}
+
+				.homediv{
+					width:100%;
+					height: 200px;
+					margin-bottom: 30px;
+				}
+
+				.icon{
+					display: none;
+				}
+
+				#home-form-new,#home-form-go{
+					width: 410px;
+					margin: 40px auto 0 auto;
+				}
+
+				#home-btn-new{
+					margin: 0;
+				}
+
+				#home-btn-go{
+					margin: 0;
+				}
+
+				#home-input{
+					margin: 0;
+				}
+
+				#set-passwd-input{
+					width: 78% !important;
+				}
+
+				#set-passwd-btn{
+					width: 15% !important;
+				}
+
 			}
+
+			@media screen and (max-width: 600px){
+
+				#set-passwd-input{
+					width: 70% !important;
+				}
+
+				#set-passwd-btn{
+					width: 20% !important;
+				}
+
+				#other-dev{
+					display: none;
+				}
+
+			}
+
 		</style>
+
 	</head>
 
 	<body>
 
-		<form action="./" method="post" style="display:inline-block;margin:0px 0px 8px -3px;">
+		<form action="./" method="post" style="display:none;" id="force-home-form">
 			<input type="hidden" name="force_home" value="yes">
-			<input type="submit" value="NotePad" style="margin:8px 0 0 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;">
-		</form>
+<!-- 			<input type="submit" value="NotePad" style="margin:8px 0 0 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;">
+ -->		</form>
+
+ 		<h1 style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >NotePad</h1>
 		<?php if( isset($_COOKIE['myNote']) && $is_home == true ) : ?>
 			<a href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
 		<?php endif; ?>
@@ -646,8 +760,8 @@
 			</form>
 
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-set-form" style="display:none;margin:0;">
-				<input type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;margin:20px 0 0 0;" />
-				<input type="submit" value="设置" class="btn" style="float:right;margin:20px 0 0 0" />
+				<input type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;margin:20px 0 0 0;" id="set-passwd-input" />
+				<input type="submit" value="设置" class="btn" style="float:right;margin:20px 0 0 0" id="set-passwd-btn" />
 			</form>
 
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-delete-form" style="display:none;margin:0;">
@@ -664,13 +778,13 @@
 				<button class="btn" style="margin:20px 0 0 0;" onclick="$('#passwd-delete-form').submit();">删除密码</button>
 			<?php endif; ?>
 
-			<button style="margin:20px 0 0 20px;" class="btn" onclick="$('#show_url_background').fadeIn();">在其它设备上访问</button>
+			<button style="margin:20px 0 0 20px;" class="btn" onclick="$('#show_url_background').fadeIn();" id="other-dev">在其它设备上访问</button>
 
 		<?php else : ?>
 
 			<div style="clear:both;"></div>
 
-			<div style="width:480px;height:550px;" class="homediv">
+			<div class="homediv">
 
 				<h2 style="margin:20px 0 0 20px;">还没有记事本?</h2>
 
@@ -678,13 +792,13 @@
 					<span class="icon-plus"></span>
 				</span>
 
-				<form action="?new=yes" method="post">
-					<button style="margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;" class="btn">立刻创建</button>
+				<form action="?new=yes" method="post" id="home-form-new">
+					<button id="home-btn-new" class="btn">立刻创建</button>
 				</form>
 
 			</div>
 
-			<div style="width:480px;height:550px;float:right;" class="homediv">
+			<div style="float:right;" class="homediv">
 
 				<h2 style="margin:20px 0 0 20px;">已有记事本</h2>
 
@@ -692,14 +806,15 @@
 					<span class="icon-file"></span>
 				</span>
 
-				<form action=" " method="get">
-					<input name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" style="margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;" />
-					<button style="margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;" class="btn">访问</button>
+				<form action=" " method="get" id="home-form-go">
+					<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" />
+					<button id="home-btn-go" class="btn">访问</button>
 				</form>
 
 			</div>
 
 		<?php endif; ?>
+
 	</body>
 
 <?php if($use_sql == true){ mysql_close($notesql); }?>
