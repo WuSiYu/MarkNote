@@ -5,7 +5,7 @@
 
 	/**** Server Config ****/
 
-	$use_sql = true; //是否使用Mysql
+	$use_sql = false; //是否使用Mysql
 
 
 	/***********************/
@@ -14,15 +14,15 @@
 
 	/***** SQL Config  *****/
 
-	$sql_host = "localhost";	//Mysql服务器地址
+	$sql_host	= "localhost";	//Mysql服务器地址
 
-	$sql_user = "root";			//Mysql用户名
+	$sql_user	= "";			//Mysql用户名
 
-	$sql_passwd = "wsy";		//Mysql密码
+	$sql_passwd	= "";			//Mysql密码
 
-	$sql_name = "notepad";		//notepad使用的数据库名
+	$sql_name	= "notepad";	//notepad使用的数据库名
 
-	$sql_table = "note_data";	//notepad使用的表名
+	$sql_table	= "note_data";	//notepad使用的表名
 
 	/***********************/
 
