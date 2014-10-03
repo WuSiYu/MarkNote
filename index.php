@@ -101,6 +101,7 @@
 			better_exit("错误：请检查地址栏");
 		}
 
+        //判断是否已有笔记本
 		if( $use_sql == false ){
 			if( file_exists("NoteData/".$_GET["n"]) ){
 				$this_ID_have_note = true;
@@ -120,13 +121,15 @@
 		if( $this_ID_have_note ){
 			//如果ID已有笔记
 
+            //处理输入的密码
 			if( isset($_POST['GiveYouPasswd']) ){
 				//如果输入了密码
 				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+31536000000);
 				echo "正在检查...";
 				header("location:?n=".$_GET['n']);
 			}
-
+            
+            //检查是这个ID是否有密码
 			if( $use_sql == false ){
 
 				//打开密码文件
@@ -256,41 +259,45 @@
 				
 			}
 
-			if( $_POST["save"] == "yes"){
+			if( $_POST["save"] == "yes" && isset($_POST['the_note']) ){
 				//如果是普通保存
 				
-				if( isset($_POST['the_note']) ){
-
-					if( $use_sql == false ){
-						file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
-					}else{
-						mysql_query("UPDATE ".$sql_table." SET content = '".$_POST['the_note']."' WHERE ID = '".$_GET['n']."'",$notesql);
-					}
+				if( $use_sql == false ){
+					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+				}else{
+					$to_save_tmp = $_POST['the_note'];
+					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
+					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
+					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
+					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
+					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
+					mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
 				}
 				
 			}
 
-			if( $_POST["ajax_save"] == "yes"){
+			if( $_POST["ajax_save"] == "yes" && isset($_POST['the_note']) ){
 				//如果是ajax保存
-				if( isset($_POST['the_note']) ){
-					if( $use_sql == false ){
-						file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
-					}else{
-						$to_save_tmp = $_POST['the_note'];
-						$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-						$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-						$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
-						$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
-						$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
-						$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
-						$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
-						mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
-					}
-					echo "ok";
 
-					//使用ajax时无需再输出HTML,任务已完成,终止执行.
-					exit();
+				if( $use_sql == false ){
+					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+				}else{
+					$to_save_tmp = $_POST['the_note'];
+					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
+					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
+					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
+					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
+					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
+					mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
 				}
+				echo "ok";
+
+				//使用ajax时无需再输出HTML,任务已完成,终止执行.
+				exit();
 			}
 
 		}else{
@@ -344,9 +351,6 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
-				// alert(winh);
-				// alert(winw);
-
 				if( winw > 990 ){
 					$("textarea").height(winh-150);
 				}else{
@@ -364,13 +368,13 @@
 					|| document.body.clientWidth;
 				
 				if( winw > 990 ){
-					if( is_passwd_set_show == true ){
+					if( is_passwd_set_show ){
 						$("textarea").height(winh-207);
 					}else{
 						$("textarea").height(winh-150);
 					}
 				}else{
-					if( is_passwd_set_show == true ){
+					if( is_passwd_set_show ){
 						$("textarea").height(winh-217);
 					}else{
 						$("textarea").height(winh-165);
@@ -380,7 +384,7 @@
 
 			function psaawd_set_display(){
 
-				if( is_passwd_set_show == false ){
+				if( !is_passwd_set_show ){
 					$('#passwd-set-form').slideDown(500);
 					$('textarea').animate({height:'-=57px'},500);
 					is_passwd_set_show = true;
@@ -392,7 +396,7 @@
 			}
 
 			function ajax_save(){
-				if( is_need_save == true ){
+				if( is_need_save ){
 					$("#save-ajax").css({"background-color":"#ccc","cursor":"wait"}).html("正在保存");
 					$.post("?n=<?php echo $_GET['n']; ?>",
 					{
