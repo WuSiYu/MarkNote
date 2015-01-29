@@ -1,34 +1,32 @@
+<!-- NotePad 轻量级云记事本系统 -->
 <?php
-	/*
-	 *	NotePad 轻量级云记事本系统
-	 */
 
-	/**** Server Config ****/
+
+	//== Server Config =====================
 
 	$use_sql = false; //是否使用Mysql
 
 
-	/***********************/
+	//======================================
 
 
+	//== SQL Config ========================
 
-	/***** SQL Config  *****/
+	$sql_host	= "localhost";	//MySQL服务器地址
 
-	$sql_host	= "localhost";	//Mysql服务器地址
+	$sql_user	= "root";		//MySQL用户名
 
-	$sql_user	= "";			//Mysql用户名
+	$sql_passwd	= "";		//MySQL密码
 
-	$sql_passwd	= "";			//Mysql密码
+	$sql_name	= "notepad";	//NotePad使用的数据库名
 
-	$sql_name	= "notepad";	//notepad使用的数据库名
+	$sql_table	= "note_data";	//NotePad使用的表名(自动创建)
 
-	$sql_table	= "note_data";	//notepad使用的表名
-
-	/***********************/
-
+	//======================================
 
 
-	function better_exit($output){
+	//输出错误信息并终止
+	function show_error_exit($output){
 		echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
 		echo '<body style="background-color:#eee;margin:8px;">';
 		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
@@ -36,6 +34,10 @@
 		echo "</div></body>";
 		exit();
 		die(1);
+	}
+
+	function show_input_passwd(){
+
 	}
 
 	if( $use_sql == false ){
@@ -46,7 +48,7 @@
 			$init_file = fopen("NoteData/passwd.data", "w+");
 			fclose($init_file);
 			if( !file_exists("NoteData") ){
-				better_exit("服务器错误：无法创建文件,请检查文件系统权限");
+				show_error_exit("服务器端错误：无法创建文件,请检查文件系统权限");
 			}
 		}
 	}else{
@@ -63,7 +65,7 @@
 			)",$notesql);
 
 			if(!$is_ok){
-				better_exit("Mysql Error");
+				show_error_exit("服务器端错误：无法创建数据库表,请修正数据库连接信息或使用文件存储方式");
 			}
 		}
 	}
@@ -72,9 +74,12 @@
 		//如果访问主页
 
 		if( isset($_COOKIE['myNote']) && $_POST['force_home'] != 'yes' ){
+			//如果是已保存cookie的老用户,并不是强制到主页(通过笔记本页的返回主页按钮).则取出记事本ID,并跳转根据ID跳转到笔记本页
 			header("location:?n=".$_COOKIE['myNote']);
 		}else{
-			$is_home = true;
+
+			$is_home = true; //设置是主页标记为真(在最后生成页面时作判断用)
+
 			if( $_GET['new'] == 'yes' ){
 				$this_name = rand(100000,999999);
 
@@ -83,7 +88,7 @@
 						$this_name = rand(100000,999999);
 					}
 				}else{
-					while( mysql_query("SELECT * FROM Persons WHERE ID='".$this_name."'",$notesql) ){
+					while( mysql_query("SELECT * FROM ".$sql_table." WHERE ID='".$this_name."'",$notesql) ){
 						$this_name = rand(100000,999999);
 					}
 				}
@@ -98,7 +103,7 @@
 
 		if( preg_match('/[.]|[?]|[$]|[<]|[>][\'][\"]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
 			//如果ID不符合规范
-			better_exit("错误：请检查地址栏");
+			show_error_exit("错误：输入的ID不合法");
 		}
 
         //判断是否已有笔记本
@@ -124,7 +129,7 @@
             //处理输入的密码
 			if( isset($_POST['GiveYouPasswd']) ){
 				//如果输入了密码
-				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+31536000000);
+				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+3600);
 				echo "正在检查...";
 				header("location:?n=".$_GET['n']);
 			}
