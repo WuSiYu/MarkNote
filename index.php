@@ -37,7 +37,19 @@
 	}
 
 	function show_input_passwd(){
-
+		?>
+			<title>输入密码</title>
+			<meta charset="utf-8" />
+			<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
+				<h3 style="font-weight:400;">请输入密码</h3>
+				<form action="?n=<?php echo $_GET['n']; ?>" method="post">
+					<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
+					<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
+				</form>
+			</body>
+		<?php
+		//显示输入密码框后终止执行
+		exit();
 	}
 
 	if( $use_sql == false ){
@@ -93,7 +105,7 @@
 					}
 				}
 
-				setcookie("myNote", $this_name, time()+31536000000);
+				// setcookie("myNote", $this_name, time()+31536000000);
 				header("location:?n=".$this_name);
 			}
 		}
@@ -105,6 +117,8 @@
 			//如果ID不符合规范
 			show_error_exit("错误：输入的ID不合法");
 		}
+
+		setcookie("myNote", $_GET["n"], time()+31536000000);
 
         //判断是否已有笔记本
 		if( $use_sql == false ){
@@ -157,19 +171,7 @@
 						//判断是否已输入密码
 						if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $this_line_array[1] ) {
 							//如果没有输入密码
-							?>
-								<title>输入密码</title>
-								<meta charset="utf-8" />
-								<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
-									<h3 style="font-weight:400;">请输入密码</h3>
-									<form action="?n=<?php echo $_GET['n']; ?>" method="post">
-										<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
-										<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
-									</form>
-								</body>
-							<?php
-							//显示输入密码框后终止执行
-							exit();
+							show_input_passwd();
 						}
 					}
 				}
