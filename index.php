@@ -1,4 +1,4 @@
-<!-- NotePad 轻量级云记事本系统 -->
+<!-- NotePad 轻量级云记事本系统 DEV-->
 <?php
 
 
@@ -90,7 +90,8 @@
 			header("location:?n=".$_COOKIE['myNote']);
 		}else{
 
-			$is_home = true; //设置是主页标记为真(在最后生成页面时作判断用)
+			// $is_home = true; //设置是主页标记为真(在最后生成页面时作判断用)
+			$page_type = 'home'; //设置是主页标记为真(在最后生成页面时作判断用)
 
 			if( $_GET['new'] == 'yes' ){
 				$this_name = rand(100000,999999);
@@ -140,6 +141,8 @@
 		if( $this_ID_have_note ){
 			//如果ID已有笔记
 
+			$page_type = 'text_note';
+
             //处理输入的密码
 			if( isset($_POST['GiveYouPasswd']) ){
 				//如果输入了密码
@@ -186,19 +189,7 @@
 
 					if( md5($_GET['n']."MyNote".$_COOKIE['myNodePasswdFor'.$_GET['n']]."Let-It-More-Lang") != $the_passwd['passwd'] ) {
 						//如果没有输入密码
-						?>
-							<title>输入密码</title>
-							<meta charset="utf-8" />
-							<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
-								<h3 style="font-weight:400;">请输入密码</h3>
-								<form action="?n=<?php echo $_GET['n']; ?>" method="post">
-									<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
-									<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
-								</form>
-							</body>
-						<?php
-						//显示输入密码框后终止执行
-						exit();
+						show_input_passwd();
 					}
 				}
 			}
@@ -307,24 +298,57 @@
 				exit();
 			}
 
+			if( $use_sql == false ){
+				$note_content_to_show = file_get_contents("NoteData/".$_GET['n']); 
+			}else{
+				$sql_return = mysql_query("SELECT content FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+
+				$the_content = mysql_fetch_array($sql_return);
+				$note_content_to_show = $the_content['content'];
+			}
+
+			if( strpos($note_content_to_show,'<<-- MarkDown Type Note -->>>') == 1 ){
+				$page_type = 'md_note';
+			}
+
 		}else{
 			//如果是新记事本
 
-			//创建新新文件
-			if( $use_sql == false ){
-				$note_file = fopen("NoteData/".$_GET['n'], "w+");
-				fclose($note_file);
-			}else{
-				mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
-			}
+			if( isset($_POST['type']) ){
 
-			$passwd = false;
+				// echo "type is ".$_POST['type'];
+				//创建新新文件
+				if( $use_sql == false ){
+					$note_file = fopen("NoteData/".$_GET['n'], "w+");
+					if( $_POST['type'] == 'md' ){
+						fwrite($note_file, '<<<-- MarkDown Type Note -->>>');
+					}
+					fclose($note_file);
+				}else{
+					mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
+					if( $_POST['type'] == 'md' ){
+						mysql_query("UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>' WHERE ID = '".$_GET['n']."'",$notesql);
+					}
+				}
+
+				$passwd = false;
+				if( $_POST['type'] == 'md' ){
+					$page_type = 'md_note';
+				}else{
+					$page_type = 'text_note';
+				}
+
+			}else{
+				$page_type = 'select_note_type';
+			}
 		}
 
 		//在记事本编辑页
-		$is_home = false;
-	}
+		// $is_home = false;
+	}//END--如果指定ID
 ?>
+
+<!-- HTML页面部分 -->
 
 <!DOCTYPE html>
 
@@ -337,6 +361,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<!--Dev only!--><script src="/jquery.js"></script>
+
+		<script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script>
+		<!--Dev only!--><script src="/markdown.min.js"></script>
 
 		<script type="text/javascript">
 
@@ -346,9 +374,9 @@
 
 
 			$(document).ready(function(){
-				$("#save-form").hide();
-				$("#save-ajax").show();
-				$("#save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+				$("#note-btns-save-form").hide();
+				$("#note-btns-save-ajax").show();
+				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
 
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
@@ -358,7 +386,7 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
-				if( winw > 990 ){
+				if( winw > 1140 ){
 					$("textarea").height(winh-150);
 				}else{
 					$("textarea").height(winh-165);
@@ -374,7 +402,7 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 				
-				if( winw > 990 ){
+				if( winw > 1140 ){
 					if( is_passwd_set_show ){
 						$("textarea").height(winh-207);
 					}else{
@@ -387,16 +415,19 @@
 						$("textarea").height(winh-165);
 					}
 				}
+
+				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 			}
 
 			function psaawd_set_display(){
 
 				if( !is_passwd_set_show ){
-					$('#passwd-set-form').slideDown(500);
+					$('#note-btns-passwdset-form').slideDown(500);
 					$('textarea').animate({height:'-=57px'},500);
+					$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 					is_passwd_set_show = true;
 				}else{
-					$('#passwd-set-form').slideUp(500);
+					$('#note-btns-passwdset-form').slideUp(500);
 					$('textarea').animate({height:'+=57px'},500);
 					is_passwd_set_show = false;
 				}
@@ -404,21 +435,21 @@
 
 			function ajax_save(){
 				if( is_need_save ){
-					$("#save-ajax").css({"background-color":"#ccc","cursor":"wait"}).html("正在保存");
+					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait"}).html("正在保存");
 					$.post("?n=<?php echo $_GET['n']; ?>",
 					{
 						ajax_save:"yes",
 						the_note:$("textarea").val()
 					},
 					function(data,status){
-						$("#save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
 						is_need_save = false;
 					});
 				}
 			}
 
 			function note_change(){
-				$("#save-ajax").css({"background-color":"#58BCFF","cursor":"pointer"}).html("保存");
+				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer"}).html("保存");
 				is_need_save = true;
 			}
 
@@ -432,17 +463,11 @@
 
 		</script>
 
+
+
 		<style type="text/css">
 
-			body{
-				color: #555;
-				font-size: 14px;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
-				background:#eee;
-				width:980px;
-				margin:0px auto 10px auto;
-			}
-
+			/***** 全局 *****/
 			input,button{
 				outline: none !important;
 				-webkit-appearance:none;
@@ -473,8 +498,9 @@
 				color:#fff;
 			}
 
-			h1,h2,h3{
+			h1,h2,h3,h4,h4,h5,h6{
 				font-weight:100;
+				margin: 0;
 			}
 
 			.btn{
@@ -491,17 +517,6 @@
 				background: #fafafa;
 			}
 
-			textarea{
-				width: 960px;
-				height: 500px;
-				padding: 0;
-				margin: 10px;
-				color: #555;background:#fff;
-				border: 0;
-				resize: none;
-				font-size: 16px !important;
-			}
-
 			.input{
 				font-size: 14px;
 				color: #555;
@@ -511,7 +526,8 @@
 				padding: 10px;
 			}
 
-			#show_url_background{
+			/***** 在其他设备上访问对话框 *****/
+			#note-otherdev-background-div{
 				position: fixed;
 				width: 100%;
 				height: 100%;
@@ -521,7 +537,7 @@
 				z-index: 10;
 			}
 
-			#show_url{
+			#note-otherdev-div{
 				position: fixed;
 				width: 300px;
 				height: 400px;
@@ -533,189 +549,18 @@
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 			}
 
-			.divhr{
+			.note-otherdev-div-divhr{
 				width: 100%;
 				height: 1px;
 				background-color: #aaa;
 			}
 
-			.homediv{
-				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-				background: #fff;
-				display: inline-block;
-				width: 480px;
-				height: 550px;
-			}
 
-			.icon{
-				/* don't change width and height in order to change the size of the icon,
-				you can control the size with font-size for different class(es) - below */
-				line-height: 100%;
-				width: 1em;
-				height: 1em;
-				position: relative;
-				display: block;
-				float: left;
-			}
+			/***** 主页 *****/
+			/* 已移动至局部 */
 
-			/* Icon Plus */
-			.icon-plus,
-			.icon-plus:after {
-				position: absolute;
-				width: .375em;
-				height: .375em;
-				border-style: solid;
-				border-color: rgb(102, 102, 102); /* #666 */
-				font-size: 300px;
-			}
+			/***** 笔记本编辑页 *****/
 
-			.icon-plus {
-				top: 80px;
-				left: 114px;
-				border-width: 0 .10em .10em 0;
-			}
-
-			.icon-plus:after {
-				content: "";
-				top: .375em;
-				left: .375em;
-				border-width: .10em 0 0 .10em;
-			}
-
-			/* Icon File */
-			.icon-file {
-				position: absolute;
-				top: 60px;
-				left: 135px;
-				width: .5em;
-				height: .75em;
-				border-width: .1em;
-				border-style: solid;
-				border-color: rgb(102, 102, 102); /* #666 */
-				background-color: rgb(249, 249, 249); /* #f9f9f9 */
-				/* for browsers that supports */
-				/*border-radius: .0625em;*/
-				font-size: 300px;
-			}
-
-			.icon-file:before {
-				content: "";
-				position: absolute;
-				top: -.1em;
-				left: -.1em;
-				width: 0;
-				height: 0;
-				border-width: .1em;
-				border-style: solid;
-				border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
-			}
-
-			#save-ajax ,#save-ajax{
-				margin: 20px 0 0 0;
-				float: right;
-				background: #58BCFF;
-				color: #fff;
-			}
-
-			#textdiv{
-				width: 980px;
-				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-				background: #fff;
-			}
-
-			#back-to-note{
-				float: right;
-				text-decoration: none;
-				background: #58BCFF;
-				color: #fff;
-				font-size: 15px;
-				margin: 8px 0 10px 0;
-				box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
-			}
-
-			#home-input{
-				margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;
-			}
-
-			#home-btn-new{
-				margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;
-			}
-
-			#home-btn-go{
-				margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;
-			}
-
-
-			@media screen and (max-width: 990px){
-
-				body{
-					margin: 0 20px 0 20px;
-					width: auto;
-				}
-
-				#textdiv{
-					width: auto;
-					padding: 18px;
-				}
-
-				textarea{
-					width: 100%;
-					margin: 0;
-					font-size: 16px !important;
-				}
-
-				.homediv{
-					width:100%;
-					height: 200px;
-					margin-bottom: 30px;
-				}
-
-				.icon{
-					display: none;
-				}
-
-				#home-form-new,#home-form-go{
-					width: 410px;
-					margin: 40px auto 0 auto;
-				}
-
-				#home-btn-new{
-					margin: 0;
-				}
-
-				#home-btn-go{
-					margin: 0;
-				}
-
-				#home-input{
-					margin: 0;
-				}
-
-				#set-passwd-input{
-					width: 78% !important;
-				}
-
-				#set-passwd-btn{
-					width: 15% !important;
-				}
-
-			}
-
-			@media screen and (max-width: 600px){
-
-				#set-passwd-input{
-					width: 70% !important;
-				}
-
-				#set-passwd-btn{
-					width: 20% !important;
-				}
-
-				#other-dev{
-					display: none;
-				}
-
-			}
 
 		</style>
 
@@ -723,75 +568,298 @@
 
 	<body>
 
+		<!-- 强制主页表单 -->
 		<form action="./" method="post" style="display:none;" id="force-home-form">
 			<input type="hidden" name="force_home" value="yes">
-<!-- 			<input type="submit" value="NotePad" style="margin:8px 0 0 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;">
- -->		</form>
+		</form>
 
+		<!-- NotePad标题 && 返回主页按钮 -->
  		<h1 style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >NotePad</h1>
-		<?php if( isset($_COOKIE['myNote']) && $is_home == true ) : ?>
-			<a href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
-		<?php endif; ?>
-		<!-- <h1 style="margin:0 0 10px 0;display:inline-block;">NotePad</h1> -->
-		<?php if( $is_home == false ) : ?>
-	 		<div id="show_url_background" style="display:none;">
-				<div id="show_url">
 
-					<div style="background:#eee;padding:10px 0px 8px 10px;"><h4 style="margin:0;">在其他设备上访问此记事本</h4></div>
 
-					<div class="divhr" style="margin:0 0 8px 0;"></div>
 
-					<span style="margin:0 0 0 10px;">记事本ID: <strong><?php echo $_GET['n']; ?></strong></span>
-					<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>" style="margin:10px 30px 27px 30px;"/>
-					
-					<div class="divhr"></div>
 
-					<div style="background-color:#eee;height:57px;">
-						<button class="btn" style="float:right;margin:10px 10px 10px 0;" onclick="$('#show_url_background').fadeOut();">关闭</button>
+
+
+
+
+		<!-- 记事本编辑页共用-1 -->
+		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
+			<style type="text/css">
+				#note-btns-save-ajax{
+					float: right;
+					background: #58BCFF;
+					color: #fff;
+				}
+
+
+				body{
+					color: #555;
+					font-size: 14px;
+					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+					background:#eee;
+					width:1100px;
+					margin:0px auto 10px auto;
+				}
+
+				textarea{
+					width: 1080px;
+					height: 500px;
+					padding: 0;
+					margin: 10px;
+					color: #555;background:#fff;
+					border: 0;
+					resize: none;
+					font-size: 16px !important;
+				}
+
+				#note-main-form-div{
+					width: 1100px;
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					background: #fff;
+				}
+
+				#back-to-note{
+					float: right;
+					text-decoration: none;
+					background: #58BCFF;
+					color: #fff;
+					font-size: 15px;
+					margin: 8px 0 10px 0;
+					box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
+				}
+
+				#home-input{
+					margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;
+				}
+
+				#home-btn-new{
+					margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;
+				}
+
+				#home-btn-go{
+					margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;
+				}
+
+
+				@media screen and (max-width: 1140px){
+
+					body{
+						margin: 0 20px 0 20px;
+						width: auto;
+					}
+
+					#note-main-form-div{
+						width: auto;
+						padding: 18px;
+					}
+
+					textarea{
+						width: 100%;
+						margin: 0;
+						font-size: 16px !important;
+					}
+
+					.homediv{
+						width:100%;
+						height: 200px;
+						margin-bottom: 30px;
+					}
+
+					.icon{
+						display: none;
+					}
+
+					#home-form-new,#home-form-go{
+						width: 410px;
+						margin: 40px auto 0 auto;
+					}
+
+					#home-btn-new{
+						margin: 0;
+					}
+
+					#home-btn-go{
+						margin: 0;
+					}
+
+					#home-input{
+						margin: 0;
+					}
+
+
+				}
+
+				@media screen and (max-width: 420px){
+
+					#note-btns-otherdev-btn{
+						display: none;
+					}
+
+				}
+			</style>
+
+			<!-- [在其他设备上访问此记事本]对话框 -->
+	 		<div id="note-otherdev-background-div" style="display:none;">
+				<div id="note-otherdev-div">
+					<div style="background:#eee;padding:10px 0px 8px 10px;"><h4>在其他设备上访问此记事本</h4></div>
+
+					<div class="note-otherdev-div-divhr" style="margin-bottom:8px;"></div>
+
+					<span style="margin-left:10px;">记事本ID: <strong><?php echo $_GET['n']; ?></strong></span>
+
+					<div style="width:240px; height:240px; margin:10px 30px 30px 30px;">
+						<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>"/>
 					</div>
 
+					<div class="note-otherdev-div-divhr"></div>
+
+					<div style="background-color:#eee; height:58px;">
+						<button class="btn" style="float:right;margin:10px 10px 10px 0;" onclick="$('#note-otherdev-background-div').fadeOut();">关闭</button>
+					</div>
 				</div>
-
 			</div>
+		<?php endif; ?>
+			
 
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-form" style="margin:0 auto;">
-				<div id="textdiv">
-					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" ><?php
-						if( $use_sql == false ){
-							echo file_get_contents("NoteData/".$_GET['n']); 
-						}else{
-							$sql_return = mysql_query("SELECT content FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
 
-							$the_content = mysql_fetch_array($sql_return);
-							echo $the_content['content'];
-						}
-					?></textarea>
+
+
+
+
+		<!-- 纯文本记事本编辑页 -->
+		<?php if ( $page_type == 'text_note' ) : ?>
+
+			<!-- 大框子 -->
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
+				<div id="note-main-form-div">
+					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" >
+						<?php echo $note_content_to_show; ?>
+					</textarea>
 				</div>
 				<input type="hidden" name="save" value="yes" />
 			</form>
 
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-set-form" style="display:none;margin:0;">
-				<input type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;margin:20px 0 0 0;" id="set-passwd-input" />
-				<input type="submit" value="设置" class="btn" style="float:right;margin:20px 0 0 0" id="set-passwd-btn" />
-			</form>
+			<div id="note-btns-div" style="margin:20px 0 0 0;">
+				
+				<!-- 密码 设置 && 删除 表单+按钮 -->
+				<?php if($passwd) : ?>
+					<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
+						<input type="hidden" name="delete_passwd" value="yes" />
+					</form>
+					<button class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
+				<?php else : ?>
+					<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-bottom:20px;">
+						<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;"/>
+						<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
+					</form>
+					<button class="btn" onclick="psaawd_set_display();">设置密码</button>
+				<?php endif; ?>
 
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="passwd-delete-form" style="display:none;margin:0;">
-				<input type="hidden" name="delete_passwd" value="yes" />
-			</form>
+				<button style="margin-left:20px;" class="btn" onclick="$('#note-otherdev-background-div').fadeIn();" id="note-btns-otherdev-btn">在其它设备上访问</button>
 
-			<button id="save-form" class="btn" onclick="$('#note-form').submit();">保存</button>
+				<!-- 对于老式浏览器的传统表单保存,在现代浏览器中会自动隐藏 -->
+				<button id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
 
-			<button id="save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
-			
-			<?php if(!$passwd) : ?>
-				<button class="btn" style="margin:20px 0 0 0;" onclick="psaawd_set_display();">设置密码</button>
-			<?php else : ?>
-				<button class="btn" style="margin:20px 0 0 0;" onclick="$('#passwd-delete-form').submit();">删除密码</button>
+				<!-- 对于现代浏览器的ajax保存,在现代浏览器中会自动显示 -->
+				<button id="note-btns-save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
+
+		<?php endif; ?>
+
+
+
+
+
+
+
+
+		<!-- MarkDown记事本编辑页 -->
+		<?php if ( $page_type == 'md_note' ) : ?>
+			<h1>MarkDown Note</h1>
+		<?php endif; ?>
+
+
+
+
+
+
+
+		<!-- 主页HTML -->
+		<?php if ( $page_type == 'home' ) : ?>
+
+			<style type="text/css">
+				.homediv{
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					background: #fff;
+					display: inline-block;
+					width: 480px;
+					height: 550px;
+				}
+
+				.icon{
+					line-height: 100%;
+					width: 1em;
+					height: 1em;
+					position: relative;
+					display: block;
+					float: left;
+				}
+
+				.icon-plus,
+				.icon-plus:after {
+					position: absolute;
+					width: .375em;
+					height: .375em;
+					border-style: solid;
+					border-color: rgb(102, 102, 102); /* #666 */
+					font-size: 300px;
+				}
+
+				.icon-plus {
+					top: 80px;
+					left: 114px;
+					border-width: 0 .10em .10em 0;
+				}
+
+				.icon-plus:after {
+					content: "";
+					top: .375em;
+					left: .375em;
+					border-width: .10em 0 0 .10em;
+				}
+
+
+				.icon-file {
+					position: absolute;
+					top: 60px;
+					left: 135px;
+					width: .5em;
+					height: .75em;
+					border-width: .1em;
+					border-style: solid;
+					border-color: rgb(102, 102, 102); /* #666 */
+					background-color: rgb(249, 249, 249); /* #f9f9f9 */
+					font-size: 300px;
+				}
+
+				.icon-file:before {
+					content: "";
+					position: absolute;
+					top: -.1em;
+					left: -.1em;
+					width: 0;
+					height: 0;
+					border-width: .1em;
+					border-style: solid;
+					border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
+				}
+
+			</style>
+
+			<?php if( isset($_COOKIE['myNote']) ) : ?>
+				<!-- 强制主页时的返回按钮 -->
+				<a href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
 			<?php endif; ?>
-
-			<button style="margin:20px 0 0 20px;" class="btn" onclick="$('#show_url_background').fadeIn();" id="other-dev">在其它设备上访问</button>
-
-		<?php else : ?>
 
 			<div style="clear:both;"></div>
 
@@ -817,14 +885,39 @@
 					<span class="icon-file"></span>
 				</span>
 
-				<form action=" " method="get" id="home-form-go">
+				<form action="" method="get" id="home-form-go">
 					<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" />
 					<button id="home-btn-go" class="btn">访问</button>
 				</form>
 
 			</div>
+		<?php endif; ?>
+
+
+
+
+
+
+
+
+		<?php if ( $page_type == 'select_note_type' ) : ?>
+
+			<form action="" method="post"> 
+				<input type="hidden" name="type" value="text">
+				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
+				<input type="submit" value="Text" class="btn">
+			</form>
+
+			<form action="" method="post">
+				<input type="hidden" name="type" value="md">
+				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
+				<input type="submit" value="MarkDown" class="btn">
+			</form>
 
 		<?php endif; ?>
+
+
+
 
 	</body>
 
