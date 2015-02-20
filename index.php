@@ -4,7 +4,7 @@
 
 	//== Server Config =====================
 
-	$use_sql = true; //是否使用Mysql
+	$use_sql = false; //是否使用Mysql
 
 
 	//======================================
@@ -328,21 +328,19 @@
 				if( $use_sql == false ){
 					$note_file = fopen("NoteData/".$_GET['n'], "w+");
 					if( $_POST['type'] == 'md' ){
-						$md_head = '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本\n- - -\n在**右侧**编辑记事本，会在**左侧**显示效果。\n';
 						$note_content_to_show = '#MarkDown格式记事本
 - - -
 在**右侧**编辑记事本，会在**左侧**显示效果。';
-						fwrite($note_file, $md_head);
+						fwrite($note_file, '<<<-- MarkDown Type Note -->>>'.$note_content_to_show);
 					}
 					fclose($note_file);
 				}else{
 					mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
 					if( $_POST['type'] == 'md' ){
-						$md_head = '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本\n- - -\n在**右侧**编辑记事本，会在**左侧**显示效果。\n';
-						mysql_query("UPDATE ".$sql_table." SET content = '".$md_head."' WHERE ID = '".$_GET['n']."'",$notesql);
 						$note_content_to_show = '#MarkDown格式记事本
 - - -
 在**右侧**编辑记事本，会在**左侧**显示效果。';
+						mysql_query("UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>".$note_content_to_show."' WHERE ID = '".$_GET['n']."'",$notesql);
 					}
 				}
 
@@ -383,7 +381,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<!-- <script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script> -->
 		<!--Dev only!--><script src="/jquery.js"></script>
 
 
@@ -391,6 +389,7 @@
 
 			var is_passwd_set_show = false;
 			var is_need_save = false;
+			var is_pic_loaded = false;
 
 
 
@@ -433,8 +432,13 @@
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
-					$("#note-md-edit").height(winh-160);
-					$("#note-md-show").height(winh-160);
+					if( is_passwd_set_show ){
+						$("#note-md-edit").height(winh-217);
+						$("#note-md-show").height(winh-217);
+					}else{
+						$("#note-md-edit").height(winh-160);
+						$("#note-md-show").height(winh-160);
+					}
 				<?php endif; ?>
 			}
 
@@ -445,10 +449,18 @@
 					$('#note-main-form-div').animate({height:'-=57px'},500);
 					$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 					is_passwd_set_show = true;
+					<?php if ( $page_type == 'md_note' ) : ?>
+						$("#note-md-edit").animate({height:'-=57px'},500);
+						$("#note-md-show").animate({height:'-=57px'},500);
+					<?php endif; ?>
 				}else{
 					$('#note-btns-passwdset-form').slideUp(500);
 					$('#note-main-form-div').animate({height:'+=57px'},500);
 					is_passwd_set_show = false;
+					<?php if ( $page_type == 'md_note' ) : ?>
+						$("#note-md-edit").animate({height:'+=57px'},500);
+						$("#note-md-show").animate({height:'+=57px'},500);
+					<?php endif; ?>
 				}
 			}
 
@@ -468,9 +480,17 @@
 				}
 			}
 
-			function note_change(){
+			function note_change(ojb){
 				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				is_need_save = true;
+			}
+
+			function other_dev_show(){
+				$('#note-otherdev-background-div').fadeIn();
+				if(!is_pic_loaded){
+					$('#note-otherdev-img-add').after("<img src='http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>'>");
+				is_pic_loaded = true;
+				}
 			}
 
 			window.onbeforeunload = onbeforeunload_handler;  
@@ -481,10 +501,52 @@
 				}
 			}
 
+			$(document).keydown(function(e){
+				if( e.ctrlKey && e.which == 83 ){
+					ajax_save();
+					return false;
+				}
+			});
+
 			<?php if ( $page_type == 'md_note' || $page_type == 'text_note' ) : ?>
+				(function($, undefined) {
+					$.fn.getCursorPosition = function() {
+						var el = $(this).get(0);
+						var pos = 0;
+							if ('selectionStart' in el) {
+							pos = el.selectionStart;
+						} else if ('selection' in document) {
+							el.focus();
+							var Sel = document.selection.createRange();
+							var SelLength = document.selection.createRange().text.length;
+							Sel.moveStart('character', -el.value.length);
+							pos = Sel.text.length - SelLength;
+						}
+						return pos;
+					}
+				})(jQuery);
 				$(document).keydown(function(e){
-					if( e.ctrlKey && e.which == 83 ){
-						ajax_save();
+					if( e.which == 9 ){
+						var cursor_pos = $('textarea').getCursorPosition();
+						$('textarea').val($('textarea').val().slice(0,cursor_pos)+'\t'+$('textarea').val().slice(cursor_pos));
+						document.getElementById("note-md-edit").focus();
+						document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+						return false;
+					}
+					if( e.which == 13 ){
+						var cursor_pos = $('textarea').getCursorPosition();
+						var notelines = $('textarea').val().slice(0,cursor_pos).split('\n');
+						var listline = notelines[notelines.length-1];
+						var n = 0;
+						while(listline[n]=='\t'){
+							n+=1;
+						}
+						$('textarea').val($('textarea').val().slice(0,cursor_pos)+'\n'+$('textarea').val().slice(cursor_pos));
+						for (i=n; i>0; i--){
+							$('textarea').val($('textarea').val().slice(0,cursor_pos+1)+'\t'+$('textarea').val().slice(cursor_pos+1));
+						}
+						document.getElementById("note-md-edit").focus();
+						document.getElementById("note-md-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
 						return false;
 					}
 				});
@@ -688,7 +750,8 @@
 					<span style="margin-left:10px;">记事本ID: <strong><?php echo $_GET['n']; ?></strong></span>
 
 					<div style="width:240px; height:240px; margin:10px 30px 30px 30px;">
-						<img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>"/>
+						<span id='note-otherdev-img-add'></span>
+						<!-- <img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php // echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>"/> -->
 					</div>
 
 					<div class="note-otherdev-div-divhr"></div>
@@ -713,7 +776,7 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
+						<textarea autofocus="autofocus" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -752,7 +815,7 @@
 					border: 1px solid #888;
 				}
 			</style>
-			<script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script>
+			<!-- <script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script> -->
 			<!--Dev only!--><script src="/markdown.min.js"></script><!--Dev only!-->
 			
 			<!-- 大框子 -->
@@ -762,7 +825,7 @@
 						<div style="width:49%; height:100%; float:left; font-size:16px;">
 							<div id="note-md-show" style="width:100%; height:100%; overflow:auto; padding:5px;"></div>
 						</div>
-						<textarea id="note-md-edit" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change();" style="width:48%; height:100%; float:right; background-color:#f4f4f4; padding:5px"><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-md-edit" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change(this);" style="width:48%; height:100%; float:right; background-color:#f4f4f4; padding:5px"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -809,7 +872,7 @@
 					<button class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
-				<button style="margin-left:20px;" class="btn" onclick="$('#note-otherdev-background-div').fadeIn();" id="note-btns-otherdev-btn">在其它设备上访问</button>
+				<button style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
 
 				<!-- 对于老式浏览器的传统表单保存,在现代浏览器中会自动隐藏 -->
 				<button id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
