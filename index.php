@@ -4,7 +4,7 @@
 
 	//== Server Config =====================
 
-	$use_sql = false; //是否使用Mysql
+	$use_sql = true; //是否使用Mysql
 
 
 	//======================================
@@ -16,7 +16,7 @@
 
 	$sql_user	= "root";		//MySQL用户名
 
-	$sql_passwd	= "";		//MySQL密码
+	$sql_passwd	= "wsy";		//MySQL密码
 
 	$sql_name	= "notepad";	//NotePad使用的数据库名
 
@@ -279,10 +279,16 @@
 			if( $_POST["ajax_save"] == "yes" && isset($_POST['the_note']) ){
 				//如果是ajax保存
 
+				$to_save_raw = $_POST['the_note'];
+
+				if( $_POST['note_type'] == 'md_note' ){
+					$to_save_raw = '<<<-- MarkDown Type Note -->>>'.$to_save_raw;
+				}
+
 				if( $use_sql == false ){
-					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					file_put_contents("NoteData/".$_GET['n'], $to_save_raw);
 				}else{
-					$to_save_tmp = $_POST['the_note'];
+					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
 					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
 					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
@@ -309,6 +315,7 @@
 
 			if( strpos($note_content_to_show,'<<-- MarkDown Type Note -->>>') == 1 ){
 				$page_type = 'md_note';
+				$note_content_to_show = str_replace('<<<-- MarkDown Type Note -->>>','',$note_content_to_show);
 			}
 
 		}else{
@@ -321,13 +328,21 @@
 				if( $use_sql == false ){
 					$note_file = fopen("NoteData/".$_GET['n'], "w+");
 					if( $_POST['type'] == 'md' ){
-						fwrite($note_file, '<<<-- MarkDown Type Note -->>>');
+						$md_head = '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本\n- - -\n在**右侧**编辑记事本，会在**左侧**显示效果。\n';
+						$note_content_to_show = '#MarkDown格式记事本
+- - -
+在**右侧**编辑记事本，会在**左侧**显示效果。';
+						fwrite($note_file, $md_head);
 					}
 					fclose($note_file);
 				}else{
 					mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
 					if( $_POST['type'] == 'md' ){
-						mysql_query("UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>' WHERE ID = '".$_GET['n']."'",$notesql);
+						$md_head = '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本\n- - -\n在**右侧**编辑记事本，会在**左侧**显示效果。\n';
+						mysql_query("UPDATE ".$sql_table." SET content = '".$md_head."' WHERE ID = '".$_GET['n']."'",$notesql);
+						$note_content_to_show = '#MarkDown格式记事本
+- - -
+在**右侧**编辑记事本，会在**左侧**显示效果。';
 					}
 				}
 
@@ -348,6 +363,14 @@
 	}//END--如果指定ID
 ?>
 
+
+
+
+
+
+
+
+
 <!-- HTML页面部分 -->
 
 <!DOCTYPE html>
@@ -363,8 +386,6 @@
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 		<!--Dev only!--><script src="/jquery.js"></script>
 
-		<script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script>
-		<!--Dev only!--><script src="/markdown.min.js"></script>
 
 		<script type="text/javascript">
 
@@ -376,7 +397,7 @@
 			$(document).ready(function(){
 				$("#note-btns-save-form").hide();
 				$("#note-btns-save-ajax").show();
-				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 13px"}).html("已保存");
 
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
@@ -386,11 +407,12 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
-				if( winw > 1140 ){
-					$("textarea").height(winh-150);
-				}else{
-					$("textarea").height(winh-165);
-				}
+				$("#note-main-form-div").height(winh-150);
+
+				<?php if ( $page_type == 'md_note' ) : ?>
+					$("#note-md-edit").height(winh-160);
+					$("#note-md-show").height(winh-160);
+				<?php endif; ?>
 			});
 
 			window.onresize = function (){
@@ -402,54 +424,52 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 				
-				if( winw > 1140 ){
-					if( is_passwd_set_show ){
-						$("textarea").height(winh-207);
-					}else{
-						$("textarea").height(winh-150);
-					}
+				if( is_passwd_set_show ){
+					$("#note-main-form-div").height(winh-207);
 				}else{
-					if( is_passwd_set_show ){
-						$("textarea").height(winh-217);
-					}else{
-						$("textarea").height(winh-165);
-					}
+					$("#note-main-form-div").height(winh-150);
 				}
 
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
+
+				<?php if ( $page_type == 'md_note' ) : ?>
+					$("#note-md-edit").height(winh-160);
+					$("#note-md-show").height(winh-160);
+				<?php endif; ?>
 			}
 
 			function psaawd_set_display(){
 
 				if( !is_passwd_set_show ){
 					$('#note-btns-passwdset-form').slideDown(500);
-					$('textarea').animate({height:'-=57px'},500);
+					$('#note-main-form-div').animate({height:'-=57px'},500);
 					$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 					is_passwd_set_show = true;
 				}else{
 					$('#note-btns-passwdset-form').slideUp(500);
-					$('textarea').animate({height:'+=57px'},500);
+					$('#note-main-form-div').animate({height:'+=57px'},500);
 					is_passwd_set_show = false;
 				}
 			}
 
 			function ajax_save(){
 				if( is_need_save ){
-					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait"}).html("正在保存");
+					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
 					$.post("?n=<?php echo $_GET['n']; ?>",
 					{
 						ajax_save:"yes",
-						the_note:$("textarea").val()
+						the_note:$("textarea").val(),
+						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default"}).html("已保存");
+						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 13px"}).html("已保存");
 						is_need_save = false;
 					});
 				}
 			}
 
 			function note_change(){
-				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer"}).html("保存");
+				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				is_need_save = true;
 			}
 
@@ -461,6 +481,15 @@
 				}
 			}
 
+			<?php if ( $page_type == 'md_note' || $page_type == 'text_note' ) : ?>
+				$(document).keydown(function(e){
+					if( e.ctrlKey && e.which == 83 ){
+						ajax_save();
+						return false;
+					}
+				});
+			<?php endif; ?>
+
 		</script>
 
 
@@ -468,6 +497,16 @@
 		<style type="text/css">
 
 			/***** 全局 *****/
+
+			body{
+				color: #555;
+				font-size: 14px;
+				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+				background:#eee;
+				width:1100px;
+				margin:0px auto 10px auto;
+			}
+
 			input,button{
 				outline: none !important;
 				-webkit-appearance:none;
@@ -592,21 +631,9 @@
 					color: #fff;
 				}
 
-
-				body{
-					color: #555;
-					font-size: 14px;
-					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
-					background:#eee;
-					width:1100px;
-					margin:0px auto 10px auto;
-				}
-
 				textarea{
-					width: 1080px;
-					height: 500px;
 					padding: 0;
-					margin: 10px;
+					margin: 0;
 					color: #555;background:#fff;
 					border: 0;
 					resize: none;
@@ -614,33 +641,11 @@
 				}
 
 				#note-main-form-div{
-					width: 1100px;
+					width: 1080px;
 					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 					background: #fff;
+					padding: 10px;
 				}
-
-				#back-to-note{
-					float: right;
-					text-decoration: none;
-					background: #58BCFF;
-					color: #fff;
-					font-size: 15px;
-					margin: 8px 0 10px 0;
-					box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
-				}
-
-				#home-input{
-					margin:419px 0px 0px 20px;font-size:23px;width:255px;background:#C6E8FF;
-				}
-
-				#home-btn-new{
-					margin:419px 0 0 20px;background:#58BCFF;color:#fff;font-size:24px;padding:9px 154px 9px 154px;
-				}
-
-				#home-btn-go{
-					margin:419px 35px 0 0;background:#58BCFF;color:#fff;font-size:24px;padding:9px 30px 9px 30px;float:right;
-				}
-
 
 				@media screen and (max-width: 1140px){
 
@@ -651,49 +656,23 @@
 
 					#note-main-form-div{
 						width: auto;
-						padding: 18px;
+						padding: 10px;
 					}
 
 					textarea{
 						width: 100%;
 						margin: 0;
-						font-size: 16px !important;
 					}
-
-					.homediv{
-						width:100%;
-						height: 200px;
-						margin-bottom: 30px;
-					}
-
-					.icon{
-						display: none;
-					}
-
-					#home-form-new,#home-form-go{
-						width: 410px;
-						margin: 40px auto 0 auto;
-					}
-
-					#home-btn-new{
-						margin: 0;
-					}
-
-					#home-btn-go{
-						margin: 0;
-					}
-
-					#home-input{
-						margin: 0;
-					}
-
-
 				}
 
 				@media screen and (max-width: 420px){
 
 					#note-btns-otherdev-btn{
 						display: none;
+					}
+
+					#note-md-edit{
+						width: 47% !important;
 					}
 
 				}
@@ -733,26 +712,100 @@
 			<!-- 大框子 -->
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
-					<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" >
-						<?php echo $note_content_to_show; ?>
-					</textarea>
+					<div style="width:100%; height:100%">
+						<textarea autofocus="autofocus" name="the_note" onkeydown="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
+					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
 			</form>
 
+
+		<?php endif; ?>
+
+
+
+
+
+
+
+
+		<!-- MarkDown记事本编辑页 -->
+		<?php if ( $page_type == 'md_note' ) : ?>
+			<style type="text/css">
+				#note-md-show p{
+					margin: 5px 0;
+				}
+				#note-md-show h2{
+					border-bottom:solid 3px #eee;
+					margin-bottom: 5px;
+				}
+				#note-md-show blockquote{
+					border: solid 2px #eee;
+					padding: 0 5px;
+				}
+				#note-md-show pre{
+					margin: 5px 0;
+					padding: 5px;
+					background-color: #ddd;
+				}
+				#note-md-show hr{
+					border: 1px solid #888;
+				}
+			</style>
+			<script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script>
+			<!--Dev only!--><script src="/markdown.min.js"></script><!--Dev only!-->
+			
+			<!-- 大框子 -->
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
+				<div id="note-main-form-div">
+					<div style="width:100%; height:100%">
+						<div style="width:49%; height:100%; float:left; font-size:16px;">
+							<div id="note-md-show" style="width:100%; height:100%; overflow:auto; padding:5px;"></div>
+						</div>
+						<textarea id="note-md-edit" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change();" style="width:48%; height:100%; float:right; background-color:#f4f4f4; padding:5px"><?php echo $note_content_to_show; ?></textarea>
+					</div>
+				</div>
+				<input type="hidden" name="save" value="yes" />
+			</form>
+
+			<script>
+				function Editor(input, preview) {
+					this.update = function () {
+						preview.innerHTML = markdown.toHTML(input.value);
+						$("#note-md-show a").attr("target","_blank");
+					};
+					input.editor = this;
+					this.update();
+				}
+				new Editor(document.getElementById("note-md-edit"), document.getElementById("note-md-show"));
+			</script>
+
+		<?php endif; ?>
+
+
+
+
+
+
+
+
+		<!-- 记事本编辑页共用-2 -->
+		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-top:20px; height:37px;">
+				<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;"/>
+				<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
+			</form>
+
+			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
+				<input type="hidden" name="delete_passwd" value="yes" />
+			</form>
+			
 			<div id="note-btns-div" style="margin:20px 0 0 0;">
 				
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
-					<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
-						<input type="hidden" name="delete_passwd" value="yes" />
-					</form>
 					<button class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
 				<?php else : ?>
-					<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-bottom:20px;">
-						<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;"/>
-						<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
-					</form>
 					<button class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
@@ -772,28 +825,23 @@
 
 
 
-
-		<!-- MarkDown记事本编辑页 -->
-		<?php if ( $page_type == 'md_note' ) : ?>
-			<h1>MarkDown Note</h1>
-		<?php endif; ?>
-
-
-
-
-
-
-
 		<!-- 主页HTML -->
 		<?php if ( $page_type == 'home' ) : ?>
 
 			<style type="text/css">
+				body{
+					margin: 0 auto 20px auto;
+					max-width: 980px;
+					width: 95%;
+				}
+
 				.homediv{
 					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 					background: #fff;
 					display: inline-block;
-					width: 480px;
+					width: 440px;
 					height: 550px;
+					padding: 20px;
 				}
 
 				.icon{
@@ -817,7 +865,7 @@
 
 				.icon-plus {
 					top: 80px;
-					left: 114px;
+					left: 94px;
 					border-width: 0 .10em .10em 0;
 				}
 
@@ -832,7 +880,7 @@
 				.icon-file {
 					position: absolute;
 					top: 60px;
-					left: 135px;
+					left: 115px;
 					width: .5em;
 					height: .75em;
 					border-width: .1em;
@@ -854,6 +902,66 @@
 					border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
 				}
 
+				#home-input{
+					margin:460px 0px 0px 0px;
+					font-size:23px;
+					width:255px;
+					background:#C6E8FF;
+				}
+
+				#home-btn-new{
+					margin:460px 0px 0px 0px;
+					background:#58BCFF;
+					color:#fff;
+					font-size:24px;
+					padding:9px 154px 9px 154px;
+				}
+
+				#home-btn-go{
+					margin:460px 15px 0px 0px;
+					background:#58BCFF;
+					color:#fff;
+					font-size:24px;
+					padding:9px 30px 9px 30px;
+					float:right;
+				}
+
+				#back-to-note{
+					float: right;
+					text-decoration: none;
+					background: #58BCFF;
+					color: #fff;
+					font-size: 15px;
+					margin: 8px 0 10px 0;
+					box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
+				}
+
+				@media screen and (max-width: 1000px){
+					body{
+						margin: 20px auto;
+					}
+
+					.icon{
+						display: none;
+					}
+
+					#home-form-new,#home-form-go{
+						width: 410px;
+						margin: 40px auto 0 auto;
+					}
+
+					.homediv{
+						height: 140px;
+						clear: both;
+						display: block;
+						float: none !important;
+						margin: 20px auto;
+					}
+
+					#home-btn-new,#home-input,#home-btn-go{
+						margin: 0;
+					}
+				}
 			</style>
 
 			<?php if( isset($_COOKIE['myNote']) ) : ?>
@@ -865,7 +973,7 @@
 
 			<div class="homediv">
 
-				<h2 style="margin:20px 0 0 20px;">还没有记事本?</h2>
+				<h2>还没有记事本?</h2>
 
 				<span class="icon icon-mid">
 					<span class="icon-plus"></span>
@@ -879,7 +987,7 @@
 
 			<div style="float:right;" class="homediv">
 
-				<h2 style="margin:20px 0 0 20px;">已有记事本</h2>
+				<h2>已有记事本</h2>
 
 				<span class="icon icon-mid">
 					<span class="icon-file"></span>
@@ -902,6 +1010,7 @@
 
 		<?php if ( $page_type == 'select_note_type' ) : ?>
 
+			<h2>选择记事本类型</h2>
 			<form action="" method="post"> 
 				<input type="hidden" name="type" value="text">
 				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
