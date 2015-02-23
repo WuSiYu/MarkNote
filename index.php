@@ -6,7 +6,6 @@
 
 	$use_sql = false; //是否使用Mysql
 
-
 	//======================================
 
 
@@ -409,12 +408,15 @@
 				$("#note-main-form-div").height(winh-150);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
-					$("#note-md-edit").height(winh-160);
-					$("#note-md-show").height(winh-160);
+					var box_width = $("#note-main-form-div").width();
+					$("#note-md-show").height(winh-160).width( box_width - 535 );
+					$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
+					$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
 				<?php endif; ?>
 			});
 
-			window.onresize = function (){
+				
+			window.onresize = function () {
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
 					|| document.body.clientHeight;
@@ -433,11 +435,15 @@
 
 				<?php if ( $page_type == 'md_note' ) : ?>
 					if( is_passwd_set_show ){
-						$("#note-md-edit").height(winh-217);
-						$("#note-md-show").height(winh-217);
+					var box_width = $("#note-main-form-div").width();
+						$("#note-md-show").height(winh-217).width( box_width - 535 );
+						$("#note-md-edit").height(winh-217).width(500).css("margin-left",box_width - 510);
+						$("#note-md-move").height(winh-207).css("left",box_width - 520);
 					}else{
-						$("#note-md-edit").height(winh-160);
-						$("#note-md-show").height(winh-160);
+						var box_width = $("#note-main-form-div").width();
+						$("#note-md-show").height(winh-160).width( box_width - 535 );
+						$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
+						$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
 					}
 				<?php endif; ?>
 			}
@@ -493,10 +499,22 @@
 				}
 			}
 
+			function download_note(){
+				$('#download-a').attr({
+					<?php if ( $page_type == 'md_note' ) : ?>
+						"download" : "记事本-<?php echo $_GET['n']; ?>.md",
+					<?php else: ?>
+						"download" : "记事本-<?php echo $_GET['n']; ?>.txt",
+					<?php endif; ?>
+					"href" : "data:text/plain,"+$("textarea").val().replace(/\n/g,"%0a").replace(/\#/g,"%23")
+				});
+				document.getElementById("download-a").click();
+			}
+
 			window.onbeforeunload = onbeforeunload_handler;  
 			function onbeforeunload_handler(){
 				if(is_need_save){
-					var warning="您输入的内容还没有保存,请确认您是否真的要离开.";      
+					var warning="您的记事本还没有保存，请确认您是否真的要离开。";      
 					return warning;
 				}
 			}
@@ -599,6 +617,23 @@
 				color:#fff;
 			}
 
+			/* 设置滚动条的样式 */
+			::-webkit-scrollbar {
+				width: 10px;
+			}
+			/* 滚动槽 */
+			::-webkit-scrollbar-track {
+				background-color: #fff;
+			}
+			/* 滚动条滑块 */
+			::-webkit-scrollbar-thumb {
+				background: rgba(0,0,0,0.1);
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(0,0,0,0.3);
+			}
+
 			h1,h2,h3,h4,h4,h5,h6{
 				font-weight:100;
 				margin: 0;
@@ -655,6 +690,16 @@
 				height: 1px;
 				background-color: #aaa;
 			}
+
+			@media screen and (max-width: 1140px){
+
+				body{
+					margin: 0 20px 0 20px;
+					width: auto;
+				}
+
+			}
+
 
 
 			/***** 主页 *****/
@@ -776,7 +821,7 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<textarea autofocus="autofocus" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
+						<textarea autofocus="autofocus" spellcheck="false" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -799,7 +844,7 @@
 					margin: 5px 0;
 				}
 				#note-md-show h2{
-					border-bottom:solid 3px #eee;
+					border-bottom:solid 2px #ddd;
 					margin-bottom: 5px;
 				}
 				#note-md-show blockquote{
@@ -814,7 +859,58 @@
 				#note-md-show hr{
 					border: 1px solid #888;
 				}
+				#note-md-show code{
+					background-color: #ddd;
+					padding: 2px;
+				}				
+				/* 设置滚动条的样式 */
+				textarea::-webkit-scrollbar {
+					width: 10px;
+				}
+				/* 滚动槽 */
+				textarea::-webkit-scrollbar-track {
+					background-color: #dedede;
+				}
+				/* 滚动条滑块 */
+				textarea::-webkit-scrollbar-thumb {
+					background: rgba(0,0,0,0.1);
+				}
+
+				textarea::-webkit-scrollbar-thumb:hover {
+					background: rgba(0,0,0,0.3);
+				}
 			</style>
+			<script type="text/javascript">
+				window.onload = function(){
+					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
+					oMove.onmousedown = function(e){
+						var winw=window.innerWidth
+							|| document.documentElement.clientWidth
+							|| document.body.clientWidth;
+						var disX = (e || event).clientX;
+						oMove.left = oMove.offsetLeft;
+						document.onmousemove = function(e){
+							var iT = oMove.left + ((e || event).clientX - disX);
+							var e=e||window.event,tarnameb=e.target||e.srcElement;
+							oMove.style.margin = 0;
+							iT < (winw-oBox.clientWidth)/2 + 100 && (iT = (winw-oBox.clientWidth)/2 + 100);
+							iT > winw-(winw-oBox.clientWidth)/2 - 100 && (iT = winw-(winw-oBox.clientWidth)/2 - 100);
+							oMove.style.left  = iT + "px";
+							oLeft.style.width = iT - (winw-oBox.clientWidth)/2 -25 + "px";
+							oRight.style.width = oBox.clientWidth - iT - 30 + (winw-oBox.clientWidth)/2 + "px";
+							oRight.style.marginLeft = iT - (winw-oBox.clientWidth)/2 + "px";
+							return false
+						};
+						document.onmouseup = function(){
+							document.onmousemove = null;
+							document.onmouseup = null;
+							oMove.releaseCapture && oMove.releaseCapture()
+						};
+						oMove.setCapture && oMove.setCapture();
+						return false
+					};
+				};
+			</script>
 			<!-- <script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script> -->
 			<!--Dev only!--><script src="/markdown.min.js"></script><!--Dev only!-->
 			
@@ -822,10 +918,9 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<div style="width:49%; height:100%; float:left; font-size:16px;">
-							<div id="note-md-show" style="width:100%; height:100%; overflow:auto; padding:5px;"></div>
-						</div>
-						<textarea id="note-md-edit" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change(this);" style="width:48%; height:100%; float:right; background-color:#f4f4f4; padding:5px"><?php echo $note_content_to_show; ?></textarea>
+						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
+						<div id="note-md-move" style="height:100%;width:5px;background-color:#aaa;position: absolute;cursor: ew-resize;"></div>
+						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px" spellcheck="false" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change(this);" ><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -872,8 +967,12 @@
 					<button class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
-				<button style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
+				<button style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-otherdev-btn">下载</button>
 
+				<a id="download-a" style="display:none"></a>
+
+				<button style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
+				
 				<!-- 对于老式浏览器的传统表单保存,在现代浏览器中会自动隐藏 -->
 				<button id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
 
@@ -1073,18 +1172,33 @@
 
 		<?php if ( $page_type == 'select_note_type' ) : ?>
 
-			<h2>选择记事本类型</h2>
-			<form action="" method="post"> 
-				<input type="hidden" name="type" value="text">
-				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
-				<input type="submit" value="Text" class="btn">
-			</form>
-
-			<form action="" method="post">
+			<h2 style="margin-bottom:10px;">请选择将要创建的记事本类型:</h2>
+			<form id="choose-form-md" action="" method="post">
 				<input type="hidden" name="type" value="md">
 				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
-				<input type="submit" value="MarkDown" class="btn">
+				<!-- <input type="submit" value="MarkDown" class="btn"> -->
 			</form>
+
+			<form id="choose-form-text" action="" method="post"> 
+				<input type="hidden" name="type" value="text">
+				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
+				<!-- <input type="submit" value="Text" class="btn"> -->
+			</form>
+
+			<div class="btn" onclick="$('#choose-form-md').submit();" style="height:150px;margin-bottom:20px;padding:10px;">
+				<h2>MarkDown格式笔记本</h2>
+				<p>
+					MarkDown是适合网络书写的语言，使您用极为简单的语法就能编写出样式复杂的HTML文档。<br/>
+					MarkDown的语法极为简介，全部由符号表示。例如您写"#标题"就可以产生"&#60;h1&#62;标题&#60;/h1&#62;"
+				</p>
+			</div>
+			<div class="btn" onclick="$('#choose-form-text').submit();" style="height:150px;margin-bottom:20px;padding:10px;">
+				<h2>纯文本记事本</h2>
+				<p>
+					如果您不需要使用MarkDown的功能，您可以简单的创建一个纯文本的记事本。
+				</p>
+			</div>
+
 
 		<?php endif; ?>
 
