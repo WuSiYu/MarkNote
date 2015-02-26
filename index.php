@@ -879,7 +879,7 @@
 					background: rgba(0,0,0,0.3);
 				}
 			</style>
-            <script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js">
+            <script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script type="text/javascript">
 				window.onload = function(){
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
