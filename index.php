@@ -795,7 +795,6 @@
 
 					<div style="width:240px; height:240px; margin:10px 30px 30px 30px;">
 						<span id='note-otherdev-img-add'></span>
-						<!-- <img src="http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php // echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>"/> -->
 					</div>
 
 					<div class="note-otherdev-div-divhr"></div>
@@ -840,7 +839,7 @@
 		<?php if ( $page_type == 'md_note' ) : ?>
 			<style type="text/css">
 				#note-md-show p{
-					margin: 5px 0;
+					margin: 15px 0;
 				}
 				#note-md-show h2{
 					border-bottom:solid 2px #ddd;
