@@ -380,8 +380,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<!-- <script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script> -->
-		<!--Dev only!--><script src="/jquery.js"></script>
+		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 
 
 		<script type="text/javascript">
@@ -880,6 +879,7 @@
 					background: rgba(0,0,0,0.3);
 				}
 			</style>
+            <script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js">
 			<script type="text/javascript">
 				window.onload = function(){
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
@@ -911,8 +911,6 @@
 					};
 				};
 			</script>
-			<!-- <script src="http://cdn.bootcss.com/markdown.js/0.6.0-beta1/markdown.min.js"></script> -->
-			<!--Dev only!--><script src="/markdown.min.js"></script><!--Dev only!-->
 			
 			<!-- 大框子 -->
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
