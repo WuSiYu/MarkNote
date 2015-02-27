@@ -407,7 +407,12 @@
 				$("#note-main-form-div").height(winh-150);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
-					var box_width = $("#note-main-form-div").width();
+					if(winw<=1140){
+						var box_width = winw-60;
+					}else{
+						var box_width = $("#note-main-form-div").width();
+					}
+
 					$("#note-md-show").height(winh-160).width( box_width - 535 );
 					$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
 					$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
@@ -433,13 +438,16 @@
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
+					if(winw<=1140){
+						var box_width = winw-60;
+					}else{
+						var box_width = $("#note-main-form-div").width();
+					}
 					if( is_passwd_set_show ){
-					var box_width = $("#note-main-form-div").width();
 						$("#note-md-show").height(winh-217).width( box_width - 535 );
 						$("#note-md-edit").height(winh-217).width(500).css("margin-left",box_width - 510);
 						$("#note-md-move").height(winh-207).css("left",box_width - 520);
 					}else{
-						var box_width = $("#note-main-form-div").width();
 						$("#note-md-show").height(winh-160).width( box_width - 535 );
 						$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
 						$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
@@ -1095,7 +1103,7 @@
 					box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
 				}
 
-				@media screen and (max-width: 1000px){
+				@media screen and (max-width: 1030px){
 					body{
 						margin: 20px auto;
 					}
