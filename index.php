@@ -1,6 +1,14 @@
 <!-- NotePad 轻量级云记事本系统 DEV-->
 <?php
 
+	//NotePad 轻量级云记事本系统-概述
+
+	//功能:
+	// 1.以文件或数据库的方式保存记事本
+	// 2.支持MarkDown(即时预览+优化的textarea)和纯文本两种格式的记事本
+	// 3.可以给记事本设置密码
+	// 4.可生成记事本的二维码,以方便手机用户
+	// 5.可将记事本下载到本地
 
 	//== Server Config =====================
 
@@ -15,7 +23,7 @@
 
 	$sql_user	= "root";		//MySQL用户名
 
-	$sql_passwd	= "wsy";		//MySQL密码
+	$sql_passwd	= "";			//MySQL密码
 
 	$sql_name	= "notepad";	//NotePad使用的数据库名
 
@@ -24,8 +32,8 @@
 	//======================================
 
 
-	//输出错误信息并终止
 	function show_error_exit($output){
+		//输出错误信息并终止
 		echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />";
 		echo '<body style="background-color:#eee;margin:8px;">';
 		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
@@ -36,6 +44,7 @@
 	}
 
 	function show_input_passwd(){
+		//显示输入密码框并终止
 		?>
 			<title>输入密码</title>
 			<meta charset="utf-8" />
@@ -47,10 +56,12 @@
 				</form>
 			</body>
 		<?php
-		//显示输入密码框后终止执行
 		exit();
 	}
 
+	//-----程序从这里开始-----
+
+	//判断是否是第一次使用
 	if( $use_sql == false ){
 		if( !file_exists("NoteData") ){
 			mkdir("NoteData");
@@ -81,6 +92,7 @@
 		}
 	}
 
+	//开始处理记事本
 	if( $_GET["n"] == "" ){
 		//如果访问主页
 
