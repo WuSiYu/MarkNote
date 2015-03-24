@@ -1,7 +1,7 @@
-<!-- NotePad 轻量级云记事本系统 DEV-->
+<!-- MarkNote 轻量级云记事本系统 DEV-->
 <?php
 
-	//NotePad 轻量级云记事本系统-概述
+	//MarkNote 轻量级云记事本系统-概述
 
 	//功能:
 	// 1.以文件或数据库的方式保存记事本
@@ -25,9 +25,9 @@
 
 	$sql_passwd	= "";			//MySQL密码
 
-	$sql_name	= "notepad";	//NotePad使用的数据库名
+	$sql_name	= "marknote";	//MarkNote使用的数据库名
 
-	$sql_table	= "note_data";	//NotePad使用的表名(自动创建)
+	$sql_table	= "note_data";	//MarkNote使用的表名(自动创建)
 
 	//======================================
 
@@ -738,8 +738,8 @@
 			<input type="hidden" name="force_home" value="yes">
 		</form>
 
-		<!-- NotePad标题 && 返回主页按钮 -->
- 		<h1 style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >NotePad</h1>
+		<!-- MarkNote标题 && 返回主页按钮 -->
+ 		<h1 style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
 
 
 
