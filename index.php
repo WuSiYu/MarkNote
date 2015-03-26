@@ -1,7 +1,6 @@
-<!-- MarkNote 轻量级云记事本系统 DEV-->
 <?php
 
-	//MarkNote 轻量级云记事本系统-概述
+	//MarkNote 轻量级云记事本系统
 
 	//功能:
 	// 1.以文件或数据库的方式保存记事本
@@ -205,7 +204,7 @@
 				}
 			}
 
-			if( $_POST['delete_passwd'] == 'yes' ){
+			if( isset($_POST['delete_passwd']) ){
 
 				if( $use_sql == false ){
 
@@ -268,13 +267,19 @@
 				
 			}
 
-			if( $_POST["save"] == "yes" && isset($_POST['the_note']) ){
+			if( isset($_POST['save']) && isset($_POST['the_note']) ){
 				//如果是普通保存
 				
+				$to_save_raw = $_POST['the_note'];
+
+				if( $_POST['note_type'] == 'md_note' ){
+					$to_save_raw = '<<<-- MarkDown Type Note -->>>'.$to_save_raw;
+				}
+
 				if( $use_sql == false ){
-					file_put_contents("NoteData/".$_GET['n'], $_POST['the_note']);
+					file_put_contents("NoteData/".$_GET['n'], $to_save_raw);
 				}else{
-					$to_save_tmp = $_POST['the_note'];
+					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
 					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
 					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
