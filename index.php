@@ -607,7 +607,7 @@
 			body{
 				color: #555;
 				font-size: 14px;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif;
+				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				background:#eee;
 				width:1100px;
 				margin:0px auto 10px auto;
@@ -726,14 +726,6 @@
 
 			}
 
-
-
-			/***** 主页 *****/
-			/* 已移动至局部 */
-
-			/***** 笔记本编辑页 *****/
-
-
 		</style>
 
 	</head>
@@ -771,6 +763,7 @@
 					border: 0;
 					resize: none;
 					font-size: 16px !important;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				}
 
 				#note-main-form-div{
@@ -880,6 +873,7 @@
 					margin: 5px 0;
 					padding: 5px;
 					background-color: #ddd;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
 				#note-md-show hr{
 					border: 1px solid #888;
@@ -887,6 +881,7 @@
 				#note-md-show code{
 					background-color: #ddd;
 					padding: 2px;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}				
 				/* 设置滚动条的样式 */
 				textarea::-webkit-scrollbar {
