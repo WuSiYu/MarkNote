@@ -520,7 +520,7 @@
 			function other_dev_show(){
 				$('#note-otherdev-background-div').fadeIn();
 				if(!is_pic_loaded){
-					$('#note-otherdev-img-add').after("<img src='http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>'>");
+					$('#note-otherdev-img-add').after("<img alt='Loading...' src='http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>'>");
 				is_pic_loaded = true;
 				}
 			}
@@ -617,6 +617,8 @@
 				outline: none !important;
 				-webkit-appearance:none;
 				border-radius: 0;
+				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+
 			}
 
 			.btn::-moz-focus-inner,input::-moz-focus-inner{
