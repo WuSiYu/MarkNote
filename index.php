@@ -678,7 +678,7 @@
 			}
 
 			.btn:hover{
-				background: #fafafa;
+				background: #f8f8ff;
 			}
 
 			.input{
@@ -740,7 +740,7 @@
 		</form>
 
 		<!-- MarkNote标题 && 返回主页按钮 -->
- 		<h1 style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+ 		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
 
 
 
@@ -983,22 +983,22 @@
 				
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
-					<button class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
+					<button title="删除这个记事本的密码" class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
 				<?php else : ?>
-					<button class="btn" onclick="psaawd_set_display();">设置密码</button>
+					<button title="给这个记事本设置一个密码" class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
-				<button style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-otherdev-btn">下载</button>
+				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-otherdev-btn">下载</button>
 
 				<a id="download-a" style="display:none"></a>
 
-				<button style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
+				<button title="获取记事本ID并生成二维码" style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
 				
 				<!-- 对于老式浏览器的传统表单保存,在现代浏览器中会自动隐藏 -->
-				<button id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
+				<button title="也可按Ctrl+S保存" id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
 
 				<!-- 对于现代浏览器的ajax保存,在现代浏览器中会自动显示 -->
-				<button id="note-btns-save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
+				<button title="也可按Ctrl+S保存" id="note-btns-save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
 
 		<?php endif; ?>
 
@@ -1149,7 +1149,7 @@
 
 			<?php if( isset($_COOKIE['myNote']) ) : ?>
 				<!-- 强制主页时的返回按钮 -->
-				<a href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
+				<a title="根据这个设备上的记录来回到您的笔记本" href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
 			<?php endif; ?>
 
 			<div style="clear:both;"></div>
@@ -1163,7 +1163,7 @@
 				</span>
 
 				<form action="?new=yes" method="post" id="home-form-new">
-					<button id="home-btn-new" class="btn">立刻创建</button>
+					<button title="使用一个随机的ID创建一个记事本" id="home-btn-new" class="btn">立刻创建</button>
 				</form>
 
 			</div>
@@ -1178,7 +1178,7 @@
 
 				<form action="" method="get" id="home-form-go">
 					<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" />
-					<button id="home-btn-go" class="btn">访问</button>
+					<button title="根据输入的记事本ID来访问记事本" id="home-btn-go" class="btn">访问</button>
 				</form>
 
 			</div>
