@@ -47,11 +47,40 @@
 		?>
 			<title>输入密码</title>
 			<meta charset="utf-8" />
-			<body style="background:#eee;width:490px;margin:20px auto 20px auto;">
+			<style type="text/css">
+				body{
+					background:#eee;width:490px;margin:20px auto 20px auto;
+				}
+				#input-passwd{
+					font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
+				}
+				#input-submit{
+					font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;
+				}
+
+				@media screen and (max-width: 500px){
+					body{
+						width:100%;
+						padding: 20px;
+						margin: 0;
+					}
+					form{
+						width:100%;
+					}
+					#input-passwd{
+						width: 70%;
+					}
+					#input-submit{
+						width: 20%;
+					}
+				}
+
+			</style>
+			<body>
 				<h3 style="font-weight:400;">请输入密码</h3>
 				<form action="?n=<?php echo $_GET['n']; ?>" method="post">
-					<input type="password" name="GiveYouPasswd" placeholder="密码" style="font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);"/>
-					<input type="submit" value="提交" style="font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;" />
+					<input id="input-passwd" type="password" name="GiveYouPasswd" placeholder="密码" style=""/>
+					<input id="input-submit" type="submit" value="提交" style="" />
 				</form>
 			</body>
 		<?php
@@ -431,10 +460,10 @@
 					}else{
 						var box_width = $("#note-main-form-div").width();
 					}
-
-					$("#note-md-show").height(winh-160).width( box_width - 535 );
-					$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
-					$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
+					var edit_width = box_width / 2;
+					$("#note-md-show").height(winh-160).width( box_width - edit_width - 35 );
+					$("#note-md-edit").height(winh-160).width(edit_width).css("margin-left",box_width - edit_width - 10);
+					$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 				<?php endif; ?>
 			});
 
@@ -462,14 +491,15 @@
 					}else{
 						var box_width = $("#note-main-form-div").width();
 					}
+					var edit_width = box_width / 2;
 					if( is_passwd_set_show ){
-						$("#note-md-show").height(winh-217).width( box_width - 535 );
-						$("#note-md-edit").height(winh-217).width(500).css("margin-left",box_width - 510);
-						$("#note-md-move").height(winh-207).css("left",box_width - 520);
+						$("#note-md-show").height(winh-217).width( box_width - edit_width - 35 );
+						$("#note-md-edit").height(winh-217).width(edit_width).css("margin-left",box_width - edit_width - 10);
+						$("#note-md-move").height(winh-207).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 					}else{
-						$("#note-md-show").height(winh-160).width( box_width - 535 );
-						$("#note-md-edit").height(winh-160).width(500).css("margin-left",box_width - 510);
-						$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - 520);
+						$("#note-md-show").height(winh-160).width( box_width - edit_width - 35 );
+						$("#note-md-edit").height(winh-160).width(edit_width).css("margin-left",box_width - edit_width - 10);
+						$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 					}
 				<?php endif; ?>
 			}
@@ -484,6 +514,7 @@
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'-=57px'},500);
 						$("#note-md-show").animate({height:'-=57px'},500);
+						$("#note-md-move").animate({height:'-=57px'},500);
 					<?php endif; ?>
 				}else{
 					$('#note-btns-passwdset-form').slideUp(500);
@@ -492,6 +523,7 @@
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'+=57px'},500);
 						$("#note-md-show").animate({height:'+=57px'},500);
+						$("#note-md-move").animate({height:'+=57px'},500);
 					<?php endif; ?>
 				}
 			}
@@ -573,8 +605,13 @@
 					if( e.which == 9 ){
 						var cursor_pos = $('textarea').getCursorPosition();
 						$('textarea').val($('textarea').val().slice(0,cursor_pos)+'\t'+$('textarea').val().slice(cursor_pos));
-						document.getElementById("note-md-edit").focus();
-						document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+						<?php if ( $page_type == 'md_note' ) : ?>
+							document.getElementById("note-md-edit").focus();
+							document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+						<?php else : ?>
+							document.getElementById("note-text-edit").focus();
+							document.getElementById("note-text-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+						<?php endif; ?>
 						return false;
 					}
 					if( e.which == 13 ){
@@ -589,8 +626,13 @@
 						for (i=n; i>0; i--){
 							$('textarea').val($('textarea').val().slice(0,cursor_pos+1)+'\t'+$('textarea').val().slice(cursor_pos+1));
 						}
-						document.getElementById("note-md-edit").focus();
-						document.getElementById("note-md-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
+						<?php if ( $page_type == 'md_note' ) : ?>
+							document.getElementById("note-md-edit").focus();
+							document.getElementById("note-md-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
+						<?php else : ?>
+							document.getElementById("note-text-edit").focus();
+							document.getElementById("note-text-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
+						<?php endif; ?>
 						return false;
 					}
 				});
@@ -651,7 +693,7 @@
 			}
 			/* 滚动槽 */
 			::-webkit-scrollbar-track {
-				background-color: #fff;
+				background-color: #eee;
 			}
 			/* 滚动条滑块 */
 			::-webkit-scrollbar-thumb {
@@ -793,16 +835,21 @@
 					}
 				}
 
+				@media screen and (max-width: 510px){
+
+					#note-btns-download-btn{
+						display: none;
+					}
+				}
+
 				@media screen and (max-width: 420px){
 
+					#note-btns-download-btn{
+						display: none;
+					}
 					#note-btns-otherdev-btn{
 						display: none;
 					}
-
-					#note-md-edit{
-						width: 47% !important;
-					}
-
 				}
 			</style>
 
@@ -841,7 +888,7 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<textarea autofocus="autofocus" spellcheck="false" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -885,22 +932,7 @@
 					padding: 2px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}				
-				/* 设置滚动条的样式 */
-				textarea::-webkit-scrollbar {
-					width: 10px;
-				}
-				/* 滚动槽 */
-				textarea::-webkit-scrollbar-track {
-					background-color: #dedede;
-				}
-				/* 滚动条滑块 */
-				textarea::-webkit-scrollbar-thumb {
-					background: rgba(0,0,0,0.1);
-				}
 
-				textarea::-webkit-scrollbar-thumb:hover {
-					background: rgba(0,0,0,0.3);
-				}
 			</style>
             <script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script type="text/javascript">
@@ -940,7 +972,7 @@
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
-						<div id="note-md-move" style="height:100%;width:5px;background-color:#aaa;position: absolute;cursor: ew-resize;"></div>
+						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
 						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px" spellcheck="false" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change(this);" ><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
@@ -988,7 +1020,7 @@
 					<button title="给这个记事本设置一个密码" class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
-				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-otherdev-btn">下载</button>
+				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-download-btn">下载</button>
 
 				<a id="download-a" style="display:none"></a>
 
@@ -1121,7 +1153,7 @@
 
 				@media screen and (max-width: 1030px){
 					body{
-						margin: 20px auto;
+						margin: 0 auto;
 					}
 
 					.icon{
