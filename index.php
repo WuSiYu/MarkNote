@@ -365,6 +365,10 @@
 				$note_content_to_show = str_replace('<<<-- MarkDown Type Note -->>>','',$note_content_to_show);
 			}
 
+			if( $_GET['html'] == 'yes' ){
+				$page_type = 'html';
+			}
+
 		}else{
 			//如果是新记事本
 
@@ -776,14 +780,18 @@
 
 	<body>
 
-		<!-- 强制主页表单 -->
-		<form action="./" method="post" style="display:none;" id="force-home-form">
-			<input type="hidden" name="force_home" value="yes">
-		</form>
 
-		<!-- MarkNote标题 && 返回主页按钮 -->
- 		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+		<?php if ( $page_type != 'html' ) : ?>
 
+			<!-- 强制主页表单 -->
+			<form action="./" method="post" style="display:none;" id="force-home-form">
+				<input type="hidden" name="force_home" value="yes">
+			</form>
+
+			<!-- MarkNote标题 && 返回主页按钮 -->
+	 		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+
+	 	<?php endif; ?>
 
 
 
@@ -934,7 +942,7 @@
 				}				
 
 			</style>
-            <script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script type="text/javascript">
 				window.onload = function(){
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
@@ -1011,6 +1019,10 @@
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 			
+<!-- 			<form action="?n=<?php echo $_GET['n']; ?>&html=yes" method="post" id="note-btns-tohtml-form" style="display:none;margin:0;">
+				<input type="hidden" name="html" value="yes" />
+			</form> -->
+
 			<div id="note-btns-div" style="margin:20px 0 0 0;">
 				
 				<!-- 密码 设置 && 删除 表单+按钮 -->
@@ -1023,6 +1035,10 @@
 				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-download-btn">下载</button>
 
 				<a id="download-a" style="display:none"></a>
+
+				<?php if( $page_type == 'md_note' ) : ?>
+					<a style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="?n=<?php echo $_GET['n']; ?>&html=yes" target="_blank">生成HTML</a>
+				<?php endif; ?>
 
 				<button title="获取记事本ID并生成二维码" style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
 				
@@ -1229,20 +1245,18 @@
 			<form id="choose-form-md" action="" method="post">
 				<input type="hidden" name="type" value="md">
 				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
-				<!-- <input type="submit" value="MarkDown" class="btn"> -->
 			</form>
 
 			<form id="choose-form-text" action="" method="post"> 
 				<input type="hidden" name="type" value="text">
 				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
-				<!-- <input type="submit" value="Text" class="btn"> -->
 			</form>
 
 			<div class="btn" onclick="$('#choose-form-md').submit();" style="height:150px;margin-bottom:20px;padding:10px;">
 				<h2>MarkDown格式笔记本</h2>
 				<p>
 					MarkDown是适合网络书写的语言，使您用极为简单的语法就能编写出样式复杂的HTML文档。<br/>
-					MarkDown的语法极为简介，全部由符号表示。例如您写"#标题"就可以产生"&#60;h1&#62;标题&#60;/h1&#62;"
+					MarkDown的语法极为简介，由符号表示。例如您写"#标题"就可以产生"&#60;h1&#62;标题&#60;/h1&#62;"的HTML
 				</p>
 			</div>
 			<div class="btn" onclick="$('#choose-form-text').submit();" style="height:150px;margin-bottom:20px;padding:10px;">
@@ -1253,6 +1267,67 @@
 			</div>
 
 
+		<?php endif; ?>
+
+
+
+
+
+
+
+		<?php if ( $page_type == 'html' ) : ?>
+			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<style type="text/css">
+				body{
+					font-family: "文泉驛正黑","Microsoft yahei UI","Microsoft yahei","微软雅黑","Lato",Helvetica,Arial,sans-serif !important;
+					color: #34495E;
+				}
+
+				h1{
+					color: #3498db;
+				}
+
+				#html-box{
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					background-color: #fff;
+					padding: 20px;
+					margin: 50px 0;
+				}
+
+				#html-box p{
+					margin: 15px 0;
+				}
+				#html-box h2{
+					border-bottom:solid 2px #ddd;
+					margin-bottom: 5px;
+				}
+				#html-box blockquote{
+					border: solid 2px #eee;
+					padding: 0 5px;
+				}
+				#html-box pre{
+					margin: 5px 0;
+					padding: 5px;
+					background-color: #ddd;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+				#html-box hr{
+					border: 1px solid #888;
+				}
+				#html-box code{
+					background-color: #ddd;
+					padding: 2px;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+			</style>
+
+
+			<div id="html-box"></div>
+			<textarea id="tmp" style="display:none"><?php echo $note_content_to_show; ?></textarea>
+			<script type="text/javascript">
+				document.getElementById("html-box").innerHTML = markdown.toHTML(document.getElementById("tmp").value);
+			</script>
+			
 		<?php endif; ?>
 
 
