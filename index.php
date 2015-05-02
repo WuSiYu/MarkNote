@@ -427,12 +427,106 @@
 
 	<head>
 
-		<title>记事本</title>
+		<title>记事本 › <?php echo $_GET['n']; ?></title>
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+
+		<?php if ( $page_type == 'html' ) : ?>
+			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<style type="text/css">
+				body{
+					font-size: 14px;
+					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+					background: #eee;
+					width: 1100px;
+					margin: 0px auto 10px auto;
+					color: #34495E;
+				}
+				h1{
+					color: #3498db;
+				}
+				#html-box{
+					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					background-color: #fff;
+					padding: 20px;
+					margin: 50px 0;
+				}
+				#html-box p{
+					margin: 15px 0;
+				}
+				#html-box h2{
+					border-bottom:solid 2px #ddd;
+					margin-bottom: 5px;
+				}
+				#html-box blockquote{
+					border: solid 2px #eee;
+					padding: 0 10px;
+				}
+				#html-box pre{
+					margin: 5px 0;
+					padding: 5px;
+					background-color: #ddd;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+				#html-box hr{
+					border: 1px solid #888;
+				}
+				#html-box code{
+					background-color: #ddd;
+					padding: 2px;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+				:focus {
+					border: none;
+					outline: 0;
+				}
+				::selection {
+					background:#58BCFF;
+					color:#fff;
+				}
+				::-moz-selection {
+					background:#58BCFF;
+					color:#fff;
+				}
+				::-webkit-selection {
+					background:#58BCFF;
+					color:#fff;
+				}
+				/* 设置滚动条的样式 */
+				::-webkit-scrollbar {
+					width: 10px;
+				}
+				/* 滚动槽 */
+				::-webkit-scrollbar-track {
+					background-color: #eee;
+				}
+				/* 滚动条滑块 */
+				::-webkit-scrollbar-thumb {
+					background: rgba(0,0,0,0.1);
+				}
+				::-webkit-scrollbar-thumb:hover {
+					background: rgba(0,0,0,0.3);
+				}
+				h1,h2,h3,h4,h4,h5,h6{
+					font-weight:100;
+					margin: 0;
+				}
+				@media screen and (max-width: 1140px){
+					body{
+						margin: 0 20px 0 20px;
+						width: auto;
+					}
+				}
+			</style>
+			<div id="html-box"><?php echo $note_content_to_show; ?></div>
+			<script type="text/javascript">
+				document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
+			</script>
+		<?php exit(); endif; ?>
+
 
 
 		<script type="text/javascript">
@@ -548,7 +642,7 @@
 				}
 			}
 
-			function note_change(ojb){
+			function note_change(){
 				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				is_need_save = true;
 			}
@@ -654,9 +748,9 @@
 				color: #555;
 				font-size: 14px;
 				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
-				background:#eee;
-				width:1100px;
-				margin:0px auto 10px auto;
+				background: #eee;
+				width: 1100px;
+				margin: 0px auto 10px auto;
 			}
 
 			input,button{
@@ -724,7 +818,7 @@
 			}
 
 			.btn:hover{
-				background: #f8f8ff;
+				background: #f8f8f8;
 			}
 
 			.input{
@@ -781,19 +875,14 @@
 	<body>
 
 
-		<?php if ( $page_type != 'html' ) : ?>
 
-			<!-- 强制主页表单 -->
-			<form action="./" method="post" style="display:none;" id="force-home-form">
-				<input type="hidden" name="force_home" value="yes">
-			</form>
+		<!-- 强制主页表单 -->
+		<form action="./" method="post" style="display:none;" id="force-home-form">
+			<input type="hidden" name="force_home" value="yes">
+		</form>
 
-			<!-- MarkNote标题 && 返回主页按钮 -->
-	 		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
-
-	 	<?php endif; ?>
-
-
+		<!-- MarkNote标题 && 返回主页按钮 -->
+ 		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
 
 
 
@@ -843,7 +932,14 @@
 					}
 				}
 
-				@media screen and (max-width: 510px){
+				@media screen and (max-width: 650px){
+
+					#note-btns-otherdev-btn{
+						display: none;
+					}
+				}
+
+				@media screen and (max-width: 460px){
 
 					#note-btns-download-btn{
 						display: none;
@@ -852,13 +948,11 @@
 
 				@media screen and (max-width: 420px){
 
-					#note-btns-download-btn{
-						display: none;
-					}
-					#note-btns-otherdev-btn{
+					#note-btns-tohtml-btn{
 						display: none;
 					}
 				}
+
 			</style>
 
 			<!-- [在其他设备上访问此记事本]对话框 -->
@@ -896,7 +990,7 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" onkeydown="note_change(this);" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -924,7 +1018,7 @@
 				}
 				#note-md-show blockquote{
 					border: solid 2px #eee;
-					padding: 0 5px;
+					padding: 0 10px;
 				}
 				#note-md-show pre{
 					margin: 5px 0;
@@ -981,7 +1075,7 @@
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
 						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
-						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px" spellcheck="false" oninput="this.editor.update()" autofocus="autofocus" name="the_note" onkeydown="note_change(this);" ><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -1018,10 +1112,6 @@
 			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
-			
-<!-- 			<form action="?n=<?php echo $_GET['n']; ?>&html=yes" method="post" id="note-btns-tohtml-form" style="display:none;margin:0;">
-				<input type="hidden" name="html" value="yes" />
-			</form> -->
 
 			<div id="note-btns-div" style="margin:20px 0 0 0;">
 				
@@ -1037,7 +1127,7 @@
 				<a id="download-a" style="display:none"></a>
 
 				<?php if( $page_type == 'md_note' ) : ?>
-					<a style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="?n=<?php echo $_GET['n']; ?>&html=yes" target="_blank">生成HTML</a>
+					<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="?n=<?php echo $_GET['n']; ?>&html=yes" target="_blank">生成HTML</a>
 				<?php endif; ?>
 
 				<button title="获取记事本ID并生成二维码" style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
@@ -1272,63 +1362,6 @@
 
 
 
-
-
-
-		<?php if ( $page_type == 'html' ) : ?>
-			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
-			<style type="text/css">
-				body{
-					font-family: "文泉驛正黑","Microsoft yahei UI","Microsoft yahei","微软雅黑","Lato",Helvetica,Arial,sans-serif !important;
-					color: #34495E;
-				}
-
-				h1{
-					color: #3498db;
-				}
-
-				#html-box{
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-					background-color: #fff;
-					padding: 20px;
-					margin: 50px 0;
-				}
-
-				#html-box p{
-					margin: 15px 0;
-				}
-				#html-box h2{
-					border-bottom:solid 2px #ddd;
-					margin-bottom: 5px;
-				}
-				#html-box blockquote{
-					border: solid 2px #eee;
-					padding: 0 5px;
-				}
-				#html-box pre{
-					margin: 5px 0;
-					padding: 5px;
-					background-color: #ddd;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
-				}
-				#html-box hr{
-					border: 1px solid #888;
-				}
-				#html-box code{
-					background-color: #ddd;
-					padding: 2px;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
-				}
-			</style>
-
-
-			<div id="html-box"></div>
-			<textarea id="tmp" style="display:none"><?php echo $note_content_to_show; ?></textarea>
-			<script type="text/javascript">
-				document.getElementById("html-box").innerHTML = markdown.toHTML(document.getElementById("tmp").value);
-			</script>
-			
-		<?php endif; ?>
 
 
 
