@@ -3,15 +3,22 @@
 	//MarkNote 轻量级云记事本系统
 
 	//功能:
-	// 1.以文件或数据库的方式保存记事本
-	// 2.支持MarkDown(即时预览+优化的textarea)和纯文本两种格式的记事本
-	// 3.可以给记事本设置密码
-	// 4.可生成记事本的二维码,以方便手机用户
-	// 5.可将记事本下载到本地
+	// 1. 以文件或数据库的方式保存记事本
+	// 2. 支持MarkDown(即时预览+优化的textarea)和纯文本两种格式的记事本
+	// 3. 可以给记事本设置密码
+	// 4. 可生成记事本的二维码,以方便手机用户
+	// 5. 可将记事本下载到本地
+	// 6. 可以将Markdown记事本一键生成网页
+	// 7. 支持伪静态(http://233333.net/记事本名),仅限apache,默认开启,若环境不支持请关闭
+	// 8. 支持使用任意英文和数字作为ID
 
 	//== Server Config =====================
 
-	$use_sql = false; //是否使用Mysql
+	$use_sql = false;						//是否使用Mysql来存储记事本
+
+	$rewrite_create_htaccess_file = true;	//是否创建.htaccess文件以尝试实现伪静态
+
+	$rewrite_use_better_url = true;			//是否使用伪静态后的URL(如/记事本名),若环境不支持伪静态则不要开启
 
 	//======================================
 
@@ -78,7 +85,7 @@
 			</style>
 			<body>
 				<h3 style="font-weight:400;">请输入密码</h3>
-				<form action="?n=<?php echo $_GET['n']; ?>" method="post">
+				<form action="<?php echo_note_url(); ?>" method="post">
 					<input id="input-passwd" type="password" name="GiveYouPasswd" placeholder="密码" style=""/>
 					<input id="input-submit" type="submit" value="提交" style="" />
 				</form>
@@ -87,9 +94,18 @@
 		exit();
 	}
 
+	function echo_note_url(){
+		global $rewrite_use_better_url;
+		if($rewrite_use_better_url){
+			echo $_GET['n'];
+		}else{
+			echo '?n='.$_GET['n'];
+		}
+	}
+
 	// -----程序从这里开始-----
 
-	error_reporting(0);
+	// error_reporting(0);
 
 	//判断是否是第一次使用
 	if( $use_sql == false ){
@@ -104,22 +120,37 @@
 			}
 		}
 	}else{
-		$notesql = mysql_connect($sql_host ,$sql_user ,$sql_passwd);
-		mysql_select_db($sql_name, $notesql);
+		$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
+		// mysql_select_db($sql_name, $notesql);
 
-		if( !mysql_query("SELECT * FROM ".$sql_table, $notesql) ){
+		if( !mysqli_query($notesql,"SELECT * FROM ".$sql_table) ){
 
-			$is_ok = mysql_query("CREATE TABLE ".$sql_table." ( 
-				ID int NOT NULL AUTO_INCREMENT, 
-				PRIMARY KEY(ID), 
-				passwd varchar(40), 
-				content longtext 
-			)",$notesql);
+			$is_ok = mysqli_query($notesql,"CREATE TABLE ".$sql_table." ( 
+				num int NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY(num),
+				ID tinytext,
+				passwd tinytext,
+				content longtext
+			)");
 
 			if(!$is_ok){
 				show_error_exit("服务器端错误：无法创建数据库表,请修正数据库连接信息或使用文件存储方式");
 			}
 		}
+	}
+
+	//创建伪静态
+	if( !file_exists(".htaccess") && $rewrite_create_htaccess_file ){
+		$htaccess_file_content = 
+"### MarkNote RewriteRule start
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule ^([a-zA-Z0-9]+)$ index.php?n=$1
+	RewriteRule ^([a-zA-Z0-9]+).html$ index.php?n=$1&html=yes
+</IfModule>
+### MarkNote RewriteRule end
+";
+		file_put_contents('.htaccess', $htaccess_file_content);
 	}
 
 	//开始处理记事本
@@ -128,7 +159,11 @@
 
 		if( isset($_COOKIE['myNote']) && $_POST['force_home'] != 'yes' ){
 			//如果是已保存cookie的老用户,并不是强制到主页(通过笔记本页的返回主页按钮).则取出记事本ID,并跳转根据ID跳转到笔记本页
-			header("location:?n=".$_COOKIE['myNote']);
+			if($rewrite_use_better_url){
+				header("location:".$_COOKIE['myNote']);
+			}else{
+				header("location:?n=".$_COOKIE['myNote']);
+			}
 		}else{
 
 			// $is_home = true; //设置是主页标记为真(在最后生成页面时作判断用)
@@ -142,20 +177,22 @@
 						$this_name = rand(100000,999999);
 					}
 				}else{
-					while( mysql_query("SELECT * FROM ".$sql_table." WHERE ID='".$this_name."'",$notesql) ){
+					while( mysqli_query($notesql,"SELECT * FROM ".$sql_table." WHERE ID='".$this_name."'") ){
 						$this_name = rand(100000,999999);
 					}
 				}
-
-				// setcookie("myNote", $this_name, time()+31536000000);
-				header("location:?n=".$this_name);
+				if($rewrite_use_better_url){
+					header("location:".$this_name);
+				}else{
+					header("location:?n=".$this_name);
+				}
 			}
 		}
 
 	}else{
 		//如果指定了ID
 
-		if( preg_match('/[.]|[?]|[$]|[<]|[>][\'][\"]+/',$_GET["n"]) || preg_match('/[A-Za-z]+/',$_GET["n"]) || !preg_match('/[0-9]+/',$_GET["n"]) || preg_match("/[\x7f-\xff]/", $_GET["n"]) || strlen($_GET["n"])!=6 ){
+		if( !preg_match('/^[A-Za-z0-9]+$/',$_GET["n"]) || strlen($_GET["n"])<3 || strlen($_GET["n"])>200){
 			//如果ID不符合规范
 			show_error_exit("错误：输入的ID不合法");
 		}
@@ -170,8 +207,8 @@
 				$this_ID_have_note = false;
 			}
 		}else{
-			$sql_return = mysql_query("SELECT * FROM ".$sql_table." WHERE ID='".$_GET['n']."'",$notesql);
-			$the_content = mysql_fetch_array($sql_return);
+			$sql_return = mysqli_query($notesql,"SELECT * FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+			$the_content = mysqli_fetch_array($sql_return);
 			if( $the_content['ID'] ){
 				$this_ID_have_note = true;
 			}else{
@@ -189,7 +226,11 @@
 				//如果输入了密码
 				setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()+3600);
 				echo "正在检查...";
-				header("location:?n=".$_GET['n']);
+				if($rewrite_use_better_url){
+					header("location:".$_GET['n']);
+				}else{
+					header("location:?n=".$_GET['n']);
+				}
 			}
             
             //检查是这个ID是否有密码
@@ -222,8 +263,8 @@
 
 				fclose($passwd_file);
 			}else{
-				$sql_return = mysql_query("SELECT passwd FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
-				$the_passwd = mysql_fetch_array($sql_return);
+				$sql_return = mysqli_query($notesql,"SELECT passwd FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+				$the_passwd = mysqli_fetch_array($sql_return);
 				if( $the_passwd['passwd'] ){
 					//有密码标记为真
 					$passwd = true;
@@ -266,13 +307,18 @@
 					//关闭文件
 					fclose($passwd_file);
 				}else{
-					mysql_query("UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$_GET['n']."'",$notesql);
+					mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$_GET['n']."'");
+					//删除Cookie
+					setcookie("myNodePasswdFor".$_GET['n'], $_POST['GiveYouPasswd'], time()-1);
+					//提示信息
+					echo "<script>alert('密码已删除');</script>";
 					//有密码标记为假
 					$passwd = false;
 				}
 			}
 
 			if( isset($_POST['the_set_passwd']) ){
+
 				//如果要设置密码
 
 				if( $use_sql == false ){
@@ -284,7 +330,7 @@
 					fputs($passwd_file,"\n");
 					fclose($passwd_file);
 				}else{
-					mysql_query("UPDATE ".$sql_table." SET passwd = '".md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang")."' WHERE ID = '".$_GET['n']."'",$notesql);
+					mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '".md5($_GET['n']."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang")."' WHERE ID = '".$_GET['n']."'");
 				}
 
 				//设置Cookie
@@ -312,13 +358,13 @@
 				}else{
 					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+					// $to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+					// $to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
 					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
 					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
 					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
 					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
-					mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
+					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'");
 				}
 				
 			}
@@ -337,13 +383,13 @@
 				}else{
 					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+					// $to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+					// $to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
 					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
 					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
 					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
 					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
-					mysql_query("UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'",$notesql);
+					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$_GET['n']."'");
 				}
 				echo "ok";
 
@@ -354,9 +400,9 @@
 			if( $use_sql == false ){
 				$note_content_to_show = file_get_contents("NoteData/".$_GET['n']); 
 			}else{
-				$sql_return = mysql_query("SELECT content FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
+				$sql_return = mysqli_query($notesql,"SELECT content FROM ".$sql_table." WHERE ID='".$_GET['n']."'");
 
-				$the_content = mysql_fetch_array($sql_return);
+				$the_content = mysqli_fetch_array($sql_return);
 				$note_content_to_show = $the_content['content'];
 			}
 
@@ -386,12 +432,12 @@
 					}
 					fclose($note_file);
 				}else{
-					mysql_query("INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')",$notesql);
+					mysqli_query($notesql,"INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$_GET['n']."','','')");
 					if( $_POST['type'] == 'md' ){
 						$note_content_to_show = '#MarkDown格式记事本
 - - -
 在**右侧**编辑记事本，会在**左侧**显示效果。';
-						mysql_query("UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>".$note_content_to_show."' WHERE ID = '".$_GET['n']."'",$notesql);
+						mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>".$note_content_to_show."' WHERE ID = '".$_GET['n']."'");
 					}
 				}
 
@@ -407,8 +453,7 @@
 			}
 		}
 
-		//在记事本编辑页
-		// $is_home = false;
+
 	}//END--如果指定ID
 ?>
 
@@ -629,7 +674,7 @@
 			function ajax_save(){
 				if( is_need_save ){
 					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
-					$.post("?n=<?php echo $_GET['n']; ?>",
+					$.post("<?php echo_note_url(); ?>",
 					{
 						ajax_save:"yes",
 						the_note:$("textarea").val(),
@@ -987,7 +1032,7 @@
 		<?php if ( $page_type == 'text_note' ) : ?>
 
 			<!-- 大框子 -->
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
 						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
@@ -1070,7 +1115,7 @@
 			</script>
 			
 			<!-- 大框子 -->
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-main-form" style="margin:0 auto;">
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
@@ -1104,12 +1149,12 @@
 
 		<!-- 记事本编辑页共用-2 -->
 		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-top:20px; height:37px;">
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-top:20px; height:37px;">
 				<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;"/>
 				<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
 			</form>
 
-			<form action="?n=<?php echo $_GET['n']; ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 
@@ -1127,7 +1172,11 @@
 				<a id="download-a" style="display:none"></a>
 
 				<?php if( $page_type == 'md_note' ) : ?>
-					<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="?n=<?php echo $_GET['n']; ?>&html=yes" target="_blank">生成HTML</a>
+					<?php if ($rewrite_use_better_url): ?>
+						<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="<?php echo $_GET['n']; ?>.html" target="_blank">生成HTML</a>
+					<?php else : ?>
+						<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="./?n=<?php echo $_GET['n']; ?>&html=yes" target="_blank">生成HTML</a>
+					<?php endif ?>
 				<?php endif; ?>
 
 				<button title="获取记事本ID并生成二维码" style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
@@ -1287,7 +1336,7 @@
 
 			<?php if( isset($_COOKIE['myNote']) ) : ?>
 				<!-- 强制主页时的返回按钮 -->
-				<a title="根据这个设备上的记录来回到您的笔记本" href="?n=<?php echo $_COOKIE['myNote']; ?>" id="back-to-note" class="btn" >回到我的笔记</a>
+				<a title="根据这个设备上的记录来回到您的笔记本" href="<?php if($rewrite_use_better_url){echo $_COOKIE['myNote'];}else{echo '?n='.$_COOKIE['myNote'];} ?>" id="back-to-note" class="btn" >回到我的笔记</a>
 			<?php endif; ?>
 
 			<div style="clear:both;"></div>
@@ -1332,6 +1381,7 @@
 		<?php if ( $page_type == 'select_note_type' ) : ?>
 
 			<h2 style="margin-bottom:10px;">请选择将要创建的记事本类型:</h2>
+			
 			<form id="choose-form-md" action="" method="post">
 				<input type="hidden" name="type" value="md">
 				<input type="hidden" name="n" value="<?php echo $_GET['n']; ?>">
@@ -1368,4 +1418,4 @@
 
 	</body>
 
-<?php if($use_sql == true){ mysql_close($notesql); }?>
+<?php if($use_sql){ mysqli_close($notesql); }?>
