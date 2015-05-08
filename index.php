@@ -476,7 +476,7 @@
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAADKSURBVCjPpZG9agJhEEXPXT4C/iAkRUDUVu3NM5lmTa3YCIq/payI75IXSBOFEEhewLWws1JwUi2urpLC057LzFxG3KAOWTqkXf3livVsa6HavLJwvCc1a9qq4VtgXUcuEdgwoIbPzLraeQkdWtPK8pnZh57hMrCmqYoaBPatHk/gLnSLKg0C+9KIDMfzCaFFeqUBeQzOJthcBd6Y2lITCqdKEQd+eKRvnxpTjHeO2JO3X1IaU4qfdVqR1hCXaBULiIdrP/H4h/sDf9snOKUfSt0FAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE0LTA1LTE2VDEzOjU5OjIzKzA4OjAw15vc7QAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0wNS0xNlQxMzo1OToyMyswODowMKbGZFEAAABNdEVYdHNvZnR3YXJlAEltYWdlTWFnaWNrIDYuOC44LTcgUTE2IHg4Nl82NCAyMDE0LTAyLTI4IGh0dHA6Ly93d3cuaW1hZ2VtYWdpY2sub3JnWaRffwAAABh0RVh0VGh1bWI6OkRvY3VtZW50OjpQYWdlcwAxp/+7LwAAABd0RVh0VGh1bWI6OkltYWdlOjpIZWlnaHQAODbMbeUmAAAAFnRFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADg2NMIlqwAAABl0RVh0VGh1bWI6Ok1pbWV0eXBlAGltYWdlL3BuZz+yVk4AAAAXdEVYdFRodW1iOjpNVGltZQAxNDAwMjE5OTYz4dtdZwAAABN0RVh0VGh1bWI6OlNpemUAMS42OEtCQj6VXf4AAABidEVYdFRodW1iOjpVUkkAZmlsZTovLy9ob21lL2Z0cC8xNTIwL2Vhc3lpY29uLmNuL2Vhc3lpY29uLmNuL2Nkbi1pbWcuZWFzeWljb24uY24vcG5nLzExNjQ2LzExNjQ2MzcucG5nPtD3kwAAAABJRU5ErkJggg==" type="image/x-icon" rel=icon> 
+		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABWVBMVEVhVTVSSjVORzROSDRQSTVfVDVcUTVLRTRHQTRHQjRIQzRZUDVgVDVPSDRMRjRdUjXIojrGoTvFoDvHojv8yD37yT37yD37yD32xT72xT71xT71xT7QsVPOsVTOsFTPsVPwwULvwkLvwULvwkLRsVLPsVPPsVPQsVPqvkXpv0XpvkXpvkXWtFDVtFDUs1DVtFDguUrgukrfuUrfuUrfuUrVtFDUtFDUtFDrv0TrwETqv0Tqv0T6xzz6yDz5vDv3rDr6yDz6xzz6xzz6xzxLRDRLRTTFmTrFjznFoTvFoDr6vjz4rjv7yT37yD30uz3yqzz2xT71xT7NqFPLm1LOsFTuuEHsqD/vwkLvwULOqFLMm1HPsVPotUTmpkPpv0XpvkXTq0/Snk7UtFDUs1DesEndokjfukrfuUresErcokjfuUvTq1DRnU7UtFHptUPop0LrwETqv0T////ZQ5XYAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAAd0SU1FB98FCA0SEE9zUCEAAAA2SURBVBjTY+BEAwwYAqKi7qLIAFNAUNBdEBlg1yIGBXi0iCEABbbg14JkB0QLlOPo6OgkKgoAn/UWJhIEn78AAAAASUVORK5CYII=" type="image/x-icon" rel=icon> 
 
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 
@@ -944,6 +944,7 @@
 				}
 
 				textarea{
+					tab-size: 4;-moz-tab-size: 4;-o-tab-size: 4;
 					padding: 0;
 					margin: 0;
 					color: #555;background:#fff;
@@ -1069,10 +1070,12 @@
 				#note-md-show pre{
 					margin: 5px 0;
 					padding: 5px;
-					background-color: #ddd;
+					background-color: #F2F2F5;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
 				#note-md-show pre code{
+					overflow: auto;
+					background-color: #F2F2F5;
 					margin: 0;
 					padding: 0;
 				}
@@ -1080,6 +1083,7 @@
 					border: 1px solid #888;
 				}
 				#note-md-show code{
+					text-shadow: none;
 					background-color: #ddd;
 					padding: 2px 5px;
 					margin: 0px 2px;
@@ -1089,6 +1093,9 @@
 
 			</style>
 			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
+			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+
 			<script type="text/javascript">
 				window.onload = function(){
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
@@ -1138,6 +1145,26 @@
 					this.update = function () {
 						preview.innerHTML = markdown.toHTML(input.value);
 						$("#note-md-show a").attr("target","_blank");
+						codes=$("#note-md-show pre code");
+						langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
+							"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
+							"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
+							"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
+							"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
+						}
+						for(var x=0;x<codes.length;x++){
+							first_line=codes[x].innerHTML.split('\n',1)[0];
+							first_line_lower=first_line.toLowerCase()
+							codes[x].className="language-markup";
+							var l='';
+							for(l in langs){
+								if(first_line_lower==l){
+									codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
+									codes[x].className=langs[l];
+								}
+							}
+						}
+						Prism.highlightAll();
 					};
 					input.editor = this;
 					this.update();
