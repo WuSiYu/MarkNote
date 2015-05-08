@@ -476,6 +476,7 @@
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAADKSURBVCjPpZG9agJhEEXPXT4C/iAkRUDUVu3NM5lmTa3YCIq/payI75IXSBOFEEhewLWws1JwUi2urpLC057LzFxG3KAOWTqkXf3livVsa6HavLJwvCc1a9qq4VtgXUcuEdgwoIbPzLraeQkdWtPK8pnZh57hMrCmqYoaBPatHk/gLnSLKg0C+9KIDMfzCaFFeqUBeQzOJthcBd6Y2lITCqdKEQd+eKRvnxpTjHeO2JO3X1IaU4qfdVqR1hCXaBULiIdrP/H4h/sDf9snOKUfSt0FAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE0LTA1LTE2VDEzOjU5OjIzKzA4OjAw15vc7QAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNC0wNS0xNlQxMzo1OToyMyswODowMKbGZFEAAABNdEVYdHNvZnR3YXJlAEltYWdlTWFnaWNrIDYuOC44LTcgUTE2IHg4Nl82NCAyMDE0LTAyLTI4IGh0dHA6Ly93d3cuaW1hZ2VtYWdpY2sub3JnWaRffwAAABh0RVh0VGh1bWI6OkRvY3VtZW50OjpQYWdlcwAxp/+7LwAAABd0RVh0VGh1bWI6OkltYWdlOjpIZWlnaHQAODbMbeUmAAAAFnRFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADg2NMIlqwAAABl0RVh0VGh1bWI6Ok1pbWV0eXBlAGltYWdlL3BuZz+yVk4AAAAXdEVYdFRodW1iOjpNVGltZQAxNDAwMjE5OTYz4dtdZwAAABN0RVh0VGh1bWI6OlNpemUAMS42OEtCQj6VXf4AAABidEVYdFRodW1iOjpVUkkAZmlsZTovLy9ob21lL2Z0cC8xNTIwL2Vhc3lpY29uLmNuL2Vhc3lpY29uLmNuL2Nkbi1pbWcuZWFzeWljb24uY24vcG5nLzExNjQ2LzExNjQ2MzcucG5nPtD3kwAAAABJRU5ErkJggg==" type="image/x-icon" rel=icon> 
 
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 
@@ -585,7 +586,7 @@
 			$(document).ready(function(){
 				$("#note-btns-save-form").hide();
 				$("#note-btns-save-ajax").show();
-				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 13px"}).html("已保存");
+				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
 
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
@@ -681,7 +682,7 @@
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 13px"}).html("已保存");
+						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
 						is_need_save = false;
 					});
 				}
@@ -948,7 +949,7 @@
 					color: #555;background:#fff;
 					border: 0;
 					resize: none;
-					font-size: 16px !important;
+					font-size: 16px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				}
 
@@ -1055,7 +1056,7 @@
 		<?php if ( $page_type == 'md_note' ) : ?>
 			<style type="text/css">
 				#note-md-show p{
-					margin: 15px 0;
+					margin: 5px 0 15px 0;
 				}
 				#note-md-show h2{
 					border-bottom:solid 2px #ddd;
@@ -1071,12 +1072,18 @@
 					background-color: #ddd;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
+				#note-md-show pre code{
+					margin: 0;
+					padding: 0;
+				}
 				#note-md-show hr{
 					border: 1px solid #888;
 				}
 				#note-md-show code{
 					background-color: #ddd;
-					padding: 2px;
+					padding: 2px 5px;
+					margin: 0px 2px;
+					font-size: 14px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}				
 
@@ -1120,7 +1127,7 @@
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
 						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
-						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
