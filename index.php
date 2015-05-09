@@ -482,6 +482,8 @@
 
 		<?php if ( $page_type == 'html' ) : ?>
 			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
+			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
 			<style type="text/css">
 				body{
 					font-size: 14px;
@@ -514,8 +516,12 @@
 				#html-box pre{
 					margin: 5px 0;
 					padding: 5px;
-					background-color: #ddd;
+					background-color: #F2F2F5;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+				#html-box pre code{
+					background-color: #F2F2F5;
+					overflow: auto;
 				}
 				#html-box hr{
 					border: 1px solid #888;
@@ -570,6 +576,27 @@
 			<div id="html-box"><?php echo $note_content_to_show; ?></div>
 			<script type="text/javascript">
 				document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
+				$("#html-box a").attr("target","_blank");
+				codes=$("#html-box pre code");
+				langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
+					"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
+					"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
+					"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
+					"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
+				}
+				for(var x=0;x<codes.length;x++){
+					first_line=codes[x].innerHTML.split('\n',1)[0];
+					first_line_lower=first_line.toLowerCase()
+					codes[x].className="language-markup";
+					var l='';
+					for(l in langs){
+						if(first_line_lower==l){
+							codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
+							codes[x].className=langs[l];
+						}
+					}
+				}
+				Prism.highlightAll();
 			</script>
 		<?php exit(); endif; ?>
 
@@ -944,6 +971,7 @@
 				}
 
 				textarea{
+					line-height: 17px;
 					tab-size: 4;-moz-tab-size: 4;-o-tab-size: 4;
 					padding: 0;
 					margin: 0;
