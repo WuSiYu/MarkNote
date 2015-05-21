@@ -14,6 +14,8 @@
 
 	//== Server Config =====================
 
+	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');	//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
+
 	$use_sql = false;						//是否使用Mysql来存储记事本
 
 	$rewrite_create_htaccess_file = true;	//是否创建.htaccess文件以尝试实现伪静态
@@ -56,7 +58,7 @@
 		<title>输入密码</title>
 		<style type="text/css">
 			body{
-				background:#eee;width:490px;margin:20px auto 20px auto;
+				background:#eee;width:500px;margin:20px auto 20px auto;
 			}
 			#input-passwd{
 				font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
@@ -110,6 +112,10 @@
 		exit();
 	}
 
+	function encrypt_pass($noteId, $password){
+		return md5(MD5_SALT . $noteId . 'MyNote' . $password . 'Let-It-More-Lang');
+	}
+
 	// -----程序从这里开始-----
 
 	// error_reporting(0);
@@ -161,7 +167,8 @@
 	}
 
 	$noteId = @$_GET['n'];
-	$noteTitle = '无标题';
+	$noteTitle = '新建';
+	$JavaScript = '';//用于保存需要在页面中输出的 javascript 代码, 以修正在文档开头输出 <script> 标签的问题
 
 	$passwd = false;//代表当前的Note是否有密码
 	$note_content_to_show = '';//记事本的默认内容
@@ -181,28 +188,8 @@
 			$page_type = 'home'; //设置是主页标记为真(在最后生成页面时作判断用)
 
 			if( $isNew ){
-				/*
-					这里的两处 while 有潜在的安全隐患
-					请求 999999-100000 次 index.php?new=yes 且请求时不带Cookie
-					然后再发一次请求下面的这两个就成死循环了.
-					就能达到 DDOS 的效果了.
-				*/
-
 				//以当前的时间(带毫秒)再加上随机数生成唯一的(理论上) noteId
 				$url = md5(microtime(1) . mt_rand());
-				/*
-				$this_name = rand(100000,999999);
-
-				if( $use_sql == false ){
-					while( file_exists("NoteData/".$this_name) ){
-						$this_name = rand(100000,999999);
-					}
-				}else{
-					while( mysqli_query($notesql,"SELECT * FROM ".$sql_table." WHERE ID='".$this_name."'") ){
-						$this_name = rand(100000,999999);
-					}
-				}
-				*/
 			}
 		}
 
@@ -225,7 +212,7 @@
 		if( $use_sql == false ){
 			$this_ID_have_note = file_exists("NoteData/". $noteId);
 		}else{
-			$sql_return = mysqli_query($notesql,"SELECT * FROM ".$sql_table." WHERE ID='". $noteId ."'");
+			$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $noteId ."'");
 			$the_content = mysqli_fetch_array($sql_return);
 
 			$this_ID_have_note = isset($the_content['ID']) && $the_content['ID'];
@@ -240,9 +227,10 @@
 			if( isset($_POST['GiveYouPasswd']) ){
 				//如果输入了密码
 				setcookie("myNodePasswdFor". $noteId, $_POST['GiveYouPasswd'], time()+3600);
-				echo "正在检查...";
 				reLocation($noteId);
 			}
+
+			$realpasswd = '';
 
 			//检查是这个ID是否有密码
 			if( $use_sql == false ){
@@ -256,7 +244,7 @@
 					$passwd_file_this_line = fgets($passwd_file);
 
 					//把这行分为两段
-					$this_line_array = explode(" ",$passwd_file_this_line);
+					$this_line_array = explode(" ", $passwd_file_this_line);
 
 					if( $this_line_array[0] === $noteId ){
 						//如果这个ID有密码并在这一行中
@@ -264,124 +252,117 @@
 						//有密码标记为真
 						$passwd = true;
 
-						//判断是否已输入密码
-						if( md5($noteId . "MyNote".$_COOKIE['myNodePasswdFor'. $noteId]."Let-It-More-Lang") != $this_line_array[1] ) {
-							//如果没有输入密码
-							show_input_passwd();
-						}
+						$realpasswd = $this_line_array[1];
+
+						//找到密码后, 不再往后找了
+						break;
 					}
 				}
 
 				fclose($passwd_file);
 			}else{
-				$sql_return = mysqli_query($notesql,"SELECT passwd FROM ".$sql_table." WHERE ID='". $noteId ."'");
+				$sql_return = mysqli_query($notesql, "SELECT passwd FROM ".$sql_table." WHERE ID='". $noteId ."'");
 				$the_passwd = mysqli_fetch_array($sql_return);
-				if( $the_passwd['passwd'] ){
+				if( isset($the_passwd['passwd']) && $the_passwd['passwd'] ){
 					//有密码标记为真
 					$passwd = true;
 
-					if( md5($noteId."MyNote".$_COOKIE['myNodePasswdFor'.$noteId]."Let-It-More-Lang") != $the_passwd['passwd'] ) {
-						//如果没有输入密码
-						show_input_passwd();
-					}
+					$realpasswd = $the_passwd['passwd'];
 				}
 			}
 
-			if( isset($_POST['delete_passwd']) ){
+			//当前的 note 有密码标记
+			if($passwd){
+				//从Cookie获取密码
+				$password = @$_COOKIE['myNodePasswdFor'.$noteId];
 
-				if( $use_sql == false ){
+				//密码不正确或者未输入, 则显示密码输入框
+				if( encrypt_pass($noteId, $password) !== trim($realpasswd) ) {
+					show_input_passwd();
+				}
 
-					$passwd_file = fopen("NoteData/passwd.data","a+");
+				//当前 note 有密码时, 才处理 删除密码的逻辑, 否则 不处理, 因为没有密码, 不需要删除密码
+				if( isset($_POST['delete_passwd']) ){
 
-					//读取密码文件
-					while( !feof($passwd_file) ){
-						//读取一行
-						$passwd_file_this_line = fgets($passwd_file);
+					if( $use_sql == false ){
 
-						//把这行分为两段
-						$this_line_array = explode(" ",$passwd_file_this_line);
+						$passwd_file = fopen("NoteData/passwd.data","a+");
 
-						if( $this_line_array[0] === $noteId ){
-							//如果这个ID有密码并在这一行中
-							$passwd_file_content = file_get_contents("NoteData/passwd.data");
-							$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
-							$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
-							file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
-							//删除Cookie
-							setcookie("myNodePasswdFor".$noteId, $_POST['GiveYouPasswd'], time()-1);
-							//提示信息
-							echo "<script>alert('密码已删除');</script>";
-							//有密码标记为假
-							$passwd = false;
+						//读取密码文件
+						while( !feof($passwd_file) ){
+							//读取一行
+							$passwd_file_this_line = fgets($passwd_file);
+
+							//把这行分为两段
+							$this_line_array = explode(" ",$passwd_file_this_line);
+
+							if( $this_line_array[0] === $noteId ){
+								//如果这个ID有密码并在这一行中
+								$passwd_file_content = file_get_contents("NoteData/passwd.data");
+								$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
+								$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
+								file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
+								//有密码标记为假
+								$passwd = false;
+								break;
+							}
 						}
+						//关闭文件
+						fclose($passwd_file);
+					}else{
+						mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$noteId."'");
+						//有密码标记为假
+						$passwd = false;
 					}
-					//关闭文件
-					fclose($passwd_file);
-				}else{
-					mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$noteId."'");
-					//删除Cookie
-					setcookie("myNodePasswdFor".$noteId, $_POST['GiveYouPasswd'], time()-1);
-					//提示信息
-					echo "<script>alert('密码已删除');</script>";
-					//有密码标记为假
-					$passwd = false;
+
+					//密码删除成功
+					if($passwd === false){
+						//删除Cookie
+						setcookie("myNodePasswdFor".$noteId, '', time()-1);
+						//提示信息
+						$JavaScript = "alert('密码已删除');";
+					}
+				}
+			}else{
+				//没有密码时, 才处理 设置密码的逻辑, 否则单独多次提交设置密码逻辑, 在使用 文件模式时, 会导致文件里同一 noteId 出现多条密码的情况
+				if( isset($_POST['the_set_passwd']) ){
+
+					//如果要设置密码
+					$password = $_POST['the_set_passwd'];
+
+					//密码长度至少 6 位
+					if(strlen($password) > 5){
+						$mpass = encrypt_pass($noteId, $password);
+
+						if( $use_sql == false ){
+							//打开密码文件
+							$passwd_file = fopen("NoteData/passwd.data","a+");
+
+							//写入密码信息
+							fputs($passwd_file, $noteId.' '.$mpass);
+							fputs($passwd_file, "\n");
+							fclose($passwd_file);
+						}else{
+							mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '". $mpass ."' WHERE ID = '".$noteId."'");
+						}
+
+						//设置Cookie
+						setcookie("myNodePasswdFor".$noteId, $password, time()+3600);
+						//提示信息
+						$JavaScript = "alert('密码已设置');";
+
+						//有密码标记为真
+						$passwd = true;
+					}
 				}
 			}
 
-			if( isset($_POST['the_set_passwd']) ){
-
-				//如果要设置密码
-
-				if( $use_sql == false ){
-					//打开密码文件
-					$passwd_file = fopen("NoteData/passwd.data","a+");
-
-					//写入密码信息
-					fputs($passwd_file,$noteId.' '.md5($noteId."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang").' ' );
-					fputs($passwd_file,"\n");
-					fclose($passwd_file);
-				}else{
-					mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '".md5($noteId."MyNote".$_POST['the_set_passwd']."Let-It-More-Lang")."' WHERE ID = '".$noteId."'");
-				}
-
-				//设置Cookie
-				setcookie("myNodePasswdFor".$noteId, $_POST['the_set_passwd'], time()+3600);
-				//提示信息
-				echo "<script>alert('密码已设置');</script>";
-
-				//有密码标记为真
-				$passwd = true;
-
-
-			}
-
-			if( isset($_POST['save']) && isset($_POST['the_note']) ){
-				//如果是普通保存
-
-				$to_save_raw = $_POST['the_note'];
-
-				if( $_POST['note_type'] == 'md_note' ){
-					$to_save_raw = '<<<-- MarkDown Type Note -->>>'.$to_save_raw;
-				}
-
-				if( $use_sql == false ){
-					file_put_contents("NoteData/".$noteId, $to_save_raw);
-				}else{
-					$to_save_tmp = $to_save_raw;
-					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-					// $to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-					// $to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
-					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
-					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
-					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
-					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
-					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
-				}
-
-			}
-
-			if( @$_POST["ajax_save"] == "yes" && isset($_POST['the_note']) ){
-				//如果是ajax保存
+			if(
+				isset($_POST['the_note']) && //有POST过来的 记事本 内容
+				(
+					isset($_POST['save']) || @$_POST['ajax_save'] === 'yes'
+				)
+			){
 
 				$to_save_raw = $_POST['the_note'];
 
@@ -402,18 +383,18 @@
 					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
 					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
 				}
-				echo "ok";
 
-				//使用ajax时无需再输出HTML,任务已完成,终止执行.
-				exit();
+				if(@$_POST['ajax_save'] === 'yes'){
+					echo "ok";
+					//使用ajax时无需再输出HTML,任务已完成,终止执行.
+					exit();
+				}
 			}
 
 			if( $use_sql == false ){
 				$note_content_to_show = file_get_contents("NoteData/".$noteId);
 			}else{
-				$sql_return = mysqli_query($notesql,"SELECT content FROM ".$sql_table." WHERE ID='".$noteId."'");
-
-				$the_content = mysqli_fetch_array($sql_return);
+				//直接使用上面查询出来的结果, 不再重新查询
 				$note_content_to_show = $the_content['content'];
 			}
 
@@ -425,184 +406,184 @@
 			if( @$_GET['html'] === 'yes' ){
 				$page_type = 'html';
 			}
-
 		}else{
 			//如果是新记事本
-
 			$page_type = 'select_note_type';//默认值
 
 			if( isset($_POST['type']) ){
 
-				// echo "type is ".$_POST['type'];
+				$IsMd = $_POST['type'] === 'md';//是否为新建 MarkDown 格式的记事本
+
+				$note_content_to_show = $IsMd ? '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本
+- - -
+在**右侧**编辑记事本，会在**左侧**显示效果。' : '';
+
 				//创建新新文件
 				if( $use_sql == false ){
-					$note_file = fopen("NoteData/".$noteId, "w+");
-					if( $_POST['type'] == 'md' ){
-						$note_content_to_show = '#MarkDown格式记事本
-- - -
-在**右侧**编辑记事本，会在**左侧**显示效果。';
-						fwrite($note_file, '<<<-- MarkDown Type Note -->>>'.$note_content_to_show);
+					$note_file = 'NoteData/' . $noteId;
+
+					if( $IsMd ){
+						file_put_contents($note_file, $note_content_to_show);
+					}else{
+						touch($note_file);
 					}
-					fclose($note_file);
 				}else{
-					mysqli_query($notesql,"INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$noteId."','','')");
-					if( $_POST['type'] == 'md' ){
-						$note_content_to_show = '#MarkDown格式记事本
-- - -
-在**右侧**编辑记事本，会在**左侧**显示效果。';
-						mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '<<<-- MarkDown Type Note -->>>".$note_content_to_show."' WHERE ID = '".$noteId."'");
-					}
+					mysqli_query($notesql, "INSERT INTO ".$sql_table." (ID, passwd, content) VALUES ('".$noteId."','','".$note_content_to_show."')");
 				}
 
 				$passwd = false;
 
-				$page_type = ( $_POST['type'] == 'md' ) ? 'md_note' : 'text_note';
+				$page_type = $IsMd ? 'md_note' : 'text_note';
 			}
 		}
+
+		//下载时的 文件名
+		$filename = '记事本-' . $noteId . '.' . (( $page_type == 'md_note' ) ? 'md' : 'txt');
 	}
 ?>
 <!DOCTYPE html>
 	<head>
 		<meta charset="utf-8" />
 		<title>记事本 › <?php echo $noteTitle; ?></title>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABWVBMVEVhVTVSSjVORzROSDRQSTVfVDVcUTVLRTRHQTRHQjRIQzRZUDVgVDVPSDRMRjRdUjXIojrGoTvFoDvHojv8yD37yT37yD37yD32xT72xT71xT71xT7QsVPOsVTOsFTPsVPwwULvwkLvwULvwkLRsVLPsVPPsVPQsVPqvkXpv0XpvkXpvkXWtFDVtFDUs1DVtFDguUrgukrfuUrfuUrfuUrVtFDUtFDUtFDrv0TrwETqv0Tqv0T6xzz6yDz5vDv3rDr6yDz6xzz6xzz6xzxLRDRLRTTFmTrFjznFoTvFoDr6vjz4rjv7yT37yD30uz3yqzz2xT71xT7NqFPLm1LOsFTuuEHsqD/vwkLvwULOqFLMm1HPsVPotUTmpkPpv0XpvkXTq0/Snk7UtFDUs1DesEndokjfukrfuUresErcokjfuUvTq1DRnU7UtFHptUPop0LrwETqv0T////ZQ5XYAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAAd0SU1FB98FCA0SEE9zUCEAAAA2SURBVBjTY+BEAwwYAqKi7qLIAFNAUNBdEBlg1yIGBXi0iCEABbbg14JkB0QLlOPo6OgkKgoAn/UWJhIEn78AAAAASUVORK5CYII=" type="image/x-icon" rel=icon>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABWVBMVEVhVTVSSjVORzROSDRQSTVfVDVcUTVLRTRHQTRHQjRIQzRZUDVgVDVPSDRMRjRdUjXIojrGoTvFoDvHojv8yD37yT37yD37yD32xT72xT71xT71xT7QsVPOsVTOsFTPsVPwwULvwkLvwULvwkLRsVLPsVPPsVPQsVPqvkXpv0XpvkXpvkXWtFDVtFDUs1DVtFDguUrgukrfuUrfuUrfuUrVtFDUtFDUtFDrv0TrwETqv0Tqv0T6xzz6yDz5vDv3rDr6yDz6xzz6xzz6xzxLRDRLRTTFmTrFjznFoTvFoDr6vjz4rjv7yT37yD30uz3yqzz2xT71xT7NqFPLm1LOsFTuuEHsqD/vwkLvwULOqFLMm1HPsVPotUTmpkPpv0XpvkXTq0/Snk7UtFDUs1DesEndokjfukrfuUresErcokjfuUvTq1DRnU7UtFHptUPop0LrwETqv0T////ZQ5XYAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAAd0SU1FB98FCA0SEE9zUCEAAAA2SURBVBjTY+BEAwwYAqKi7qLIAFNAUNBdEBlg1yIGBXi0iCEABbbg14JkB0QLlOPo6OgkKgoAn/UWJhIEn78AAAAASUVORK5CYII=" type="image/x-icon" rel="icon" />
 		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
-		<?php if ( $page_type == 'html' ) : ?>
-			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
-			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
-			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
-			<style type="text/css">
+<?php if ( $page_type == 'html' ) : ?>
+		<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+		<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
+		<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+		<style type="text/css">
+			body{
+				font-size: 14px;
+				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				background: #eee;
+				width: 1100px;
+				margin: 0px auto 10px auto;
+				color: #34495E;
+			}
+			h1{
+				color: #3498db;
+			}
+			#html-box{
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				background-color: #fff;
+				padding: 20px;
+				margin: 50px 0;
+			}
+			#html-box p{
+				margin: 15px 0;
+			}
+			#html-box h2{
+				border-bottom:solid 2px #ddd;
+				margin-bottom: 5px;
+			}
+			#html-box blockquote{
+				border: solid 2px #eee;
+				padding: 0 10px;
+			}
+			#html-box pre{
+				margin: 5px 0;
+				padding: 5px;
+				background-color: #F2F2F5;
+				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+			}
+			#html-box pre code{
+				background-color: #F2F2F5;
+				overflow: auto;
+			}
+			#html-box hr{
+				border: 1px solid #888;
+			}
+			#html-box code{
+				background-color: #ddd;
+				padding: 2px;
+				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+			}
+			:focus {
+				border: none;
+				outline: 0;
+			}
+			::selection {
+				background:#58BCFF;
+				color:#fff;
+			}
+			::-moz-selection {
+				background:#58BCFF;
+				color:#fff;
+			}
+			::-webkit-selection {
+				background:#58BCFF;
+				color:#fff;
+			}
+			/* 设置滚动条的样式 */
+			::-webkit-scrollbar {
+				width: 10px;
+			}
+			/* 滚动槽 */
+			::-webkit-scrollbar-track {
+				background-color: #eee;
+			}
+			/* 滚动条滑块 */
+			::-webkit-scrollbar-thumb {
+				background: rgba(0,0,0,0.1);
+			}
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(0,0,0,0.3);
+			}
+			h1,h2,h3,h4,h4,h5,h6{
+				font-weight:100;
+				margin: 0;
+			}
+			@media screen and (max-width: 1140px){
 				body{
-					font-size: 14px;
-					font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
-					background: #eee;
-					width: 1100px;
-					margin: 0px auto 10px auto;
-					color: #34495E;
+					margin: 0 20px 0 20px;
+					width: auto;
 				}
-				h1{
-					color: #3498db;
-				}
-				#html-box{
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-					background-color: #fff;
-					padding: 20px;
-					margin: 50px 0;
-				}
-				#html-box p{
-					margin: 15px 0;
-				}
-				#html-box h2{
-					border-bottom:solid 2px #ddd;
-					margin-bottom: 5px;
-				}
-				#html-box blockquote{
-					border: solid 2px #eee;
-					padding: 0 10px;
-				}
-				#html-box pre{
-					margin: 5px 0;
-					padding: 5px;
-					background-color: #F2F2F5;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
-				}
-				#html-box pre code{
-					background-color: #F2F2F5;
-					overflow: auto;
-				}
-				#html-box hr{
-					border: 1px solid #888;
-				}
-				#html-box code{
-					background-color: #ddd;
-					padding: 2px;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
-				}
-				:focus {
-					border: none;
-					outline: 0;
-				}
-				::selection {
-					background:#58BCFF;
-					color:#fff;
-				}
-				::-moz-selection {
-					background:#58BCFF;
-					color:#fff;
-				}
-				::-webkit-selection {
-					background:#58BCFF;
-					color:#fff;
-				}
-				/* 设置滚动条的样式 */
-				::-webkit-scrollbar {
-					width: 10px;
-				}
-				/* 滚动槽 */
-				::-webkit-scrollbar-track {
-					background-color: #eee;
-				}
-				/* 滚动条滑块 */
-				::-webkit-scrollbar-thumb {
-					background: rgba(0,0,0,0.1);
-				}
-				::-webkit-scrollbar-thumb:hover {
-					background: rgba(0,0,0,0.3);
-				}
-				h1,h2,h3,h4,h4,h5,h6{
-					font-weight:100;
-					margin: 0;
-				}
-				@media screen and (max-width: 1140px){
-					body{
-						margin: 0 20px 0 20px;
-						width: auto;
-					}
-				}
-			</style>
-			<div id="html-box"><?php echo htmlentities($note_content_to_show); ?></div>
-			<script type="text/javascript">
-				document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
-				$("#html-box a").attr("target","_blank");
-				codes=$("#html-box pre code");
-				langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
-					"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
-					"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
-					"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
-					"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
-				}
-				for(var x=0;x<codes.length;x++){
-					first_line=codes[x].innerHTML.split('\n',1)[0];
-					first_line_lower=first_line.toLowerCase()
-					codes[x].className="language-markup";
-					var l='';
-					for(l in langs){
-						if(first_line_lower==l){
-							codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
-							codes[x].className=langs[l];
-						}
-					}
-				}
-				Prism.highlightAll();
-			</script>
-		<?php exit(); endif; ?>
-
-
-
+			}
+		</style>
+		<div id="html-box"><?php echo htmlentities($note_content_to_show); ?></div>
 		<script type="text/javascript">
-
+			document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
+			$("#html-box a").attr("target","_blank");
+			codes=$("#html-box pre code");
+			langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
+				"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
+				"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
+				"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
+				"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
+			}
+			for(var x=0;x<codes.length;x++){
+				first_line=codes[x].innerHTML.split('\n',1)[0];
+				first_line_lower=first_line.toLowerCase()
+				codes[x].className="language-markup";
+				var l='';
+				for(l in langs){
+					if(first_line_lower==l){
+						codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
+						codes[x].className=langs[l];
+					}
+				}
+			}
+			Prism.highlightAll();
+		</script>
+<?php exit(); endif; ?>
+		<script type="text/javascript">
 			var is_passwd_set_show = false;
 			var is_need_save = false;
 			var is_pic_loaded = false;
-
-
 
 			$(document).ready(function(){
 				$("#note-btns-save-form").hide();
 				$("#note-btns-save-ajax").show();
 				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
+
+				$('#note-btns-setpasswd-form-btn').click(function(){
+					if(($('#note-btns-setpasswd-form-input').val()+'').length < 6){
+						alert('请输入密码, 长度至少六位!');
+						return false;
+					}
+				});
 
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
@@ -627,6 +608,10 @@
 				<?php endif; ?>
 			});
 
+<?php
+if($JavaScript !== ''){
+	echo $JavaScript;
+}?>
 
 			window.onresize = function () {
 				var winh=window.innerHeight
@@ -719,11 +704,7 @@
 
 			function download_note(){
 				$('#download-a').attr({
-					<?php if ( $page_type == 'md_note' ) : ?>
-						"download" : "记事本-<?php echo $noteId; ?>.md",
-					<?php else: ?>
-						"download" : "记事本-<?php echo $noteId; ?>.txt",
-					<?php endif; ?>
+					"download" : "<?php echo $filename; ?>",
 					"href" : "data:text/plain,"+$("textarea").val().replace(/\n/g,"%0a").replace(/\#/g,"%23")
 				});
 				document.getElementById("download-a").click();
