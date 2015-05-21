@@ -121,7 +121,7 @@
 	// error_reporting(0);
 
 	//判断是否是第一次使用
-	if( $use_sql == false ){
+	if( !$use_sql ){
 		if( !file_exists('NoteData') ){
 			mkdir('NoteData');
 			if( !file_exists('NoteData')){
@@ -209,7 +209,7 @@
 		setcookie("myNote", $noteId, time()+31536000000);
 
 		//判断是否已有笔记本
-		if( $use_sql == false ){
+		if( !$use_sql ){
 			$this_ID_have_note = file_exists("NoteData/". $noteId);
 		}else{
 			$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $noteId ."'");
@@ -233,7 +233,7 @@
 			$realpasswd = '';
 
 			//检查是这个ID是否有密码
-			if( $use_sql == false ){
+			if( !$use_sql ){
 
 				//打开密码文件
 				$passwd_file = fopen("NoteData/passwd.data","r");
@@ -284,7 +284,7 @@
 				//当前 note 有密码时, 才处理 删除密码的逻辑, 否则 不处理, 因为没有密码, 不需要删除密码
 				if( isset($_POST['delete_passwd']) ){
 
-					if( $use_sql == false ){
+					if( !$use_sql ){
 
 						$passwd_file = fopen("NoteData/passwd.data","a+");
 
@@ -334,7 +334,7 @@
 					if(strlen($password) > 5){
 						$mpass = encrypt_pass($noteId, $password);
 
-						if( $use_sql == false ){
+						if( !$use_sql ){
 							//打开密码文件
 							$passwd_file = fopen("NoteData/passwd.data","a+");
 
@@ -370,7 +370,7 @@
 					$to_save_raw = '<<<-- MarkDown Type Note -->>>'.$to_save_raw;
 				}
 
-				if( $use_sql == false ){
+				if( !$use_sql ){
 					file_put_contents("NoteData/".$noteId, $to_save_raw);
 				}else{
 					$to_save_tmp = $to_save_raw;
@@ -391,7 +391,7 @@
 				}
 			}
 
-			if( $use_sql == false ){
+			if( !$use_sql ){
 				$note_content_to_show = file_get_contents("NoteData/".$noteId);
 			}else{
 				//直接使用上面查询出来的结果, 不再重新查询
@@ -414,16 +414,16 @@
 
 				$IsMd = $_POST['type'] === 'md';//是否为新建 MarkDown 格式的记事本
 
-				$note_content_to_show = $IsMd ? '<<<-- MarkDown Type Note -->>>#MarkDown格式记事本
+				$note_content_to_show = $IsMd ? '#MarkDown格式记事本
 - - -
 在**右侧**编辑记事本，会在**左侧**显示效果。' : '';
 
 				//创建新新文件
-				if( $use_sql == false ){
+				if( !$use_sql ){
 					$note_file = 'NoteData/' . $noteId;
 
 					if( $IsMd ){
-						file_put_contents($note_file, $note_content_to_show);
+						file_put_contents($note_file, '<<<-- MarkDown Type Note -->>>'.$note_content_to_show);
 					}else{
 						touch($note_file);
 					}
