@@ -15,6 +15,9 @@
 	//== Server Config =====================
 
 	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');	//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
+	define('MARK_DOWN_TYPE', '<<<-- MarkDown Type Note -->>>');		//Markdown 格式的标记
+	define('NOTE_DATA', __DIR__ . '/NoteData/');	//Note的数据目录
+	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');
 
 	$use_sql = false;						//是否使用Mysql来存储记事本
 
@@ -38,7 +41,6 @@
 	$sql_table	= "note_data";	//MarkNote使用的表名(自动创建)
 
 	//======================================
-
 
 	function show_error_exit($output){
 		//输出错误信息并终止
@@ -121,15 +123,16 @@
 	// error_reporting(0);
 
 	//判断是否是第一次使用
+
 	if( !$use_sql ){
-		if( !file_exists('NoteData') ){
-			mkdir('NoteData');
-			if( !file_exists('NoteData')){
+		if( !file_exists(NOTE_DATA) ){
+			mkdir(NOTE_DATA);
+			if( !file_exists(NOTE_DATA)){
 				show_error_exit('服务器端错误：无法创建文件,请检查文件系统权限');
 			}
-			touch('NoteData/index.html');
-			touch('NoteData/passwd.data');
-		}else if( !is_dir('NoteData') ){
+			touch(NOTE_DATA . 'index.html');
+			touch(NOTE_PASSWD_FILE);
+		}else if( !is_dir(NOTE_DATA) ){
 			show_error_exit('服务器端错误：错误的数据目录类型.');
 		}
 	}else{
@@ -174,7 +177,7 @@
 	$note_content_to_show = '';//记事本的默认内容
 
 	//开始处理记事本
-	if( $noteId == "" ){
+	if( $noteId == '' ){
 		//如果访问主页
 
 		$url = '';
@@ -198,7 +201,6 @@
 		}
 	}else{
 		//如果指定了ID
-
 		if( !preg_match('/^[A-Za-z0-9]+$/', $noteId) || strlen($noteId) < 3 || strlen($noteId) > 200){
 			//如果ID不符合规范
 			show_error_exit("错误：输入的ID不合法");
@@ -210,7 +212,7 @@
 
 		//判断是否已有笔记本
 		if( !$use_sql ){
-			$this_ID_have_note = file_exists("NoteData/". $noteId);
+			$this_ID_have_note = file_exists(NOTE_DATA . $noteId);
 		}else{
 			$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $noteId ."'");
 			$the_content = mysqli_fetch_array($sql_return);
@@ -236,7 +238,7 @@
 			if( !$use_sql ){
 
 				//打开密码文件
-				$passwd_file = fopen("NoteData/passwd.data","r");
+				$passwd_file = fopen(NOTE_PASSWD_FILE, 'r');
 
 				//读取密码文件
 				while( !feof($passwd_file) ){
@@ -286,7 +288,7 @@
 
 					if( !$use_sql ){
 
-						$passwd_file = fopen("NoteData/passwd.data","a+");
+						$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
 
 						//读取密码文件
 						while( !feof($passwd_file) ){
@@ -298,10 +300,10 @@
 
 							if( $this_line_array[0] === $noteId ){
 								//如果这个ID有密码并在这一行中
-								$passwd_file_content = file_get_contents("NoteData/passwd.data");
+								$passwd_file_content = file_get_contents(NOTE_PASSWD_FILE);
 								$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
 								$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
-								file_put_contents("NoteData/passwd.data", $passwd_file_content_part_1.$passwd_file_content_part_2);
+								file_put_contents(NOTE_PASSWD_FILE, $passwd_file_content_part_1.$passwd_file_content_part_2);
 								//有密码标记为假
 								$passwd = false;
 								break;
@@ -336,7 +338,7 @@
 
 						if( !$use_sql ){
 							//打开密码文件
-							$passwd_file = fopen("NoteData/passwd.data","a+");
+							$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
 
 							//写入密码信息
 							fputs($passwd_file, $noteId.' '.$mpass);
@@ -367,11 +369,11 @@
 				$to_save_raw = $_POST['the_note'];
 
 				if( @$_POST['note_type'] == 'md_note' ){
-					$to_save_raw = '<<<-- MarkDown Type Note -->>>'.$to_save_raw;
+					$to_save_raw = MARK_DOWN_TYPE . $to_save_raw;
 				}
 
 				if( !$use_sql ){
-					file_put_contents("NoteData/".$noteId, $to_save_raw);
+					file_put_contents(NOTE_DATA . $noteId, $to_save_raw);
 				}else{
 					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
@@ -392,15 +394,16 @@
 			}
 
 			if( !$use_sql ){
-				$note_content_to_show = file_get_contents("NoteData/".$noteId);
+				$note_content_to_show = file_get_contents(NOTE_DATA . $noteId);
 			}else{
 				//直接使用上面查询出来的结果, 不再重新查询
 				$note_content_to_show = $the_content['content'];
 			}
 
-			if( strpos($note_content_to_show,'<<-- MarkDown Type Note -->>>') == 1 ){
+			//如果内容里包含 MarkDown 的特定标记, 则自动将标记移除
+			if( strpos($note_content_to_show, MARK_DOWN_TYPE) === 0 ){
 				$page_type = 'md_note';
-				$note_content_to_show = str_replace('<<<-- MarkDown Type Note -->>>','',$note_content_to_show);
+				$note_content_to_show = substr($note_content_to_show, strlen(MARK_DOWN_TYPE));
 			}
 
 			if( @$_GET['html'] === 'yes' ){
@@ -414,16 +417,17 @@
 
 				$IsMd = $_POST['type'] === 'md';//是否为新建 MarkDown 格式的记事本
 
-				$note_content_to_show = $IsMd ? '#MarkDown格式记事本
+
+				$note_content_to_show = $IsMd ? (MARK_DOWN_TYPE . '#MarkDown格式记事本
 - - -
-在**右侧**编辑记事本，会在**左侧**显示效果。' : '';
+在**右侧**编辑记事本，会在**左侧**显示效果。') : '';
 
 				//创建新新文件
-				if( !$use_sql ){
-					$note_file = 'NoteData/' . $noteId;
 
+				if( !$use_sql ){
+					$note_file = NOTE_DATA . $noteId;
 					if( $IsMd ){
-						file_put_contents($note_file, '<<<-- MarkDown Type Note -->>>'.$note_content_to_show);
+						file_put_contents($note_file, $note_content_to_show);
 					}else{
 						touch($note_file);
 					}
@@ -434,6 +438,11 @@
 				$passwd = false;
 
 				$page_type = $IsMd ? 'md_note' : 'text_note';
+
+				//因为MarkDown格式的内容开头有特写的标记,所以此处要将它移除
+				if($IsMd){
+					$note_content_to_show = substr($note_content_to_show, strlen(MARK_DOWN_TYPE));
+				}
 			}
 		}
 
