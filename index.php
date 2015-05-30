@@ -45,8 +45,10 @@
 		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>';
 		echo '<body style="background-color:#eee;margin:8px;">';
 		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
-		echo $output;
-		echo '</div></body></html>';
+		echo '<p style="margin:0 0 5px 0;">'.$output.'</p>';
+		echo '<button onclick="history.go(-1)">< 返回</button>';
+		echo '</div>';
+		echo '</body></html>';
 		exit();
 	}
 
@@ -87,7 +89,7 @@
 		</style>
 	</head>
 	<body>
-		<h3 style="font-weight:400;">请输入密码</h3>
+		<h3 style="font-weight:400;">此记事本有密码, 请输入密码以继续访问</h3>
 		<form action="<?php echo_note_url(); ?>" method="post">
 			<input id="input-passwd" type="password" name="GiveYouPasswd" placeholder="密码" style=""/>
 			<input id="input-submit" type="submit" value="提交" style="" />
@@ -357,6 +359,34 @@
 				}
 			}
 
+			if( isset($_POST['the_set_id']) ){
+				$new_id = $_POST['the_set_id'];
+				if( !preg_match('/^[A-Za-z0-9]+$/', $new_id) || strlen($new_id) < 3 || strlen($new_id) > 200){
+					//如果ID不符合规范
+					show_error_exit("错误：输入的ID不合法");
+				}
+				//判断是否已有笔记本
+				if( !$use_sql ){
+					$this_ID_have_note = file_exists(NOTE_DATA . $new_id);
+				}else{
+					$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $new_id ."'");
+					$the_content = mysqli_fetch_array($sql_return);
+
+					$this_ID_have_note = isset($the_content['ID']) && $the_content['ID'];
+				}
+				if($this_ID_have_note){
+					show_error_exit("错误：输入的ID已存在");
+				}
+
+				if( !$use_sql ){
+					rename(NOTE_DATA.$noteId,NOTE_DATA.$new_id);
+				}else{
+					mysqli_query($notesql,"UPDATE ".$sql_table." SET ID = '".$new_id."' WHERE ID = '".$noteId."'");
+				}
+
+				reLocation($new_id);
+			}
+
 			if(
 				isset($_POST['the_note']) && //有POST过来的 记事本 内容
 				(
@@ -479,7 +509,7 @@
 				margin: 50px 0;
 			}
 			#html-box p{
-				margin: 15px 0;
+				margin: 5px 0 15px 0;
 			}
 			#html-box h2{
 				border-bottom:solid 2px #ddd;
@@ -504,7 +534,8 @@
 			}
 			#html-box code{
 				background-color: #ddd;
-				padding: 2px;
+				padding: 2px 5px;
+				margin: 0px 2px;
 				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 			}
 			:focus {
@@ -512,15 +543,15 @@
 				outline: 0;
 			}
 			::selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 			::-moz-selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 			::-webkit-selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 			/* 设置滚动条的样式 */
@@ -680,6 +711,30 @@ if($JavaScript !== ''){
 				}
 			}
 
+			function id_set_display(){
+
+				if( !is_passwd_set_show ){
+					$('#note-btns-idset-form').slideDown(500);
+					$('#note-main-form-div').animate({height:'-=57px'},500);
+					$("#note-btns-setid-form-input").width($("#note-btns-idset-form").width()-110);
+					is_passwd_set_show = true;
+					<?php if ( $page_type == 'md_note' ) : ?>
+						$("#note-md-edit").animate({height:'-=57px'},500);
+						$("#note-md-show").animate({height:'-=57px'},500);
+						$("#note-md-move").animate({height:'-=57px'},500);
+					<?php endif; ?>
+				}else{
+					$('#note-btns-idset-form').slideUp(500);
+					$('#note-main-form-div').animate({height:'+=57px'},500);
+					is_passwd_set_show = false;
+					<?php if ( $page_type == 'md_note' ) : ?>
+						$("#note-md-edit").animate({height:'+=57px'},500);
+						$("#note-md-show").animate({height:'+=57px'},500);
+						$("#note-md-move").animate({height:'+=57px'},500);
+					<?php endif; ?>
+				}
+			}
+
 			function ajax_save(){
 				if( is_need_save ){
 					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
@@ -697,7 +752,7 @@ if($JavaScript !== ''){
 			}
 
 			function note_change(){
-				$("#note-btns-save-ajax").css({"background-color":"#58BCFF","cursor":"pointer","padding":"9px 20px"}).html("保存");
+				$("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				is_need_save = true;
 			}
 
@@ -812,7 +867,7 @@ if($JavaScript !== ''){
 				font-size: 14px;
 				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				background: #eee;
-				width: 1100px;
+				width: 1200px;
 				margin: 0px auto 10px auto;
 			}
 
@@ -834,17 +889,17 @@ if($JavaScript !== ''){
 			}
 
 			::selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 
 			::-moz-selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 
 			::-webkit-selection {
-				background:#58BCFF;
+				background:#3498DB;
 				color:#fff;
 			}
 
@@ -875,7 +930,7 @@ if($JavaScript !== ''){
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
+				box-shadow:0px 2px 4px rgba(100, 100, 100, 0.2);
 				cursor: pointer;
 				font-size: 14px;
 			}
@@ -889,38 +944,11 @@ if($JavaScript !== ''){
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
 				padding: 10px;
 			}
 
-			/***** 在其他设备上访问对话框 *****/
-			#note-otherdev-background-div{
-				position: fixed;
-				width: 100%;
-				height: 100%;
-				top: 0;
-				left: 0;
-				background-color: rgba(0,0,0,0.2);
-				z-index: 10;
-			}
 
-			#note-otherdev-div{
-				position: fixed;
-				width: 300px;
-				height: 400px;
-				top: 50%;
-				left: 50%;
-				background-color: #fff;
-				z-index: 11;
-				margin: -200px 0 0 -150px;
-				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
-			}
-
-			.note-otherdev-div-divhr{
-				width: 100%;
-				height: 1px;
-				background-color: #aaa;
-			}
 
 			@media screen and (max-width: 1140px){
 
@@ -946,7 +974,7 @@ if($JavaScript !== ''){
 			<style type="text/css">
 				#note-btns-save-ajax{
 					float: right;
-					background: #58BCFF;
+					background: #3498DB;
 					color: #fff;
 				}
 
@@ -963,13 +991,13 @@ if($JavaScript !== ''){
 				}
 
 				#note-main-form-div{
-					width: 1080px;
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					width: 1180px;
+					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
 					background: #fff;
 					padding: 10px;
 				}
 
-				@media screen and (max-width: 1140px){
+				@media screen and (max-width: 1240px){
 
 					body{
 						margin: 0 20px 0 20px;
@@ -987,27 +1015,65 @@ if($JavaScript !== ''){
 					}
 				}
 
-				@media screen and (max-width: 650px){
+				@media screen and (max-width: 760px){
 
 					#note-btns-otherdev-btn{
 						display: none;
 					}
 				}
 
-				@media screen and (max-width: 460px){
+				@media screen and (max-width: 570px){
 
 					#note-btns-download-btn{
 						display: none;
 					}
 				}
 
-				@media screen and (max-width: 420px){
+				@media screen and (max-width: 480px){
 
 					#note-btns-tohtml-btn{
 						display: none;
 					}
 				}
 
+				@media screen and (max-width: 350px){
+
+					#note-btns-changeid-btn{
+						display: none;
+					}
+					#note-btns-passwd-btn{
+						margin-left: 0 !important;
+					}
+				}
+
+				/***** 在其他设备上访问对话框 *****/
+				#note-otherdev-background-div{
+					position: fixed;
+					width: 100%;
+					height: 100%;
+					top: 0;
+					left: 0;
+					background-color: rgba(0,0,0,0.2);
+					z-index: 10;
+				}
+
+				#note-otherdev-div{
+					position: fixed;
+					width: 300px;
+					height: 400px;
+					top: 50%;
+					left: 50%;
+					background-color: #fff;
+					z-index: 11;
+					margin: -200px 0 0 -150px;
+					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
+				}
+
+				.note-otherdev-div-divhr{
+					width: 100%;
+					height: 1px;
+					background-color: #aaa;
+				}
 			</style>
 
 			<!-- [在其他设备上访问此记事本]对话框 -->
@@ -1047,7 +1113,7 @@ if($JavaScript !== ''){
 		<?php if ( $page_type == 'md_note' ) : ?>
 			<style type="text/css">
 				#note-md-show p{
-					margin: 5px 0 15px 0;
+					margin: 5px 0 12px 0;
 				}
 				#note-md-show h2{
 					border-bottom:solid 2px #ddd;
@@ -1079,6 +1145,10 @@ if($JavaScript !== ''){
 					margin: 0px 2px;
 					font-size: 14px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+
+				pre[class*=language-]>code[data-language]::before{
+					border-radius: 0 !important;
 				}
 
 			</style>
@@ -1168,17 +1238,24 @@ if($JavaScript !== ''){
 				<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
 			</form>
 
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-idset-form" style="display:none; margin-top:20px; height:37px;">
+				<input id="note-btns-setid-form-input" type="text" name="the_set_id" placeholder="新ID" class="input" style="width:870px;"/>
+				<input id="note-btns-setid-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
+			</form>
+
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
 
 			<div id="note-btns-div" style="margin:20px 0 0 0;">
 
+				<button id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID" class="btn" onclick="id_set_display();">更换ID</button>
+
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
-					<button title="删除这个记事本的密码" class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
+					<button id="note-btns-passwd-btn" title="删除这个记事本的密码" style="margin-left:20px;" class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
 				<?php else : ?>
-					<button title="给这个记事本设置一个密码" class="btn" onclick="psaawd_set_display();">设置密码</button>
+					<button id="note-btns-passwd-btn" title="给这个记事本设置一个密码" style="margin-left:20px;" class="btn" onclick="psaawd_set_display();">设置密码</button>
 				<?php endif; ?>
 
 				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-download-btn">下载</button>
@@ -1187,9 +1264,9 @@ if($JavaScript !== ''){
 
 				<?php if( $page_type == 'md_note' ) : ?>
 					<?php if ($rewrite_use_better_url): ?>
-						<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank">生成HTML</a>
+						<a title="生成一个网页,网址可直接访问" style="padding:10px 20px;margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank">生成HTML</a>
 					<?php else : ?>
-						<a title="生成一个网页,网址可直接访问" style="margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank">生成HTML</a>
+						<a title="生成一个网页,网址可直接访问" style="padding:10px 20px;margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank">生成HTML</a>
 					<?php endif ?>
 				<?php endif; ?>
 
@@ -1213,7 +1290,7 @@ if($JavaScript !== ''){
 				}
 
 				.homediv{
-					box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
 					background: #fff;
 					display: inline-block;
 					width: 440px;
@@ -1288,7 +1365,7 @@ if($JavaScript !== ''){
 
 				#home-btn-new{
 					margin:460px 0px 0px 0px;
-					background:#58BCFF;
+					background:#3498DB;
 					color:#fff;
 					font-size:24px;
 					padding:9px 154px 9px 154px;
@@ -1296,7 +1373,7 @@ if($JavaScript !== ''){
 
 				#home-btn-go{
 					margin:460px 15px 0px 0px;
-					background:#58BCFF;
+					background:#3498DB;
 					color:#fff;
 					font-size:24px;
 					padding:9px 30px 9px 30px;
@@ -1306,7 +1383,7 @@ if($JavaScript !== ''){
 				#back-to-note{
 					float: right;
 					text-decoration: none;
-					background: #58BCFF;
+					background: #3498DB;
 					color: #fff;
 					font-size: 15px;
 					margin: 8px 0 10px 0;
