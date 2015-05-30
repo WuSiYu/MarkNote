@@ -14,17 +14,16 @@
 
 	//== Server Config =====================
 
-	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');	//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
+	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');			//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
 	define('MARK_DOWN_TYPE', '<<<-- MarkDown Type Note -->>>');		//Markdown 格式的标记
-	define('NOTE_DATA', __DIR__ . '/NoteData/');	//Note的数据目录
-	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');
+	define('NOTE_DATA', __DIR__ . '/NoteData/');					//MarkNote的数据目录
+	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');			//MarkNote的密码存储文件
 
-	$use_sql = false;						//是否使用Mysql来存储记事本
+	$use_sql = false;						//是否使用MySQL来存储记事本
 
 	$rewrite_create_htaccess_file = true;	//是否创建.htaccess文件以尝试实现伪静态
 
 	$rewrite_use_better_url = true;			//是否使用伪静态后的URL(如/记事本名),若环境不支持伪静态则不要开启
-
 	//======================================
 
 
@@ -39,7 +38,6 @@
 	$sql_name	= "marknote";	//MarkNote使用的数据库名
 
 	$sql_table	= "note_data";	//MarkNote使用的表名(自动创建)
-
 	//======================================
 
 	function show_error_exit($output){
@@ -751,39 +749,57 @@ if($JavaScript !== ''){
 						return pos;
 					}
 				})(jQuery);
+
+				var is_focus = true;
+				$(document).ready(function(){
+					the_textarea = $('textarea');
+					the_textarea.focus(function(){is_focus=true;});
+					the_textarea.blur(function(){is_focus=false;});
+				});
+
 				$(document).keydown(function(e){
-					if( e.which == 9 ){
-						var cursor_pos = $('textarea').getCursorPosition();
-						$('textarea').val($('textarea').val().slice(0,cursor_pos)+'\t'+$('textarea').val().slice(cursor_pos));
-						<?php if ( $page_type == 'md_note' ) : ?>
-							document.getElementById("note-md-edit").focus();
-							document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
-						<?php else : ?>
-							document.getElementById("note-text-edit").focus();
-							document.getElementById("note-text-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
-						<?php endif; ?>
-						return false;
-					}
-					if( e.which == 13 ){
-						var cursor_pos = $('textarea').getCursorPosition();
-						var notelines = $('textarea').val().slice(0,cursor_pos).split('\n');
-						var listline = notelines[notelines.length-1];
-						var n = 0;
-						while(listline[n]=='\t'){
-							n+=1;
+					the_textarea = $('textarea');
+
+					if(is_focus){
+						if( e.which == 9 ){
+							var cursor_pos = the_textarea.getCursorPosition();
+							the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\t'+the_textarea.val().slice(cursor_pos));
+							<?php if ( $page_type == 'md_note' ) : ?>
+								document.getElementById("note-md-edit").focus();
+								document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+							<?php else : ?>
+								document.getElementById("note-text-edit").focus();
+								document.getElementById("note-text-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+							<?php endif; ?>
+							return false;
 						}
-						$('textarea').val($('textarea').val().slice(0,cursor_pos)+'\n'+$('textarea').val().slice(cursor_pos));
-						for (i=n; i>0; i--){
-							$('textarea').val($('textarea').val().slice(0,cursor_pos+1)+'\t'+$('textarea').val().slice(cursor_pos+1));
+						if( e.which == 13 ){
+							var cursor_pos = the_textarea.getCursorPosition();
+							var notelines = the_textarea.val().slice(0,cursor_pos).split('\n');
+							var listline = notelines[notelines.length-1];
+							var ntab = 0,nsp = 0;
+							while(listline[ntab]=='\t'){
+								ntab+=1;
+							}
+							while( listline[nsp]==' ' && listline[nsp+1]==' ' && listline[nsp+2]==' ' && listline[nsp+3]==' '){
+								nsp+=4;
+							}
+							the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\n'+the_textarea.val().slice(cursor_pos));
+							for (i=ntab; i>0; i--){
+								the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+'\t'+the_textarea.val().slice(cursor_pos+1));
+							}
+							for (i=nsp; i>0; i--){
+								the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+' '+the_textarea.val().slice(cursor_pos+1));
+							}
+							<?php if ( $page_type == 'md_note' ) : ?>
+								document.getElementById("note-md-edit").focus();
+								document.getElementById("note-md-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
+							<?php else : ?>
+								document.getElementById("note-text-edit").focus();
+								document.getElementById("note-text-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
+							<?php endif; ?>
+							return false;
 						}
-						<?php if ( $page_type == 'md_note' ) : ?>
-							document.getElementById("note-md-edit").focus();
-							document.getElementById("note-md-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
-						<?php else : ?>
-							document.getElementById("note-text-edit").focus();
-							document.getElementById("note-text-edit").setSelectionRange(cursor_pos+n+1,cursor_pos+n+1);
-						<?php endif; ?>
-						return false;
 					}
 				});
 			<?php endif; ?>
