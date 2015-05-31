@@ -104,7 +104,10 @@
 
 	// -----程序从这里开始-----
 
-	// error_reporting(0);
+	// error_reporting(0);					//不显示所以错误提升
+
+	// ini_set("display_errors", "On");		//显示所以错误提升
+	// error_reporting(E_ALL);
 
 	//判断是否是第一次使用
 
