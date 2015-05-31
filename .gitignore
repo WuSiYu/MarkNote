@@ -3,3 +3,6 @@ NoteData/
 
 #过滤自动生成的伪静态配置文件
 .htaccess
+
+#过滤自动生成的配置文件
+NoteConfig.php
