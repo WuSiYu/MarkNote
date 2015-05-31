@@ -12,41 +12,25 @@
 	// 7. 支持伪静态(http://233333.net/记事本名),仅限apache,默认开启,若环境不支持请关闭
 	// 8. 支持使用任意英文和数字作为ID
 
-	//== Server Config =====================
-
+	//=== 选项 =============================
 	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');			//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
 	define('MARK_DOWN_TYPE', '<<<-- MarkDown Type Note -->>>');		//Markdown 格式的标记
-	define('NOTE_DATA', __DIR__ . '/NoteData/');					//MarkNote的数据目录
-	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');			//MarkNote的密码存储文件
-
-	$use_sql = false;						//是否使用MySQL来存储记事本
+	define('NOTE_CONFIG_FILE', __DIR__ . '/NoteConfig.php');		//MarkNote的配置文件(自动生成)
+	define('NOTE_DATA', __DIR__ . '/NoteData/');					//MarkNote的数据目录(自动生成)
+	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');			//MarkNote的密码存储文件(自动生成)
 
 	$rewrite_create_htaccess_file = true;	//是否创建.htaccess文件以尝试实现伪静态
-
-	$rewrite_use_better_url = true;			//是否使用伪静态后的URL(如/记事本名),若环境不支持伪静态则不要开启
 	//======================================
 
+	$rewrite_use_better_url = true;			//是否使用伪静态后的URL(如 http://note.domain/记事本名 ),若环境不支持伪静态则不要开启
 
-	//== SQL Config ========================
-
-	$sql_host	= "localhost";	//MySQL服务器地址
-
-	$sql_user	= "root";		//MySQL用户名
-
-	$sql_passwd	= "";			//MySQL密码
-
-	$sql_name	= "marknote";	//MarkNote使用的数据库名
-
-	$sql_table	= "note_data";	//MarkNote使用的表名(自动创建)
-	//======================================
-
-	function show_error_exit($output){
+	function show_error_exit($output,$show_return=true){
 		//输出错误信息并终止
 		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>';
 		echo '<body style="background-color:#eee;margin:8px;">';
 		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
 		echo '<p style="margin:0 0 5px 0;">'.$output.'</p>';
-		echo '<button onclick="history.go(-1)">< 返回</button>';
+		if($show_return) echo '<button onclick="history.go(-1)">< 返回</button>';
 		echo '</div>';
 		echo '</body></html>';
 		exit();
@@ -124,40 +108,73 @@
 
 	//判断是否是第一次使用
 
-	if( !$use_sql ){
-		if( !file_exists(NOTE_DATA) ){
-			mkdir(NOTE_DATA);
-			if( !file_exists(NOTE_DATA)){
-				show_error_exit('服务器端错误：无法创建文件,请检查文件系统权限');
+	if( !file_exists(NOTE_CONFIG_FILE) ){
+		if( !isset($_POST['mode']) ){
+			show_error_exit('
+				<h2 style="font-weight:100;margin:0;">首次执行: 请选择记事本的存储方式</h2>
+				<br/>
+				<h3 style="font-weight:100;margin:0;">使用文件方式:</h3>
+				<form action="" method="post">
+					<input type="hidden" name="mode" value="file">
+					<button>确定</button>
+				</form>
+				<br/>
+				<h3 style="font-weight:100;margin:0;">使用MySQL方式:</h3>
+				<form action="" method="post">
+					<input type="hidden" name="mode" value="sql">
+						<span style="width:200px;display:inline-block;">数据库主机</span> <input type="text" name="sql_host" placeholder="Host" value="localhost" /><br/>
+						<span style="width:200px;display:inline-block;">数据库用户</span> <input type="text" name="sql_user" placeholder="User" value="root" /><br/>
+						<span style="width:200px;display:inline-block;">密码</span> <input type="text" name="sql_passwd" placeholder="Password" /><br/>
+						<span style="width:200px;display:inline-block;">数据库名</span> <input type="text" name="sql_name" placeholder="Database Name" value="marknote" /><br/>
+						<span style="width:200px;display:inline-block;">使用的数据库表(一般不必修改)</span> <input type="text" name="sql_table" placeholder="Database Table Name" value="note_data"/><br/>
+					<button>确定</button>
+				</form>
+			',false);
+		}else{
+
+			if( $_POST['mode']=='sql' ){
+				$use_sql=true;
+				$sql_host=$_POST['sql_host'];
+				$sql_user=$_POST['sql_user'];
+				$sql_passwd=$_POST['sql_passwd'];
+				$sql_name=$_POST['sql_name'];
+				$sql_table=$_POST['sql_table'];
+			}else{
+				$use_sql=false;
 			}
-			touch(NOTE_DATA . 'index.html');
-			touch(NOTE_PASSWD_FILE);
-		}else if( !is_dir(NOTE_DATA) ){
-			show_error_exit('服务器端错误：错误的数据目录类型.');
-		}
-	}else{
-		$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
-		// mysql_select_db($sql_name, $notesql);
 
-		if( !mysqli_query($notesql,"SELECT * FROM ".$sql_table) ){
+			if( !$use_sql ){
+				if( !file_exists(NOTE_DATA) ){
+					mkdir(NOTE_DATA);
+					if( !file_exists(NOTE_DATA)){
+						show_error_exit('服务器端错误：无法创建文件,请检查文件系统权限');
+					}
+					touch(NOTE_DATA . 'index.html');
+					touch(NOTE_PASSWD_FILE);
+				}else if( !is_dir(NOTE_DATA) ){
+					show_error_exit('服务器端错误：错误的数据目录类型.');
+				}
+			}else{
+				$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
+				if(!$notesql) show_error_exit("服务器端错误：无法连接数据库,请修正数据库连接信息或使用文件存储方式");
 
-			$is_ok = mysqli_query($notesql,"CREATE TABLE ".$sql_table." (
-				num int NOT NULL AUTO_INCREMENT,
-				PRIMARY KEY(num),
-				ID tinytext,
-				passwd tinytext,
-				content longtext
-			)");
+				if( !mysqli_query($notesql,"SELECT * FROM ".$sql_table) ){
 
-			if(!$is_ok){
-				show_error_exit("服务器端错误：无法创建数据库表,请修正数据库连接信息或使用文件存储方式");
+					$is_ok = mysqli_query($notesql,"CREATE TABLE ".$sql_table." (
+						num int NOT NULL AUTO_INCREMENT,
+						PRIMARY KEY(num),
+						ID tinytext,
+						passwd tinytext,
+						content longtext
+					)");
+
+					if(!$is_ok) show_error_exit("服务器端错误：无法创建数据库表,请修正数据库连接信息或使用文件存储方式");
+				}
 			}
-		}
-	}
 
-	//创建伪静态
-	if( !file_exists(".htaccess") && $rewrite_create_htaccess_file ){
-		$htaccess_file_content =
+			//创建伪静态
+			if( !file_exists(".htaccess") && $rewrite_create_htaccess_file ){
+				$htaccess_file_content =
 "### MarkNote RewriteRule start
 <IfModule mod_rewrite.c>
 	RewriteEngine On
@@ -166,7 +183,36 @@
 </IfModule>
 ### MarkNote RewriteRule end
 ";
-		file_put_contents('.htaccess', $htaccess_file_content);
+				file_put_contents('.htaccess', $htaccess_file_content);
+			}
+
+			if( !$use_sql ){
+				$to_config_file='
+<?php
+	$use_sql=false;
+?>
+';
+			}else{
+				$to_config_file='
+<?php
+	$use_sql=true;
+	$sql_host='.$sql_host.';
+	$sql_user='.$sql_user.';
+	$sql_passwd='.$sql_passwd.';
+	$sql_name='.$sql_name.';
+	$sql_table='.$sql_table.';
+?>
+';
+			}
+			file_put_contents(NOTE_CONFIG_FILE, $to_config_file);
+			header("Location: ");
+		}
+	}else{
+		require NOTE_CONFIG_FILE;
+	}
+
+	if($use_sql){
+		$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
 	}
 
 	$noteId = @$_GET['n'];
