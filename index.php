@@ -930,7 +930,7 @@ if($JavaScript !== ''){
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow:0px 2px 4px rgba(100, 100, 100, 0.2);
+				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 				cursor: pointer;
 				font-size: 14px;
 			}
@@ -944,7 +944,7 @@ if($JavaScript !== ''){
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
+				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 				padding: 10px;
 			}
 
@@ -967,7 +967,7 @@ if($JavaScript !== ''){
 			<input type="hidden" name="force_home" value="yes">
 		</form>
 		<!-- MarkNote标题 && 返回主页按钮 -->
-		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;diaplay:inline-block;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
 
 		<!-- 记事本编辑页共用-1 -->
 		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
@@ -992,7 +992,7 @@ if($JavaScript !== ''){
 
 				#note-main-form-div{
 					width: 1180px;
-					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
+					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 					background: #fff;
 					padding: 10px;
 				}
@@ -1066,7 +1066,7 @@ if($JavaScript !== ''){
 					background-color: #fff;
 					z-index: 11;
 					margin: -200px 0 0 -150px;
-					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
+					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 				}
 
 				.note-otherdev-div-divhr{
@@ -1290,7 +1290,7 @@ if($JavaScript !== ''){
 				}
 
 				.homediv{
-					box-shadow: 0px 2px 4px rgba(100, 100, 100, 0.2);
+					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 					background: #fff;
 					display: inline-block;
 					width: 440px;
