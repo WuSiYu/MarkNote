@@ -199,11 +199,11 @@
 				$to_config_file='
 <?php
 	$use_sql=true;
-	$sql_host='.$sql_host.';
-	$sql_user='.$sql_user.';
-	$sql_passwd='.$sql_passwd.';
-	$sql_name='.$sql_name.';
-	$sql_table='.$sql_table.';
+	$sql_host="'.$sql_host.'";
+	$sql_user="'.$sql_user.'";
+	$sql_passwd="'.$sql_passwd.'";
+	$sql_name="'.$sql_name.'";
+	$sql_table="'.$sql_table.'";
 ?>
 ';
 			}
