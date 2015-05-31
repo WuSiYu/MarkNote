@@ -216,6 +216,7 @@
 
 	if($use_sql){
 		$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
+		if(!$notesql) show_error_exit('无法连接数据库');
 	}
 
 	$noteId = @$_GET['n'];
