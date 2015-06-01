@@ -455,8 +455,6 @@
 				}else{
 					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-					// $to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-					// $to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
 					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
 					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
 					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
@@ -476,6 +474,11 @@
 			}else{
 				//直接使用上面查询出来的结果, 不再重新查询
 				$note_content_to_show = $the_content['content'];
+				$note_content_to_show = str_replace("&amp;", "&",$note_content_to_show);
+				$note_content_to_show = str_replace("&#39;", "'",$note_content_to_show);
+				$note_content_to_show = str_replace("&#42;", "\"",$note_content_to_show);
+				$note_content_to_show = str_replace("&#61;", "=",$note_content_to_show);
+				$note_content_to_show = str_replace("&#63;", "?",$note_content_to_show);
 			}
 
 			//如果内容里包含 MarkDown 的特定标记, 则自动将标记移除
