@@ -15,8 +15,8 @@
 	//=== 选项 =============================
 	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');			//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
 	define('MARK_DOWN_TYPE', '<<<-- MarkDown Type Note -->>>');		//Markdown 格式的标记
-	define('NOTE_CONFIG_FILE', __DIR__ . '/NoteConfig.php');		//MarkNote的配置文件(自动生成)
-	define('NOTE_DATA', __DIR__ . '/NoteData/');					//MarkNote的数据目录(自动生成)
+	define('NOTE_CONFIG_FILE', 'NoteConfig.php');					//MarkNote的配置文件(自动生成)
+	define('NOTE_DATA', 'NoteData/');								//MarkNote的数据目录(自动生成)
 	define('NOTE_PASSWD_FILE', NOTE_DATA . 'passwd.data');			//MarkNote的密码存储文件(自动生成)
 
 	$rewrite_create_htaccess_file = true;	//是否创建.htaccess文件以尝试实现伪静态
@@ -26,11 +26,11 @@
 
 	function show_error_exit($output,$show_return=true){
 		//输出错误信息并终止
-		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>';
-		echo '<body style="background-color:#eee;margin:8px;">';
-		echo '<div style="padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
+		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><style>button{border: 0;background: #3498DB;color: #fff;font-size: 15px;padding:5px 10px;box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);</style><title>Error</title></head>';
+		echo '<body style="background-color:#eee;margin:50px auto;width:800px;">';
+		echo '<div style="padding:10px;margin:0;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
 		echo '<p style="margin:0 0 5px 0;">'.$output.'</p>';
-		if($show_return) echo '<button onclick="history.go(-1)">< 返回</button>';
+		if($show_return) echo '<br/><button onclick="history.go(-1)">< 返回</button>';
 		echo '</div>';
 		echo '</body></html>';
 		exit();
@@ -190,14 +190,14 @@
 			}
 
 			if( !$use_sql ){
-				$to_config_file='
-<?php
+				$to_config_file=
+'<?php
 	$use_sql=false;
 ?>
 ';
 			}else{
-				$to_config_file='
-<?php
+				$to_config_file=
+'<?php
 	$use_sql=true;
 	$sql_host="'.$sql_host.'";
 	$sql_user="'.$sql_user.'";
@@ -1441,6 +1441,10 @@ if($JavaScript !== ''){
 					font-size: 15px;
 					margin: 8px 0 10px 0;
 					box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);
+				}
+
+				#home-btn-new:hover,#home-btn-go:hover,#back-to-note:hover{
+					background:#45A9EC;
 				}
 
 				@media screen and (max-width: 1030px){
