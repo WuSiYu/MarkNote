@@ -617,6 +617,9 @@
 			#note-md-show .MathJax_Preview span{
 				font-size: 16px !important;
 			}
+			pre[class*=language-]>code[data-language]::before{
+				border-radius: 0 !important;
+			}
 			:focus {
 				border: none;
 				outline: 0;
@@ -1256,7 +1259,6 @@ if($JavaScript !== ''){
 					font-size: 14px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
-
 				pre[class*=language-]>code[data-language]::before{
 					border-radius: 0 !important;
 				}
