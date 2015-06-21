@@ -26,9 +26,10 @@
 
 	function show_error_exit($output,$show_return=true){
 		//输出错误信息并终止
-		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><style>button{border: 0;background: #3498DB;color: #fff;font-size: 15px;padding:5px 10px;box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);</style><title>Error</title></head>';
+		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+			<style>body{font-family: "文泉驛正黑","Microsoft yahei UI","Microsoft yahei","微软雅黑","Lato",Helvetica,Arial,sans-serif !important;}button{border: 0;background: #3498DB;color: #fff;font-size: 16px;padding:5px 10px;box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);}</style><title>MarkNote</title></head>';
 		echo '<body style="background-color:#eee;margin:50px auto;width:800px;">';
-		echo '<div style="padding:10px;margin:0;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
+		echo '<div style="padding:20px;margin:0;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
 		echo '<p style="margin:0 0 5px 0;">'.$output.'</p>';
 		if($show_return) echo '<br/><button onclick="history.go(-1)">< 返回</button>';
 		echo '</div>';
@@ -114,23 +115,26 @@
 	if( !file_exists(NOTE_CONFIG_FILE) ){
 		if( !isset($_POST['mode']) ){
 			show_error_exit('
-				<h2 style="font-weight:100;margin:0;">首次执行: 请选择记事本的存储方式</h2>
+				<h1 style="font-weight:100;margin:0;"">请选择记事本的存储方式</h1>
 				<br/>
-				<h3 style="font-weight:100;margin:0;">使用文件方式:</h3>
+				<h2 style="font-weight:100;margin:0 0 5px 0;border-bottom:solid 2px #ddd;">使用文件方式</h3>
+				<p style="margin: 5px 0;">点击确定以使用文件方式存储,并自动生成所需文件</p>
 				<form action="" method="post">
 					<input type="hidden" name="mode" value="file">
-					<button>确定</button>
+					<button>确定,使用文件方式</button>
 				</form>
 				<br/>
-				<h3 style="font-weight:100;margin:0;">使用MySQL方式:</h3>
+				<br/>
+				<h2 style="font-weight:100;margin:0 0 5px 0;border-bottom:solid 2px #ddd;">使用MySQL方式</h3>
+				<p style="margin: 5px 0;">填写数据库连接信息,并点击确定以使用MySQL方式存储</p>
 				<form action="" method="post">
 					<input type="hidden" name="mode" value="sql">
-						<span style="width:200px;display:inline-block;">数据库主机</span> <input type="text" name="sql_host" placeholder="Host" value="localhost" /><br/>
-						<span style="width:200px;display:inline-block;">数据库用户</span> <input type="text" name="sql_user" placeholder="User" value="root" /><br/>
-						<span style="width:200px;display:inline-block;">密码</span> <input type="text" name="sql_passwd" placeholder="Password" /><br/>
-						<span style="width:200px;display:inline-block;">数据库名</span> <input type="text" name="sql_name" placeholder="Database Name" value="marknote" /><br/>
-						<span style="width:200px;display:inline-block;">使用的数据库表(一般不必修改)</span> <input type="text" name="sql_table" placeholder="Database Table Name" value="note_data"/><br/>
-					<button>确定</button>
+						<div style="margin-bottom:5px"><span style="width:400px;display:inline-block;">数据库主机</span>								<input type="text" name="sql_host" 	placeholder="Host" value="localhost" /></div>
+						<div style="margin-bottom:5px"><span style="width:400px;display:inline-block;">数据库用户</span>								<input type="text" name="sql_user" 	placeholder="User" value="root" /></div>
+						<div style="margin-bottom:5px"><span style="width:400px;display:inline-block;">密码</span>									<input type="text" name="sql_passwd" placeholder="Password" /></div>
+						<div style="margin-bottom:5px"><span style="width:400px;display:inline-block;">数据库名</span>								<input type="text" name="sql_name" 	placeholder="Database Name" value="marknote" /></div>
+						<div style="margin-bottom:5px"><span style="width:400px;display:inline-block;">使用的数据库表(自动创建,一般不必修改)</span>	<input type="text" name="sql_table" placeholder="Database Table Name" value="note_data"/></div>
+					<button>确定,使用MySQL方式</button>
 				</form>
 			',false);
 		}else{
@@ -543,10 +547,12 @@
 		<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 		<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
 		<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+		<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 		<style type="text/css">
 			body{
-				font-size: 14px;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				font-size: 16px;
+				font-family: Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+				line-height: 27px;
 				background: #eee;
 				width: 1100px;
 				margin: 0px auto 10px auto;
@@ -554,6 +560,14 @@
 			}
 			h1{
 				color: #3498db;
+				font-size: 30px;
+			}
+			a{
+				color: #3498DB;
+				text-decoration: none;
+			}
+			img{
+				max-width: 100%;
 			}
 			#html-box{
 				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
@@ -567,10 +581,13 @@
 			#html-box h2{
 				border-bottom:solid 2px #ddd;
 				margin-bottom: 5px;
+				padding-bottom: 2px;
 			}
 			#html-box blockquote{
-				border: solid 2px #eee;
-				padding: 0 10px;
+				border-left: 5px solid #ccc;
+				padding: 5px 0 1px 10px;
+				margin: 16px 0;
+				background-color: #F2F2F5;
 			}
 			#html-box pre{
 				margin: 5px 0;
@@ -586,6 +603,7 @@
 				border: 1px solid #888;
 			}
 			#html-box code{
+				line-height: 16px;
 				background-color: #ddd;
 				padding: 2px 5px;
 				margin: 0px 2px;
@@ -684,7 +702,7 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
-				$("#note-main-form-div").height(winh-150);
+				$("#note-main-form-div").height(winh-135);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
 					if(winw<=1140){
@@ -693,9 +711,13 @@
 						var box_width = $("#note-main-form-div").width();
 					}
 					var edit_width = box_width / 2;
-					$("#note-md-show").height(winh-160).width( box_width - edit_width - 35 );
-					$("#note-md-edit").height(winh-160).width(edit_width).css("margin-left",box_width - edit_width - 10);
-					$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+					$("#note-md-show").height(winh-145).width( box_width - edit_width - 35 );
+					$("#note-md-edit").height(winh-145).width(edit_width).css("margin-left",box_width - edit_width - 10);
+					$("#note-md-move").height(winh-135).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+
+					MathJax.Hub.Config({
+						showProcessingMessages: false
+					});
 				<?php endif; ?>
 			});
 
@@ -714,9 +736,9 @@ if($JavaScript !== ''){
 					|| document.body.clientWidth;
 
 				if( is_passwd_set_show ){
-					$("#note-main-form-div").height(winh-207);
+					$("#note-main-form-div").height(winh-192);
 				}else{
-					$("#note-main-form-div").height(winh-150);
+					$("#note-main-form-div").height(winh-135);
 				}
 
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
@@ -729,13 +751,13 @@ if($JavaScript !== ''){
 					}
 					var edit_width = box_width / 2;
 					if( is_passwd_set_show ){
-						$("#note-md-show").height(winh-217).width( box_width - edit_width - 35 );
-						$("#note-md-edit").height(winh-217).width(edit_width).css("margin-left",box_width - edit_width - 10);
-						$("#note-md-move").height(winh-207).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+						$("#note-md-show").height(winh-202).width( box_width - edit_width - 35 );
+						$("#note-md-edit").height(winh-202).width(edit_width).css("margin-left",box_width - edit_width - 10);
+						$("#note-md-move").height(winh-192).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 					}else{
-						$("#note-md-show").height(winh-160).width( box_width - edit_width - 35 );
-						$("#note-md-edit").height(winh-160).width(edit_width).css("margin-left",box_width - edit_width - 10);
-						$("#note-md-move").height(winh-150).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+						$("#note-md-show").height(winh-145).width( box_width - edit_width - 35 );
+						$("#note-md-edit").height(winh-145).width(edit_width).css("margin-left",box_width - edit_width - 10);
+						$("#note-md-move").height(winh-135).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 					}
 				<?php endif; ?>
 			}
@@ -918,13 +940,14 @@ if($JavaScript !== ''){
 			body{
 				color: #555;
 				font-size: 14px;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				font-family: Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+				line-height: 27px;
 				background: #eee;
 				width: 1200px;
 				margin: 0px auto 10px auto;
 			}
 
-			input,button{
+			a,input,button{
 				outline: none !important;
 				-webkit-appearance:none;
 				border-radius: 0;
@@ -971,6 +994,19 @@ if($JavaScript !== ''){
 
 			::-webkit-scrollbar-thumb:hover {
 				background: rgba(0,0,0,0.3);
+			}
+
+			a{
+				color: #3498DB;
+				text-decoration: none;
+			}
+
+			img{
+				max-width: 100%;
+			}
+
+			h1{
+				font-size: 30px;
 			}
 
 			h1,h2,h3,h4,h4,h5,h6{
@@ -1036,7 +1072,8 @@ if($JavaScript !== ''){
 					tab-size: 4;-moz-tab-size: 4;-o-tab-size: 4;
 					padding: 0;
 					margin: 0;
-					color: #555;background:#fff;
+					color: #555;
+					background:#FCFCFC;
 					border: 0;
 					resize: none;
 					font-size: 16px;
@@ -1046,7 +1083,7 @@ if($JavaScript !== ''){
 				#note-main-form-div{
 					width: 1180px;
 					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-					background: #fff;
+					background: #FCFCFC;
 					padding: 10px;
 				}
 
@@ -1171,10 +1208,13 @@ if($JavaScript !== ''){
 				#note-md-show h2{
 					border-bottom:solid 2px #ddd;
 					margin-bottom: 5px;
+					padding-bottom: 2px;
 				}
 				#note-md-show blockquote{
-					border: solid 2px #eee;
-					padding: 0 10px;
+					border-left: 5px solid #ccc;
+					padding: 5px 0 1px 10px;
+					margin: 16px 0;
+					background-color: #F2F2F5;
 				}
 				#note-md-show pre{
 					margin: 5px 0;
@@ -1191,7 +1231,16 @@ if($JavaScript !== ''){
 				#note-md-show hr{
 					border: 1px solid #888;
 				}
+				#note-md-show .MathJax_Display,#note-md-show .MathJax_Preview .MJXc-math{
+					padding: 10px 0;
+					background-color: #F2F2F5;
+					display: block;
+				}
+				#note-md-show .MathJax_Preview span{
+					font-size: 16px !important;
+				}
 				#note-md-show code{
+					line-height: 16px;
 					text-shadow: none;
 					background-color: #ddd;
 					padding: 2px 5px;
@@ -1208,6 +1257,7 @@ if($JavaScript !== ''){
 			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
 			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+			<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 			<script type="text/javascript">
 				window.onload = function(){
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
@@ -1246,7 +1296,7 @@ if($JavaScript !== ''){
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
 						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
-						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fff; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo htmlentities($note_content_to_show); ?></textarea>
+						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo htmlentities($note_content_to_show); ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -1256,6 +1306,8 @@ if($JavaScript !== ''){
 				function Editor(input, preview) {
 					this.update = function () {
 						preview.innerHTML = markdown.toHTML(input.value);
+						MathJax.Hub.PreProcess();
+						MathJax.Hub.Update();
 						$("#note-md-show a").attr("target","_blank");
 						codes=$("#note-md-show pre code");
 						langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
@@ -1412,7 +1464,7 @@ if($JavaScript !== ''){
 				#home-input{
 					margin:460px 0px 0px 0px;
 					font-size:23px;
-					width:255px;
+					width:265px;
 					background:#C6E8FF;
 				}
 
