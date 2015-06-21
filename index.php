@@ -609,6 +609,14 @@
 				margin: 0px 2px;
 				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 			}
+			#note-md-show .MathJax_Display,#note-md-show .MathJax_Preview .MJXc-math{
+				padding: 10px 0;
+				background-color: #F2F2F5;
+				display: block;
+			}
+			#note-md-show .MathJax_Preview span{
+				font-size: 16px !important;
+			}
 			:focus {
 				border: none;
 				outline: 0;
@@ -1287,7 +1295,16 @@ if($JavaScript !== ''){
 						oMove.setCapture && oMove.setCapture();
 						return false
 					};
+
+					$("#note-md-edit").scroll(function(){
+						var t = $(this)[0].scrollTop;
+						document.getElementById("note-md-show").scrollTop=t * (document.getElementById("note-md-show").scrollHeight-document.getElementById("note-md-show").offsetHeight) / (document.getElementById("note-md-edit").scrollHeight-document.getElementById("note-md-edit").offsetHeight);
+					});
 				};
+			</script>
+
+			<script type="text/javascript">
+
 			</script>
 
 			<!-- 大框子 -->
