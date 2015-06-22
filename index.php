@@ -455,7 +455,7 @@
 				}
 
 				if( !$use_sql ){
-					file_put_contents(NOTE_DATA . $noteId, $to_save_raw);
+					file_put_contents(NOTE_DATA . $noteId, str_replace("\\", "&#92;",$to_save_raw));
 				}else{
 					$to_save_tmp = $to_save_raw;
 					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
@@ -463,6 +463,7 @@
 					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
 					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
 					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
+					$to_save_tmp = str_replace("\\", "&#92;",$to_save_tmp);
 					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
 				}
 
@@ -475,6 +476,7 @@
 
 			if( !$use_sql ){
 				$note_content_to_show = file_get_contents(NOTE_DATA . $noteId);
+				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
 			}else{
 				//直接使用上面查询出来的结果, 不再重新查询
 				$note_content_to_show = $the_content['content'];
@@ -483,6 +485,7 @@
 				$note_content_to_show = str_replace("&#42;", "\"",$note_content_to_show);
 				$note_content_to_show = str_replace("&#61;", "=",$note_content_to_show);
 				$note_content_to_show = str_replace("&#63;", "?",$note_content_to_show);
+				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
 			}
 
 			//如果内容里包含 MarkDown 的特定标记, 则自动将标记移除
@@ -739,6 +742,7 @@ if($JavaScript !== ''){
 	echo $JavaScript;
 }?>
 
+			//窗口大小改变时调整布局
 			window.onresize = function () {
 				var winh=window.innerHeight
 					|| document.documentElement.clientHeight
@@ -775,6 +779,7 @@ if($JavaScript !== ''){
 				<?php endif; ?>
 			}
 
+			//显示/隐藏 更改密码框
 			function psaawd_set_display(){
 
 				if( !is_passwd_set_show ){
@@ -799,6 +804,7 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//显示/隐藏 更改ID框
 			function id_set_display(){
 
 				if( !is_passwd_set_show ){
@@ -823,6 +829,7 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//使用ajax保存记事本
 			function ajax_save(){
 				if( is_need_save ){
 					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
@@ -839,11 +846,13 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//内容改变时，已保存按钮 变成 保存
 			function note_change(){
 				$("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				is_need_save = true;
 			}
 
+			//显示 在其它设备上范围 对话框
 			function other_dev_show(){
 				$('#note-otherdev-background-div').fadeIn();
 				if(!is_pic_loaded){
@@ -852,6 +861,7 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//记事本的下载
 			function download_note(){
 				$('#download-a').attr({
 					"download" : "<?php echo $filename; ?>",
@@ -860,6 +870,7 @@ if($JavaScript !== ''){
 				document.getElementById("download-a").click();
 			}
 
+			//未保存就关闭的警告
 			window.onbeforeunload = onbeforeunload_handler;
 			function onbeforeunload_handler(){
 				if(is_need_save){
@@ -868,6 +879,7 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//快捷键Ctrl+s,保存
 			$(document).keydown(function(e){
 				if( e.ctrlKey && e.which == 83 ){
 					ajax_save();
@@ -875,7 +887,9 @@ if($JavaScript !== ''){
 				}
 			});
 
-			<?php if ( $page_type == 'md_note' || $page_type == 'text_note' ) : ?>
+			<?php //if ( $page_type == 'md_note' || $page_type == 'text_note' ) : ?>
+				// 15.06.22:使用ace编辑器,此部分废弃
+
 				// (function($, undefined) {
 				// 	$.fn.getCursorPosition = function() {
 				// 		var el = $(this).get(0);
@@ -900,7 +914,6 @@ if($JavaScript !== ''){
 				// 	the_textarea.blur(function(){is_focus=false;});
 				// });
 
-				// 15.06.22:使用ace编辑器,此部分废弃
 				// $(document).keydown(function(e){
 				// 	the_textarea = $('textarea');
 				// 	if(is_focus){
@@ -945,7 +958,7 @@ if($JavaScript !== ''){
 				// 		}
 				// 	}
 				// });
-			<?php endif; ?>
+			<?php //endif; ?>
 		</script>
 		<style type="text/css">
 			/***** 全局 *****/
@@ -1267,13 +1280,17 @@ if($JavaScript !== ''){
 				}
 
 			</style>
+
 			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
 			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
 			<script src="//cdn.bootcss.com/ace/1.1.9/ace.js"></script>
 			<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+			
 			<script type="text/javascript">
 				window.onload = function(){
+
+					//“中线”调两边宽度
 					var oBox = document.getElementById("note-main-form-div"), oLeft = document.getElementById("note-md-show"), oRight = document.getElementById("note-md-edit"), oMove = document.getElementById("note-md-move");
 					oMove.onmousedown = function(e){
 						var winw=window.innerWidth
@@ -1302,9 +1319,14 @@ if($JavaScript !== ''){
 						return false
 					};
 
-					$(".ace_scrollbar-v").attr("id","note-md-edit-scrollbar");
+					$(".ace_scrollbar-v").attr("id","note-md-edit-scrollbar"); //给ACE编辑器的滚动条添加ID
+
+					//滚动条事件
 					$("#note-md-edit-scrollbar").scroll(function(){
-						var t = $(this)[0].scrollTop;
+						var t = $(this)[0].scrollTop; //获取编辑区滚动值
+
+						// 自动同步滚动,算法:
+						// 预览区滚动值 = 编辑区滚动值 * [ (预览区总滚动高度 - 预览区显示高度) / (编辑区总滚动高度 - 编辑区显示高度) ]
 						document.getElementById("note-md-show").scrollTop=t * (document.getElementById("note-md-show").scrollHeight-document.getElementById("note-md-show").offsetHeight) / (document.getElementById("note-md-edit-scrollbar").scrollHeight-document.getElementById("note-md-edit-scrollbar").offsetHeight);
 					});
 				};
@@ -1328,20 +1350,31 @@ if($JavaScript !== ''){
 			</form>
 
 			<script>
+
+				//初始化ACE编辑器
 				var EditorAce = ace.edit("note-md-edit");
-				EditorAce.setTheme("ace/theme/clouds");
+				EditorAce.setTheme("ace/theme/dawn");
 				EditorAce.getSession().setMode("ace/mode/markdown");
 				EditorAce.getSession().setUseWrapMode(true);
+
+				//ACE编辑器的内容改变事件
 				EditorAce.getSession().on('change', function(e) {
 				    update_md();
 				    note_change();
 				});
 
+				//预览区内容更新函数
 				function update_md(){
 					preview=document.getElementById("note-md-show");
+
+					//MarkDown -> HTML
 					preview.innerHTML = markdown.toHTML(EditorAce.getValue());
+
+					//MathJax公式更新
 					MathJax.Hub.PreProcess(document.getElementById("note-md-show"));
 					MathJax.Hub.Update();
+
+					//代码高亮更新
 					$("#note-md-show a").attr("target","_blank");
 					codes=$("#note-md-show pre code");
 					langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
@@ -1363,11 +1396,14 @@ if($JavaScript !== ''){
 						}
 					}
 					Prism.highlightAll();
+
 				}
 
+				//页面加载时的首次更新
 				update_md();
 
 			</script>
+
 		<?php endif; ?>
 		<!-- 记事本编辑页共用-2 -->
 		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
