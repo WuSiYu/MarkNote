@@ -590,6 +590,7 @@
 				background-color: #F2F2F5;
 			}
 			#html-box pre{
+				border-left: 5px solid #ccc;
 				margin: 5px 0;
 				padding: 5px;
 				background-color: #F2F2F5;
@@ -727,7 +728,8 @@
 					$("#note-md-move").height(winh-135).css("left",winw - (winw - box_width)/2 - edit_width - 20);
 
 					MathJax.Hub.Config({
-						showProcessingMessages: false
+						showProcessingMessages: false,
+						elements: ['note-md-show']
 					});
 				<?php endif; ?>
 			});
@@ -827,7 +829,7 @@ if($JavaScript !== ''){
 					$.post("<?php echo_note_url(); ?>",
 					{
 						ajax_save:"yes",
-						the_note:$("textarea").val(),
+						the_note:EditorAce.getValue(),
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
@@ -853,7 +855,7 @@ if($JavaScript !== ''){
 			function download_note(){
 				$('#download-a').attr({
 					"download" : "<?php echo $filename; ?>",
-					"href" : "data:text/plain,"+$("textarea").val().replace(/\n/g,"%0a").replace(/\#/g,"%23")
+					"href" : "data:text/plain,"+EditorAce.getValue().replace(/\n/g,"%0a").replace(/\#/g,"%23")
 				});
 				document.getElementById("download-a").click();
 			}
@@ -874,75 +876,75 @@ if($JavaScript !== ''){
 			});
 
 			<?php if ( $page_type == 'md_note' || $page_type == 'text_note' ) : ?>
-				(function($, undefined) {
-					$.fn.getCursorPosition = function() {
-						var el = $(this).get(0);
-						var pos = 0;
-							if ('selectionStart' in el) {
-							pos = el.selectionStart;
-						} else if ('selection' in document) {
-							el.focus();
-							var Sel = document.selection.createRange();
-							var SelLength = document.selection.createRange().text.length;
-							Sel.moveStart('character', -el.value.length);
-							pos = Sel.text.length - SelLength;
-						}
-						return pos;
-					}
-				})(jQuery);
+				// (function($, undefined) {
+				// 	$.fn.getCursorPosition = function() {
+				// 		var el = $(this).get(0);
+				// 		var pos = 0;
+				// 			if ('selectionStart' in el) {
+				// 			pos = el.selectionStart;
+				// 		} else if ('selection' in document) {
+				// 			el.focus();
+				// 			var Sel = document.selection.createRange();
+				// 			var SelLength = document.selection.createRange().text.length;
+				// 			Sel.moveStart('character', -el.value.length);
+				// 			pos = Sel.text.length - SelLength;
+				// 		}
+				// 		return pos;
+				// 	}
+				// })(jQuery);
 
-				var is_focus = true;
-				$(document).ready(function(){
-					the_textarea = $('textarea');
-					the_textarea.focus(function(){is_focus=true;});
-					the_textarea.blur(function(){is_focus=false;});
-				});
+				// var is_focus = true;
+				// $(document).ready(function(){
+				// 	the_textarea = $('textarea');
+				// 	the_textarea.focus(function(){is_focus=true;});
+				// 	the_textarea.blur(function(){is_focus=false;});
+				// });
 
-				$(document).keydown(function(e){
-					the_textarea = $('textarea');
-
-					if(is_focus){
-						if( e.which == 9 ){
-							var cursor_pos = the_textarea.getCursorPosition();
-							the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\t'+the_textarea.val().slice(cursor_pos));
-							<?php if ( $page_type == 'md_note' ) : ?>
-								document.getElementById("note-md-edit").focus();
-								document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
-							<?php else : ?>
-								document.getElementById("note-text-edit").focus();
-								document.getElementById("note-text-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
-							<?php endif; ?>
-							return false;
-						}
-						if( e.which == 13 ){
-							var cursor_pos = the_textarea.getCursorPosition();
-							var notelines = the_textarea.val().slice(0,cursor_pos).split('\n');
-							var listline = notelines[notelines.length-1];
-							var ntab = 0,nsp = 0;
-							while(listline[ntab]=='\t'){
-								ntab+=1;
-							}
-							while( listline[nsp]==' ' && listline[nsp+1]==' ' && listline[nsp+2]==' ' && listline[nsp+3]==' '){
-								nsp+=4;
-							}
-							the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\n'+the_textarea.val().slice(cursor_pos));
-							for (i=ntab; i>0; i--){
-								the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+'\t'+the_textarea.val().slice(cursor_pos+1));
-							}
-							for (i=nsp; i>0; i--){
-								the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+' '+the_textarea.val().slice(cursor_pos+1));
-							}
-							<?php if ( $page_type == 'md_note' ) : ?>
-								document.getElementById("note-md-edit").focus();
-								document.getElementById("note-md-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
-							<?php else : ?>
-								document.getElementById("note-text-edit").focus();
-								document.getElementById("note-text-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
-							<?php endif; ?>
-							return false;
-						}
-					}
-				});
+				// 15.06.22:使用ace编辑器,此部分废弃
+				// $(document).keydown(function(e){
+				// 	the_textarea = $('textarea');
+				// 	if(is_focus){
+				// 		if( e.which == 9 ){
+				// 			var cursor_pos = the_textarea.getCursorPosition();
+				// 			the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\t'+the_textarea.val().slice(cursor_pos));
+				// 			<?php if ( $page_type == 'md_note' ) : ?>
+				// 				document.getElementById("note-md-edit").focus();
+				// 				document.getElementById("note-md-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+				// 			<?php else : ?>
+				// 				document.getElementById("note-text-edit").focus();
+				// 				document.getElementById("note-text-edit").setSelectionRange(cursor_pos+1,cursor_pos+1);
+				// 			<?php endif; ?>
+				// 			return false;
+				// 		}
+				// 		if( e.which == 13 ){
+				// 			var cursor_pos = the_textarea.getCursorPosition();
+				// 			var notelines = the_textarea.val().slice(0,cursor_pos).split('\n');
+				// 			var listline = notelines[notelines.length-1];
+				// 			var ntab = 0,nsp = 0;
+				// 			while(listline[ntab]=='\t'){
+				// 				ntab+=1;
+				// 			}
+				// 			while( listline[nsp]==' ' && listline[nsp+1]==' ' && listline[nsp+2]==' ' && listline[nsp+3]==' '){
+				// 				nsp+=4;
+				// 			}
+				// 			the_textarea.val(the_textarea.val().slice(0,cursor_pos)+'\n'+the_textarea.val().slice(cursor_pos));
+				// 			for (i=ntab; i>0; i--){
+				// 				the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+'\t'+the_textarea.val().slice(cursor_pos+1));
+				// 			}
+				// 			for (i=nsp; i>0; i--){
+				// 				the_textarea.val(the_textarea.val().slice(0,cursor_pos+1)+' '+the_textarea.val().slice(cursor_pos+1));
+				// 			}
+				// 			<?php if ( $page_type == 'md_note' ) : ?>
+				// 				document.getElementById("note-md-edit").focus();
+				// 				document.getElementById("note-md-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
+				// 			<?php else : ?>
+				// 				document.getElementById("note-text-edit").focus();
+				// 				document.getElementById("note-text-edit").setSelectionRange(cursor_pos+ntab+nsp+1,cursor_pos+ntab+nsp+1);
+				// 			<?php endif; ?>
+				// 			return false;
+				// 		}
+				// 	}
+				// });
 			<?php endif; ?>
 		</script>
 		<style type="text/css">
@@ -1228,6 +1230,7 @@ if($JavaScript !== ''){
 					background-color: #F2F2F5;
 				}
 				#note-md-show pre{
+					border-left: 5px solid #ccc;
 					margin: 5px 0;
 					padding: 5px;
 					background-color: #F2F2F5;
@@ -1267,6 +1270,7 @@ if($JavaScript !== ''){
 			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
 			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
 			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+			<script src="//cdn.bootcss.com/ace/1.1.9/ace.js"></script>
 			<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 			<script type="text/javascript">
 				window.onload = function(){
@@ -1298,9 +1302,10 @@ if($JavaScript !== ''){
 						return false
 					};
 
-					$("#note-md-edit").scroll(function(){
+					$(".ace_scrollbar-v").attr("id","note-md-edit-scrollbar");
+					$("#note-md-edit-scrollbar").scroll(function(){
 						var t = $(this)[0].scrollTop;
-						document.getElementById("note-md-show").scrollTop=t * (document.getElementById("note-md-show").scrollHeight-document.getElementById("note-md-show").offsetHeight) / (document.getElementById("note-md-edit").scrollHeight-document.getElementById("note-md-edit").offsetHeight);
+						document.getElementById("note-md-show").scrollTop=t * (document.getElementById("note-md-show").scrollHeight-document.getElementById("note-md-show").offsetHeight) / (document.getElementById("note-md-edit-scrollbar").scrollHeight-document.getElementById("note-md-edit-scrollbar").offsetHeight);
 					});
 				};
 			</script>
@@ -1315,44 +1320,53 @@ if($JavaScript !== ''){
 					<div style="width:100%; height:100%">
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
 						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
-						<textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php echo htmlentities($note_content_to_show); ?></textarea>
+						<!-- <textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php // echo htmlentities($note_content_to_show); ?></textarea> -->
+						<div id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;"><?php echo htmlentities($note_content_to_show); ?></div>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
 			</form>
 
 			<script>
-				function Editor(input, preview) {
-					this.update = function () {
-						preview.innerHTML = markdown.toHTML(input.value);
-						MathJax.Hub.PreProcess();
-						MathJax.Hub.Update();
-						$("#note-md-show a").attr("target","_blank");
-						codes=$("#note-md-show pre code");
-						langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
-							"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
-							"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
-							"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
-							"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
-						}
-						for(var x=0;x<codes.length;x++){
-							first_line=codes[x].innerHTML.split('\n',1)[0];
-							first_line_lower=first_line.toLowerCase()
-							codes[x].className="language-markup";
-							var l='';
-							for(l in langs){
-								if(first_line_lower==l){
-									codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
-									codes[x].className=langs[l];
-								}
+				var EditorAce = ace.edit("note-md-edit");
+				EditorAce.setTheme("ace/theme/clouds");
+				EditorAce.getSession().setMode("ace/mode/markdown");
+				EditorAce.getSession().setUseWrapMode(true);
+				EditorAce.getSession().on('change', function(e) {
+				    update_md();
+				    note_change();
+				});
+
+				function update_md(){
+					preview=document.getElementById("note-md-show");
+					preview.innerHTML = markdown.toHTML(EditorAce.getValue());
+					MathJax.Hub.PreProcess(document.getElementById("note-md-show"));
+					MathJax.Hub.Update();
+					$("#note-md-show a").attr("target","_blank");
+					codes=$("#note-md-show pre code");
+					langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
+						"[python code]":"language-python","[php code]":"language-php","[perl code]":"language-perl",
+						"[c code]":"language-c","[c++ code]":"language-cpp","[c# code]":"language-csharp",
+						"[java code]":"language-java","[go code]":"language-go","[ruby code]":"language-ruby",
+						"[markdown code]":"language-markdown","[less code]":"language-less","[ini code]":"language-ini"
+					}
+					for(var x=0;x<codes.length;x++){
+						first_line=codes[x].innerHTML.split('\n',1)[0];
+						first_line_lower=first_line.toLowerCase()
+						codes[x].className="language-markup";
+						var l='';
+						for(l in langs){
+							if(first_line_lower==l){
+								codes[x].innerHTML=codes[x].innerHTML.split(first_line+'\n',2)[1];
+								codes[x].className=langs[l];
 							}
 						}
-						Prism.highlightAll();
-					};
-					input.editor = this;
-					this.update();
+					}
+					Prism.highlightAll();
 				}
-				new Editor(document.getElementById("note-md-edit"), document.getElementById("note-md-show"));
+
+				update_md();
+
 			</script>
 		<?php endif; ?>
 		<!-- 记事本编辑页共用-2 -->
