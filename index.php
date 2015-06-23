@@ -105,10 +105,13 @@
 
 	// -----程序从这里开始-----
 
-	// error_reporting(0);					//不显示所以错误提升
+	// error_reporting(0);					//不显示所以错误提示
 
-	// ini_set("display_errors", "On");		//显示所以错误提升
+	// ini_set("display_errors", "On");		//显示所以错误提示
 	// error_reporting(E_ALL);
+
+	$the_markdown_type = str_replace("<", "&lt;",MARK_DOWN_TYPE);
+	$the_markdown_type = str_replace(">", "&gt;",$the_markdown_type);
 
 	//判断是否是第一次使用
 
@@ -451,10 +454,12 @@
 				$to_save_raw = $_POST['the_note'];
 
 				if( @$_POST['note_type'] == 'md_note' ){
-					$to_save_raw = MARK_DOWN_TYPE . $to_save_raw;
+					$to_save_raw = $the_markdown_type . $to_save_raw;
 				}
 
 				if( !$use_sql ){
+					$to_save_raw = str_replace("<", "&lt;",$to_save_raw);
+					$to_save_raw = str_replace(">", "&gt;",$to_save_raw);
 					file_put_contents(NOTE_DATA . $noteId, str_replace("\\", "&#92;",$to_save_raw));
 				}else{
 					$to_save_tmp = $to_save_raw;
@@ -464,6 +469,8 @@
 					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
 					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
 					$to_save_tmp = str_replace("\\", "&#92;",$to_save_tmp);
+					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
 					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
 				}
 
@@ -477,6 +484,8 @@
 			if( !$use_sql ){
 				$note_content_to_show = file_get_contents(NOTE_DATA . $noteId);
 				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
+				$note_content_to_show = str_replace("<", "&lt;",$note_content_to_show);
+				$note_content_to_show = str_replace(">", "&gt;",$note_content_to_show);
 			}else{
 				//直接使用上面查询出来的结果, 不再重新查询
 				$note_content_to_show = $the_content['content'];
@@ -486,12 +495,15 @@
 				$note_content_to_show = str_replace("&#61;", "=",$note_content_to_show);
 				$note_content_to_show = str_replace("&#63;", "?",$note_content_to_show);
 				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
+				$note_content_to_show = str_replace("<", "&lt;",$note_content_to_show);
+				$note_content_to_show = str_replace(">", "&gt;",$note_content_to_show);
+
 			}
 
 			//如果内容里包含 MarkDown 的特定标记, 则自动将标记移除
-			if( strpos($note_content_to_show, MARK_DOWN_TYPE) === 0 ){
+			if( strpos($note_content_to_show, $the_markdown_type) === 0 ){
 				$page_type = 'md_note';
-				$note_content_to_show = substr($note_content_to_show, strlen(MARK_DOWN_TYPE));
+				$note_content_to_show = substr($note_content_to_show, strlen($the_markdown_type));
 			}
 
 			if( @$_GET['html'] === 'yes' ){
@@ -506,7 +518,7 @@
 				$IsMd = $_POST['type'] === 'md';//是否为新建 MarkDown 格式的记事本
 
 
-				$note_content_to_show = $IsMd ? (MARK_DOWN_TYPE . '#MarkDown格式记事本
+				$note_content_to_show = $IsMd ? ($the_markdown_type . '#MarkDown格式记事本
 - - -
 在**右侧**编辑记事本，会在**左侧**显示效果。') : '';
 
@@ -529,7 +541,7 @@
 
 				//因为MarkDown格式的内容开头有特写的标记,所以此处要将它移除
 				if($IsMd){
-					$note_content_to_show = substr($note_content_to_show, strlen(MARK_DOWN_TYPE));
+					$note_content_to_show = substr($note_content_to_show, strlen($the_markdown_type));
 				}
 			}
 		}
@@ -666,7 +678,7 @@
 				}
 			}
 		</style>
-		<div id="html-box"><?php echo htmlentities($note_content_to_show); ?></div>
+		<div id="html-box"><?php echo $note_content_to_show; ?></div>
 		<script type="text/javascript">
 			document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
 			$("#html-box a").attr("target","_blank");
@@ -1219,7 +1231,7 @@ if($JavaScript !== ''){
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%"><?php echo htmlentities($note_content_to_show); ?></textarea>
+						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -1343,7 +1355,7 @@ if($JavaScript !== ''){
 						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
 						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
 						<!-- <textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php // echo htmlentities($note_content_to_show); ?></textarea> -->
-						<div id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;"><?php echo htmlentities($note_content_to_show); ?></div>
+						<div id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;"><?php echo $note_content_to_show; ?></div>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
