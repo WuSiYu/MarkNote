@@ -710,9 +710,9 @@
 			var is_pic_loaded = false;
 
 			$(document).ready(function(){
-				$("#note-btns-save-form").hide();
-				$("#note-btns-save-ajax").show();
-				$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
+				$("#note-btns-save-ajax-div").css({"background-color":"#34495E","cursor":"default"});
+				$("#note-btns-save-ajax-div").addClass("note-btns-save-ajax-saved");
+				$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
 
 				$('#note-btns-setpasswd-form-btn').click(function(){
 					if(($('#note-btns-setpasswd-form-input').val()+'').length < 6){
@@ -729,18 +729,16 @@
 					|| document.documentElement.clientWidth
 					|| document.body.clientWidth;
 
-				$("#note-main-form-div").height(winh-135);
+				$("#note-main-form-div").height(winh-48);
+				$("textarea").height(winh-68);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
-					if(winw<=1140){
-						var box_width = winw-60;
-					}else{
-						var box_width = $("#note-main-form-div").width();
-					}
+					// var box_width = $("#note-main-form-div").width();
+					var box_width = winw;
 					var edit_width = box_width / 2;
-					$("#note-md-show").height(winh-145).width( box_width - edit_width - 35 );
-					$("#note-md-edit").height(winh-145).width(edit_width).css("margin-left",box_width - edit_width - 10);
-					$("#note-md-move").height(winh-135).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+					$("#note-md-show").height(winh-88).width( box_width - edit_width - 95 );
+					$("#note-md-edit").height(winh-48).width(edit_width).css("margin-left",box_width - edit_width);
+					$("#note-md-move").height(winh-48).css("left",winw - (winw - box_width)/2 - edit_width - 10);
 
 					MathJax.Hub.Config({
 						showProcessingMessages: false,
@@ -765,28 +763,26 @@ if($JavaScript !== ''){
 					|| document.body.clientWidth;
 
 				if( is_passwd_set_show ){
-					$("#note-main-form-div").height(winh-192);
+					$("#note-main-form-div").height(winh-88);
+					$("textarea").height(winh-108);
 				}else{
-					$("#note-main-form-div").height(winh-135);
+					$("#note-main-form-div").height(winh-48);
+					$("textarea").height(winh-68);
 				}
 
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-110);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
-					if(winw<=1140){
-						var box_width = winw-60;
-					}else{
-						var box_width = $("#note-main-form-div").width();
-					}
+					var box_width = winw;
 					var edit_width = box_width / 2;
 					if( is_passwd_set_show ){
-						$("#note-md-show").height(winh-202).width( box_width - edit_width - 35 );
-						$("#note-md-edit").height(winh-202).width(edit_width).css("margin-left",box_width - edit_width - 10);
-						$("#note-md-move").height(winh-192).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+						$("#note-md-show").height(winh-128).width( box_width - edit_width - 95 );
+						$("#note-md-edit").height(winh-88).width(edit_width).css("margin-left",box_width - edit_width);
+						$("#note-md-move").height(winh-88).css("left",winw - (winw - box_width)/2 - edit_width - 10);
 					}else{
-						$("#note-md-show").height(winh-145).width( box_width - edit_width - 35 );
-						$("#note-md-edit").height(winh-145).width(edit_width).css("margin-left",box_width - edit_width - 10);
-						$("#note-md-move").height(winh-135).css("left",winw - (winw - box_width)/2 - edit_width - 20);
+						$("#note-md-show").height(winh-88).width( box_width - edit_width - 95 );
+						$("#note-md-edit").height(winh-48).width(edit_width).css("margin-left",box_width - edit_width);
+						$("#note-md-move").height(winh-48).css("left",winw - (winw - box_width)/2 - edit_width - 10);
 					}
 				<?php endif; ?>
 			}
@@ -844,7 +840,9 @@ if($JavaScript !== ''){
 			//使用ajax保存记事本
 			function ajax_save(){
 				if( is_need_save ){
-					$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
+					// $("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
+					$("#note-btns-save-ajax-div").css({"background-color":"#34495E","cursor":"wait"});
+					$("#note-btns-save-ajax").css({"cursor":"wait"}).html("正在保存");
 					$.post("<?php echo_note_url(); ?>",
 					{
 						ajax_save:"yes",
@@ -852,7 +850,10 @@ if($JavaScript !== ''){
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						$("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
+						// $("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
+						$("#note-btns-save-ajax-div").css({"background-color":"#34495E","cursor":"default"});
+						$("#note-btns-save-ajax-div").addClass("note-btns-save-ajax-saved");
+						$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
 						is_need_save = false;
 					});
 				}
@@ -860,7 +861,10 @@ if($JavaScript !== ''){
 
 			//内容改变时，已保存按钮 变成 保存
 			function note_change(){
-				$("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer","padding":"9px 20px"}).html("保存");
+				$("#note-btns-save-ajax-div").css({"background-color":"#3498DB","cursor":"pointer"});
+				$("#note-btns-save-ajax-div").removeClass("note-btns-save-ajax-saved");
+				// $("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer","padding":"9px 20px"}).html("保存");
+				$("#note-btns-save-ajax").css({"cursor":"pointer"}).html("保存");
 				is_need_save = true;
 			}
 
@@ -980,7 +984,7 @@ if($JavaScript !== ''){
 				font-size: 14px;
 				font-family: Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 				line-height: 27px;
-				background: #eee;
+				background: #fcfcfc;
 				width: 1200px;
 				margin: 0px auto 10px auto;
 			}
@@ -1075,15 +1079,46 @@ if($JavaScript !== ''){
 				padding: 10px;
 			}
 
+			#header{
+				width: 100%;
+				background-color: #34495E;
+				height: 48px;
+			}
 
+			.header-title{
+				display: inline-block;
+				height: 24px;
+				padding: 12px 16px;
+				float: left;
+			}
 
-			@media screen and (max-width: 1140px){
+			.header-title:hover{
+				/*background-color: #2387CA;*/
+			}
 
-				body{
-					margin: 0 20px 0 20px;
-					width: auto;
-				}
+			.header-btn{
+				display: inline-block;
+				height: 24px;
+				padding: 10px 20px 14px 17px;
+				float: right;
+			}
 
+			.header-btn:hover{
+				background-color: #2387CA;
+			}
+
+			.header-btn button{
+				color: #fff;
+				background-color: transparent;
+				border: 0px;
+				font-size: 16px;
+				padding: 0;
+				margin: 0;
+			}
+
+			.header-btn button div, .header-btn button span,
+			.header-btn a div, .header-btn a span{
+				vertical-align: middle;
 			}
 
 		</style>
@@ -1093,16 +1128,29 @@ if($JavaScript !== ''){
 		<form action="./" method="post" style="display:none;" id="force-home-form">
 			<input type="hidden" name="force_home" value="yes">
 		</form>
-		<!-- MarkNote标题 && 返回主页按钮 -->
-		<h1 title="首页" style="margin:8px 0 8px 0;display:inline-block;background:#eee;font-size:28px;color:#555;border:0;padding:0;cursor:pointer;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
 
 		<!-- 记事本编辑页共用-1 -->
 		<?php if( $page_type == 'text_note' || $page_type == 'md_note' ) : ?>
+			<link href="//cdn.bootcss.com/evil-icons/1.7.6/evil-icons.min.css" rel="stylesheet">
+			<script src="//cdn.bootcss.com/evil-icons/1.7.6/evil-icons.min.js"></script>
 			<style type="text/css">
+
+				html{
+					overflow: hidden;
+				}
+
+				body{
+					width: 100%;
+				}
+
 				#note-btns-save-ajax{
-					float: right;
-					background: #3498DB;
+					padding: 0;
+					margin: 0;
 					color: #fff;
+				}
+
+				.note-btns-save-ajax-saved:hover{
+					background-color: #34495E !important;
 				}
 
 				textarea{
@@ -1118,13 +1166,26 @@ if($JavaScript !== ''){
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				}
 
-				#note-main-form-div{
+				/*textarea{
+					line-height: 17px;
+					tab-size: 4;-moz-tab-size: 4;-o-tab-size: 4;
+					padding: 0;
+					margin: 0;
+					color: #555;
+					background:#FCFCFC;
+					border: 0;
+					resize: none;
+					font-size: 16px;
+					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				}*/
+
+				/*#note-main-form-div{
 					width: 1180px;
 					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 					background: #FCFCFC;
 					padding: 10px;
-				}
-
+				}*/
+/*
 				@media screen and (max-width: 1240px){
 
 					body{
@@ -1141,7 +1202,7 @@ if($JavaScript !== ''){
 						width: 100%;
 						margin: 0;
 					}
-				}
+				}*/
 
 				@media screen and (max-width: 760px){
 
@@ -1174,6 +1235,20 @@ if($JavaScript !== ''){
 					}
 				}
 
+				<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwdset-form" style="display:none; margin-top:20px; height:37px;">
+					<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;"/>
+					<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
+				</form>
+
+				<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-idset-form" style="display:none; margin-top:20px; height:37px;">
+					<input id="note-btns-setid-form-input" type="text" name="the_set_id" placeholder="新ID" class="input" style="width:870px;"/>
+					<input id="note-btns-setid-form-btn" type="submit" value="设置" class="btn" style="float:right;"/>
+				</form>
+
+				<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
+					<input type="hidden" name="delete_passwd" value="yes" />
+				</form>
+
 				/***** 在其他设备上访问对话框 *****/
 				#note-otherdev-background-div{
 					position: fixed;
@@ -1202,6 +1277,7 @@ if($JavaScript !== ''){
 					height: 1px;
 					background-color: #aaa;
 				}
+
 			</style>
 
 			<!-- [在其他设备上访问此记事本]对话框 -->
@@ -1225,11 +1301,53 @@ if($JavaScript !== ''){
 				</div>
 			</div>
 		<?php endif; ?>
+
+
 		<!-- 纯文本记事本编辑页 -->
+
 		<?php if ( $page_type == 'text_note' ) : ?>
+
+			<div id="header">
+
+				<!-- MarkNote标题 && 返回主页按钮 -->
+				<div class="header-title">
+					<h1 title="首页" style="display:inline-block;font-size:24px;color:#FCFCFC;border:0;padding:0;cursor:pointer;margin-top:-3px;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+				</div>
+
+				<!-- 保存 -->
+				<div class="header-btn" id="note-btns-save-ajax-div" style="padding: 12px 20px;">
+					<button title="也可按Ctrl+S保存" id="note-btns-save-ajax" onclick="ajax_save();">保存</button>
+				</div>
+
+
+				<div class="header-btn">
+					<button title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
+				</div>
+
+				<!-- 密码 设置 && 删除 表单+按钮 -->
+				<div class="header-btn">
+					<?php if($passwd) : ?>
+						<button id="note-btns-passwd-btn" title="删除这个记事本的密码" onclick="$('#note-btns-passwddelete-form').submit();"><div data-icon="ei-unlock"></div><span>删除密码</span></button>
+					<?php else : ?>
+						<button id="note-btns-passwd-btn" title="给这个记事本设置一个密码" onclick="psaawd_set_display();"><div data-icon="ei-lock"></div><span>设置密码</span></button>
+					<?php endif; ?>
+				</div>
+
+				<a id="download-a" style="display:none"></a>
+
+				<div class="header-btn">
+					<button title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>
+				</div>
+
+				<div class="header-btn">
+					<button id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
+				</div>
+
+			</div>
+
 			<!-- 大框子 -->
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
-				<div id="note-main-form-div">
+				<div id="note-main-form-div" style="padding: 10px">
 					<div style="width:100%; height:100%">
 						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%"><?php echo $note_content_to_show; ?></textarea>
 					</div>
@@ -1237,8 +1355,57 @@ if($JavaScript !== ''){
 				<input type="hidden" name="save" value="yes" />
 			</form>
 		<?php endif; ?>
+
+
 		<!-- MarkDown记事本编辑页 -->
 		<?php if ( $page_type == 'md_note' ) : ?>
+
+			<div id="header">
+
+				<!-- MarkNote标题 && 返回主页按钮 -->
+				<div class="header-title">
+					<h1 title="首页" style="display:inline-block;font-size:24px;color:#FCFCFC;border:0;padding:0;cursor:pointer;margin-top:-3px;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+				</div>
+
+				<!-- 保存 -->
+				<div class="header-btn" id="note-btns-save-ajax-div" style="padding: 12px 20px;">
+					<button title="也可按Ctrl+S保存" id="note-btns-save-ajax" onclick="ajax_save();">保存</button>
+				</div>
+
+
+				<div class="header-btn">
+					<button title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
+				</div>
+
+				<!-- 密码 设置 && 删除 表单+按钮 -->
+				<div class="header-btn">
+					<?php if($passwd) : ?>
+						<button id="note-btns-passwd-btn" title="删除这个记事本的密码" onclick="$('#note-btns-passwddelete-form').submit();"><div data-icon="ei-unlock"></div><span>删除密码</span></button>
+					<?php else : ?>
+						<button id="note-btns-passwd-btn" title="给这个记事本设置一个密码" onclick="psaawd_set_display();"><div data-icon="ei-lock"></div><span>设置密码</span></button>
+					<?php endif; ?>
+				</div>
+
+				<a id="download-a" style="display:none"></a>
+
+				<div class="header-btn">
+					<?php if ($rewrite_use_better_url): ?>
+						<a title="生成一个网页,网址可直接访问" style="text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank"><div data-icon="ei-external-link"></div><span>生成HTML</span></a>
+					<?php else : ?>
+						<a title="生成一个网页,网址可直接访问" style="text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank"><div data-icon="ei-external-link"></div><span>生成HTML</span></a>
+					<?php endif ?>
+				</div>
+
+				<div class="header-btn">
+					<button title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>
+				</div>
+
+				<div class="header-btn">
+					<button id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
+				</div>
+
+			</div>
+
 			<style type="text/css">
 				#note-md-show p{
 					margin: 5px 0 12px 0;
@@ -1298,7 +1465,7 @@ if($JavaScript !== ''){
 			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
 			<script src="//cdn.bootcss.com/ace/1.1.9/ace.js"></script>
 			<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-			
+
 			<script type="text/javascript">
 				window.onload = function(){
 
@@ -1317,9 +1484,9 @@ if($JavaScript !== ''){
 							iT < (winw-oBox.clientWidth)/2 + 100 && (iT = (winw-oBox.clientWidth)/2 + 100);
 							iT > winw-(winw-oBox.clientWidth)/2 - 100 && (iT = winw-(winw-oBox.clientWidth)/2 - 100);
 							oMove.style.left  = iT + "px";
-							oLeft.style.width = iT - (winw-oBox.clientWidth)/2 -25 + "px";
-							oRight.style.width = oBox.clientWidth - iT - 30 + (winw-oBox.clientWidth)/2 + "px";
-							oRight.style.marginLeft = iT - (winw-oBox.clientWidth)/2 + "px";
+							oLeft.style.width = iT - (winw-oBox.clientWidth)/2 - 85 + "px";
+							oRight.style.width = oBox.clientWidth - iT - 10 + (winw-oBox.clientWidth)/2 + "px";
+							oRight.style.marginLeft = iT - (winw-oBox.clientWidth)/2 + 10 + "px";
 							return false
 						};
 						document.onmouseup = function(){
@@ -1352,10 +1519,10 @@ if($JavaScript !== ''){
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div">
 					<div style="width:100%; height:100%">
-						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto; padding:5px;"></div>
-						<div id="note-md-move" style="height:100%;width:5px;background-color:#eee;position: absolute;cursor: ew-resize;"></div>
+						<div id="note-md-show" style="position: absolute;width:49%; height:100%; font-size:16px; overflow:auto;padding:20px 40px;"></div>
+						<div id="note-md-move" style="height:100%;width:5px;background-color:#ccc;position: absolute;cursor: ew-resize;"></div>
 						<!-- <textarea id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;" spellcheck="false" oninput="this.editor.update();note_change();" autofocus="autofocus" name="the_note" ><?php // echo htmlentities($note_content_to_show); ?></textarea> -->
-						<div id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc; padding:5px; font-size:14px;"><?php echo $note_content_to_show; ?></div>
+						<div id="note-md-edit" style="position: absolute;overflow:auto;width:48%; height:100%; float:right; background-color:#fcfcfc;font-size:14px;"><?php echo $note_content_to_show; ?></div>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
@@ -1432,37 +1599,6 @@ if($JavaScript !== ''){
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
 				<input type="hidden" name="delete_passwd" value="yes" />
 			</form>
-
-			<div id="note-btns-div" style="margin:20px 0 0 0;">
-
-				<button id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID" class="btn" onclick="id_set_display();">更换ID</button>
-
-				<!-- 密码 设置 && 删除 表单+按钮 -->
-				<?php if($passwd) : ?>
-					<button id="note-btns-passwd-btn" title="删除这个记事本的密码" style="margin-left:20px;" class="btn" onclick="$('#note-btns-passwddelete-form').submit();">删除密码</button>
-				<?php else : ?>
-					<button id="note-btns-passwd-btn" title="给这个记事本设置一个密码" style="margin-left:20px;" class="btn" onclick="psaawd_set_display();">设置密码</button>
-				<?php endif; ?>
-
-				<button title="将记事本的内容以文件的方式下载" style="margin-left:20px;" class="btn" onclick="download_note();" id="note-btns-download-btn">下载</button>
-
-				<a id="download-a" style="display:none"></a>
-
-				<?php if( $page_type == 'md_note' ) : ?>
-					<?php if ($rewrite_use_better_url): ?>
-						<a title="生成一个网页,网址可直接访问" style="padding:10px 20px;margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank">生成HTML</a>
-					<?php else : ?>
-						<a title="生成一个网页,网址可直接访问" style="padding:10px 20px;margin-left:20px;text-decoration:none;" class="btn" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank">生成HTML</a>
-					<?php endif ?>
-				<?php endif; ?>
-
-				<button title="获取记事本ID并生成二维码" style="margin-left:20px;" class="btn" onclick="other_dev_show();" id="note-btns-otherdev-btn">在其它设备上访问</button>
-
-				<!-- 对于老式浏览器的传统表单保存,在现代浏览器中会自动隐藏 -->
-				<button title="也可按Ctrl+S保存" id="note-btns-save-form" class="btn" onclick="document.getElementById('note-main-form').submit();">保存</button>
-
-				<!-- 对于现代浏览器的ajax保存,在现代浏览器中会自动显示 -->
-				<button title="也可按Ctrl+S保存" id="note-btns-save-ajax" style="display:none;" class="btn" onclick="ajax_save();">保存</button>
 
 		<?php endif; ?>
 		<!-- 主页HTML -->
