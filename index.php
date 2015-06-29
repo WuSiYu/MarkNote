@@ -864,7 +864,6 @@ if($JavaScript !== ''){
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						// $("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"default","padding":"9px 20px"}).html("已保存");
 						$("#note-btns-save-ajax").css({"background-color":"#34495E","cursor":"default"});
 						$("#note-btns-save-ajax").addClass("note-btns-save-ajax-saved");
 						$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
@@ -877,7 +876,6 @@ if($JavaScript !== ''){
 			function note_change(){
 				$("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer"});
 				$("#note-btns-save-ajax").removeClass("note-btns-save-ajax-saved");
-				// $("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer","padding":"9px 20px"}).html("保存");
 				$("#note-btns-save-ajax").css({"cursor":"pointer"}).html("保存");
 				is_need_save = true;
 			}
@@ -895,7 +893,11 @@ if($JavaScript !== ''){
 			function download_note(){
 				$('#download-a').attr({
 					"download" : "<?php echo $filename; ?>",
-					"href" : "data:text/plain,"+EditorAce.getValue().replace(/\n/g,"%0a").replace(/\#/g,"%23")
+					<?php if ( $page_type == 'md_note' ) : ?>
+						"href" : "data:text/plain,"+EditorAce.getValue().replace(/\n/g,"%0a").replace(/\#/g,"%23")
+					<?php else : ?>
+						"href" : "data:text/plain,"+$("textarea").val().replace(/\n/g,"%0a").replace(/\#/g,"%23")
+					<?php endif; ?>
 				});
 				document.getElementById("download-a").click();
 			}
@@ -1120,20 +1122,6 @@ if($JavaScript !== ''){
 				background-color: #2387CA !important;
 			}
 
-			/*.header-btn button{
-				color: #fff;
-				background-color: transparent;
-				border: 0px;
-				font-size: 16px;
-				padding: 0;
-				margin: 0;
-			}
-
-			.header-btn button div, .header-btn button span,
-			.header-btn a div, .header-btn a span{
-				vertical-align: middle;
-			}*/
-
 			.header-btn{
 				color: #fff;
 				background-color: transparent;
@@ -1142,8 +1130,8 @@ if($JavaScript !== ''){
 				margin: 0;
 			}
 
-			.header-btn div, .header-btn span{
-				vertical-align: middle;
+			.header-btn div{
+				margin-bottom: -7px;
 			}
 
 		</style>
