@@ -841,6 +841,7 @@
 
 				$("#note-main-form-div").height(winh-48);
 				$("textarea").height(winh-68);
+				$("#note-mynote").height(winh-48);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
 					// var box_width = $("#note-main-form-div").width();
@@ -882,6 +883,8 @@ if($JavaScript !== ''){
 
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-120);
 				$("#note-btns-idset-form-input").width($("#note-btns-passwdset-form").width()-120);
+
+				$("#note-mynote").height(winh-48);
 
 				<?php if ( $page_type == 'md_note' ) : ?>
 					var box_width = winw;
@@ -1477,8 +1480,8 @@ if($JavaScript !== ''){
 
 
 			<?php if(isset($username)) { ?>
-				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow:hidden;color:#fff;">
-					<div style="background-color:#2977AB;height:28px;width:100%;padding:6px 10px;">登入用户: <?php echo $username ?></div>
+				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
+					<div style="background-color:#2977AB;height:28px;width:230px;padding:6px 10px;">登入用户: <?php echo $username ?></div>
 					<div style="padding:5px 10px;">记事本: </div>
 					
 					<?php
@@ -1537,7 +1540,7 @@ if($JavaScript !== ''){
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-main-form" style="margin:0 auto;">
 				<div id="note-main-form-div" style="padding: 10px;background-color:#eee;">
 					<div style="width:100%; height:100%">
-						<textarea id="note-text-edit" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%;background-color:#eee;"><?php echo $note_content_to_show; ?></textarea>
+						<textarea id="note-text-edit" placeholder="在这里书写" autofocus="autofocus" spellcheck="false" name="the_note" oninput="note_change();" style="width:100%; height:100%;background-color:#eee;"><?php echo $note_content_to_show; ?></textarea>
 					</div>
 				</div>
 				<input type="hidden" name="save" value="yes" />
