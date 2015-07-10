@@ -810,7 +810,7 @@
 		</style>
 		<div id="html-box"><?php echo $note_content_to_show; ?></div>
 		<script type="text/javascript">
-			document.getElementById("html-box").innerHTML = markdown.toHTML($("#html-box").text());
+			document.getElementById("html-box").innerHTML = markdown.toHTML( $("#html-box").text().replace(/\[公开HTML页面\]/g, "") );
 			$("#html-box a").attr("target","_blank");
 			codes=$("#html-box pre code");
 			langs={"[html code]":"language-markup","[javascript code]":"language-javascript","[js code]":"language-javascript","[css code]":"language-css",
@@ -1607,9 +1607,9 @@ if($JavaScript !== ''){
 				<a id="download-a" style="display:none"></a>
 
 				<?php if ($rewrite_use_better_url): ?>
-					<a class="header-btn" title="生成一个网页,网址可直接访问" style="height:24px;text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank"><div data-icon="ei-external-link"></div><span>生成HTML</span></a>
+					<a class="header-btn" title="生成一个网页,网址可直接访问" style="height:24px;text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="<?php echo $noteId; ?>.html" target="_blank"><div data-icon="ei-external-link"></div><span>HTML页面</span></a>
 				<?php else : ?>
-					<a class="header-btn" title="生成一个网页,网址可直接访问" style="height:24px;text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank"><div data-icon="ei-external-link"></div><span>生成HTML</span></a>
+					<a class="header-btn" title="生成一个网页,网址可直接访问" style="height:24px;text-decoration:none;color:#fff;font-size:16px;cursor:default;" id="note-btns-tohtml-btn" href="./?n=<?php echo $noteId; ?>&html=yes" target="_blank"><div data-icon="ei-external-link"></div><span>HTML页面</span></a>
 				<?php endif ?>
 
 				<button class="header-btn" title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>

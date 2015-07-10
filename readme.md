@@ -22,7 +22,7 @@ MarkNote 的安装极为简单，如果使用文件方式，您要做的仅仅�
 9. 支持使用任意英文和数字作为ID,并可以随时更换
 10. Markdown记事本支持代码高亮,在代码块的首行用`[Python code]`这样的格式来规定语言,大写小写均可
 
-*一些细节的说明请见wiki*
+*一些细节的说明请阅读[wiki](http://git.oschina.net/wusiyu/MarkNote/wikis/home) (记事本的权限，伪静态，代码高亮的写法等)*
 
 
 ![屏幕截图](http://git.oschina.net/uploads/images/2015/0531/004003_337d557c_83769.png "屏幕截图")
