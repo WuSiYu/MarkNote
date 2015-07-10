@@ -376,218 +376,6 @@
 
 		if( $this_ID_have_note ){
 			//如果ID已有笔记
-
-			$page_type = 'text_note';
-
-			//处理输入的密码
-			if( isset($_POST['GiveYouPasswd']) ){
-				//如果输入了密码
-				setcookie("myNodePasswdFor". $noteId, $_POST['GiveYouPasswd'], time()+3600);
-				reLocation($noteId);
-			}
-
-			$realpasswd = '';
-
-			//检查是这个ID是否有密码
-			if( !$use_sql ){
-
-				//打开密码文件
-				$passwd_file = fopen(NOTE_PASSWD_FILE, 'r');
-
-				//读取密码文件
-				while( !feof($passwd_file) ){
-					//读取一行
-					$passwd_file_this_line = fgets($passwd_file);
-
-					//把这行分为两段
-					$this_line_array = explode(" ", $passwd_file_this_line);
-
-					if( $this_line_array[0] === $noteId ){
-						//如果这个ID有密码并在这一行中
-
-						//有密码标记为真
-						$passwd = true;
-
-						$realpasswd = $this_line_array[1];
-
-						//找到密码后, 不再往后找了
-						break;
-					}
-				}
-
-				fclose($passwd_file);
-			}else{
-				$sql_return = mysqli_query($notesql, "SELECT passwd FROM ".$sql_table." WHERE ID='". $noteId ."'");
-				$the_passwd = mysqli_fetch_array($sql_return);
-				if( isset($the_passwd['passwd']) && $the_passwd['passwd'] ){
-					//有密码标记为真
-					$passwd = true;
-
-					$realpasswd = $the_passwd['passwd'];
-				}
-			}
-
-			//当前的 note 有密码标记
-			if($passwd){
-				//从Cookie获取密码
-				$password = @$_COOKIE['myNodePasswdFor'.$noteId];
-
-				//密码不正确或者未输入, 则显示密码输入框
-				if( encrypt_pass($noteId, $password) !== trim($realpasswd) ) {
-					show_input_passwd();
-				}
-
-				//当前 note 有密码时, 才处理 删除密码的逻辑, 否则 不处理, 因为没有密码, 不需要删除密码
-				if( isset($_POST['delete_passwd']) ){
-
-					if( !$use_sql ){
-
-						$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
-
-						//读取密码文件
-						while( !feof($passwd_file) ){
-							//读取一行
-							$passwd_file_this_line = fgets($passwd_file);
-
-							//把这行分为两段
-							$this_line_array = explode(" ",$passwd_file_this_line);
-
-							if( $this_line_array[0] === $noteId ){
-								//如果这个ID有密码并在这一行中
-								$passwd_file_content = file_get_contents(NOTE_PASSWD_FILE);
-								$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
-								$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
-								file_put_contents(NOTE_PASSWD_FILE, $passwd_file_content_part_1.$passwd_file_content_part_2);
-								//有密码标记为假
-								$passwd = false;
-								break;
-							}
-						}
-						//关闭文件
-						fclose($passwd_file);
-					}else{
-						mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$noteId."'");
-						//有密码标记为假
-						$passwd = false;
-					}
-
-					//密码删除成功
-					if($passwd === false){
-						//删除Cookie
-						setcookie("myNodePasswdFor".$noteId, '', time()-1);
-						//提示信息
-						$JavaScript = "alert('密码已删除');";
-					}
-				}
-			}else{
-				//没有密码时, 才处理 设置密码的逻辑, 否则单独多次提交设置密码逻辑, 在使用 文件模式时, 会导致文件里同一 noteId 出现多条密码的情况
-				if( isset($_POST['the_set_passwd']) ){
-
-					//如果要设置密码
-					$password = $_POST['the_set_passwd'];
-
-					//密码长度至少 6 位
-					if(strlen($password) > 5){
-						$mpass = encrypt_pass($noteId, $password);
-
-						if( !$use_sql ){
-							//打开密码文件
-							$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
-
-							//写入密码信息
-							fputs($passwd_file, $noteId.' '.$mpass);
-							fputs($passwd_file, "\n");
-							fclose($passwd_file);
-						}else{
-							mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '". $mpass ."' WHERE ID = '".$noteId."'");
-						}
-
-						//设置Cookie
-						setcookie("myNodePasswdFor".$noteId, $password, time()+3600);
-						//提示信息
-						$JavaScript = "alert('密码已设置');";
-
-						//有密码标记为真
-						$passwd = true;
-					}
-				}
-			}
-
-			if( isset($_POST['the_set_id']) ){
-				$new_id = $_POST['the_set_id'];
-				if( !preg_match('/^[A-Za-z0-9]+$/', $new_id) || strlen($new_id) < 3 || strlen($new_id) > 200){
-					//如果ID不符合规范
-					show_error_exit("错误：输入的ID不合法");
-				}
-				//判断是否已有笔记本
-				if( !$use_sql ){
-					$this_ID_have_note = file_exists(NOTE_DATA . $new_id);
-				}else{
-					$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $new_id ."'");
-					$the_content = mysqli_fetch_array($sql_return);
-
-					$this_ID_have_note = isset($the_content['ID']) && $the_content['ID'];
-				}
-				if($this_ID_have_note){
-					show_error_exit("错误：输入的ID已存在");
-				}
-
-				if( !$use_sql ){
-					rename(NOTE_DATA.$noteId,NOTE_DATA.$new_id);
-				}else{
-					mysqli_query($notesql,"UPDATE ".$sql_table." SET ID = '".$new_id."' WHERE ID = '".$noteId."'");
-				}
-
-				reLocation($new_id);
-			}
-
-			if( isset($_POST['the_username']) ){
-				$username = $_POST['the_username'];
-				if( !preg_match('/^[A-Za-z0-9]+$/', $username) || strlen($username) < 3 || strlen($username) > 200){
-					//如果username不符合规范
-					show_error_exit("错误：输入的用户名不合法");
-				}
-				setcookie("myNoteUsername", $username, time()+2592000);
-				reLocation($noteId);
-			}
-
-			if(
-				isset($_POST['the_note']) && //有POST过来的 记事本 内容
-				(
-					isset($_POST['save']) || @$_POST['ajax_save'] === 'yes'
-				)
-			){
-
-				$to_save_raw = $_POST['the_note'];
-
-				if( @$_POST['note_type'] == 'md_note' ){
-					$to_save_raw = $the_markdown_type . $to_save_raw;
-				}
-
-				if( !$use_sql ){
-					$to_save_raw = str_replace("<", "&lt;",$to_save_raw);
-					$to_save_raw = str_replace(">", "&gt;",$to_save_raw);
-					file_put_contents(NOTE_DATA . $noteId, str_replace("\\", "&#92;",$to_save_raw));
-				}else{
-					$to_save_tmp = $to_save_raw;
-					$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
-					$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
-					$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
-					$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
-					$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
-					$to_save_tmp = str_replace("\\", "&#92;",$to_save_tmp);
-					$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
-					$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
-					mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
-				}
-
-				if(@$_POST['ajax_save'] === 'yes'){
-					echo "ok";
-					//使用ajax时无需再输出HTML,任务已完成,终止执行.
-					exit();
-				}
-			}
-
 			if( !$use_sql ){
 				$note_content_to_show = file_get_contents(NOTE_DATA . $noteId);
 				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
@@ -607,6 +395,8 @@
 
 			}
 
+			$page_type = 'text_note';
+
 			//如果内容里包含 MarkDown 的特定标记, 则自动将标记移除
 			if( strpos($note_content_to_show, $the_markdown_type) === 0 ){
 				$page_type = 'md_note';
@@ -616,6 +406,223 @@
 			if( @$_GET['html'] === 'yes' ){
 				$page_type = 'html';
 			}
+
+			if( strpos($note_content_to_show, '[公开HTML页面]') === 0 && $page_type == 'html' ){
+				$no_passwd_view_html_page=true;
+			}else{
+
+
+				//处理输入的密码
+				if( isset($_POST['GiveYouPasswd']) ){
+					//如果输入了密码
+					setcookie("myNodePasswdFor". $noteId, $_POST['GiveYouPasswd'], time()+3600);
+					reLocation($noteId);
+				}
+
+				$realpasswd = '';
+
+				//检查是这个ID是否有密码
+				if( !$use_sql ){
+
+					//打开密码文件
+					$passwd_file = fopen(NOTE_PASSWD_FILE, 'r');
+
+					//读取密码文件
+					while( !feof($passwd_file) ){
+						//读取一行
+						$passwd_file_this_line = fgets($passwd_file);
+
+						//把这行分为两段
+						$this_line_array = explode(" ", $passwd_file_this_line);
+
+						if( $this_line_array[0] === $noteId ){
+							//如果这个ID有密码并在这一行中
+
+							//有密码标记为真
+							$passwd = true;
+
+							$realpasswd = $this_line_array[1];
+
+							//找到密码后, 不再往后找了
+							break;
+						}
+					}
+
+					fclose($passwd_file);
+				}else{
+					$sql_return = mysqli_query($notesql, "SELECT passwd FROM ".$sql_table." WHERE ID='". $noteId ."'");
+					$the_passwd = mysqli_fetch_array($sql_return);
+					if( isset($the_passwd['passwd']) && $the_passwd['passwd'] ){
+						//有密码标记为真
+						$passwd = true;
+
+						$realpasswd = $the_passwd['passwd'];
+					}
+				}
+
+				//当前的 note 有密码标记
+				if($passwd){
+					//从Cookie获取密码
+					$password = @$_COOKIE['myNodePasswdFor'.$noteId];
+
+					//密码不正确或者未输入, 则显示密码输入框
+					if( encrypt_pass($noteId, $password) !== trim($realpasswd) ) {
+						show_input_passwd();
+					}
+
+					//当前 note 有密码时, 才处理 删除密码的逻辑, 否则 不处理, 因为没有密码, 不需要删除密码
+					if( isset($_POST['delete_passwd']) ){
+
+						if( !$use_sql ){
+
+							$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
+
+							//读取密码文件
+							while( !feof($passwd_file) ){
+								//读取一行
+								$passwd_file_this_line = fgets($passwd_file);
+
+								//把这行分为两段
+								$this_line_array = explode(" ",$passwd_file_this_line);
+
+								if( $this_line_array[0] === $noteId ){
+									//如果这个ID有密码并在这一行中
+									$passwd_file_content = file_get_contents(NOTE_PASSWD_FILE);
+									$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
+									$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
+									file_put_contents(NOTE_PASSWD_FILE, $passwd_file_content_part_1.$passwd_file_content_part_2);
+									//有密码标记为假
+									$passwd = false;
+									break;
+								}
+							}
+							//关闭文件
+							fclose($passwd_file);
+						}else{
+							mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '' WHERE ID = '".$noteId."'");
+							//有密码标记为假
+							$passwd = false;
+						}
+
+						//密码删除成功
+						if($passwd === false){
+							//删除Cookie
+							setcookie("myNodePasswdFor".$noteId, '', time()-1);
+							//提示信息
+							$JavaScript = "alert('密码已删除');";
+						}
+					}
+				}else{
+					//没有密码时, 才处理 设置密码的逻辑, 否则单独多次提交设置密码逻辑, 在使用 文件模式时, 会导致文件里同一 noteId 出现多条密码的情况
+					if( isset($_POST['the_set_passwd']) ){
+
+						//如果要设置密码
+						$password = $_POST['the_set_passwd'];
+
+						//密码长度至少 6 位
+						if(strlen($password) > 5){
+							$mpass = encrypt_pass($noteId, $password);
+
+							if( !$use_sql ){
+								//打开密码文件
+								$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
+
+								//写入密码信息
+								fputs($passwd_file, $noteId.' '.$mpass);
+								fputs($passwd_file, "\n");
+								fclose($passwd_file);
+							}else{
+								mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '". $mpass ."' WHERE ID = '".$noteId."'");
+							}
+
+							//设置Cookie
+							setcookie("myNodePasswdFor".$noteId, $password, time()+3600);
+							//提示信息
+							$JavaScript = "alert('密码已设置');";
+
+							//有密码标记为真
+							$passwd = true;
+						}
+					}
+				}
+
+				if( isset($_POST['the_set_id']) ){
+					$new_id = $_POST['the_set_id'];
+					if( !preg_match('/^[A-Za-z0-9]+$/', $new_id) || strlen($new_id) < 3 || strlen($new_id) > 200){
+						//如果ID不符合规范
+						show_error_exit("错误：输入的ID不合法");
+					}
+					//判断是否已有笔记本
+					if( !$use_sql ){
+						$this_ID_have_note = file_exists(NOTE_DATA . $new_id);
+					}else{
+						$sql_return = mysqli_query($notesql,"SELECT ID, content FROM ".$sql_table." WHERE ID='". $new_id ."'");
+						$newid_the_content = mysqli_fetch_array($sql_return);
+
+						$this_ID_have_note = isset($newid_the_content['ID']) && $newid_the_content['ID'];
+					}
+					if($this_ID_have_note){
+						show_error_exit("错误：输入的ID已存在");
+					}
+
+					if( !$use_sql ){
+						rename(NOTE_DATA.$noteId,NOTE_DATA.$new_id);
+					}else{
+						mysqli_query($notesql,"UPDATE ".$sql_table." SET ID = '".$new_id."' WHERE ID = '".$noteId."'");
+					}
+
+					reLocation($new_id);
+				}
+
+				if( isset($_POST['the_username']) ){
+					$username = $_POST['the_username'];
+					if( !preg_match('/^[A-Za-z0-9]+$/', $username) || strlen($username) < 3 || strlen($username) > 200){
+						//如果username不符合规范
+						show_error_exit("错误：输入的用户名不合法");
+					}
+					setcookie("myNoteUsername", $username, time()+2592000);
+					reLocation($noteId);
+				}
+
+				if(
+					isset($_POST['the_note']) && //有POST过来的 记事本 内容
+					(
+						isset($_POST['save']) || @$_POST['ajax_save'] === 'yes'
+					)
+				){
+
+					$to_save_raw = $_POST['the_note'];
+
+					if( @$_POST['note_type'] == 'md_note' ){
+						$to_save_raw = $the_markdown_type . $to_save_raw;
+					}
+
+					if( !$use_sql ){
+						$to_save_raw = str_replace("<", "&lt;",$to_save_raw);
+						$to_save_raw = str_replace(">", "&gt;",$to_save_raw);
+						file_put_contents(NOTE_DATA . $noteId, str_replace("\\", "&#92;",$to_save_raw));
+					}else{
+						$to_save_tmp = $to_save_raw;
+						$to_save_tmp = str_replace("&", "&amp;",$to_save_tmp);
+						$to_save_tmp = str_replace("'", "&#39;",$to_save_tmp);
+						$to_save_tmp = str_replace("\"", "&#42;",$to_save_tmp);
+						$to_save_tmp = str_replace("=", "&#61;",$to_save_tmp);
+						$to_save_tmp = str_replace("?", "&#63;",$to_save_tmp);
+						$to_save_tmp = str_replace("\\", "&#92;",$to_save_tmp);
+						$to_save_tmp = str_replace("<", "&lt;",$to_save_tmp);
+						$to_save_tmp = str_replace(">", "&gt;",$to_save_tmp);
+						mysqli_query($notesql,"UPDATE ".$sql_table." SET content = '".$to_save_tmp."' WHERE ID = '".$noteId."'");
+					}
+
+					if(@$_POST['ajax_save'] === 'yes'){
+						echo "ok";
+						//使用ajax时无需再输出HTML,任务已完成,终止执行.
+						exit();
+					}
+				}
+
+			}
+
 		}else{
 			//如果是新记事本
 			$page_type = 'select_note_type';//默认值
@@ -728,7 +735,7 @@
 			#html-box code{
 				line-height: 16px;
 				background-color: #ddd;
-				padding: 2px 5px;
+				padding: 4px 8px 2px 8px;
 				margin: 0px 2px;
 				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 			}
@@ -742,6 +749,22 @@
 			}
 			pre[class*=language-]>code[data-language]::before{
 				border-radius: 0 !important;
+			}
+			#html-box .checkbox-checked{
+				width: 24px;
+				display:inline-block;
+				height:24px;
+				background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+				background-position:-48px 0px;
+				margin-bottom: -7px;
+			}
+			#html-box .checkbox-notchecked{
+				width: 24px;
+				display:inline-block;
+				height:24px;
+				background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+				background-position:-24px 0px;
+				margin-bottom: -7px;
 			}
 			:focus {
 				border: none;
@@ -809,6 +832,9 @@
 				}
 			}
 			Prism.highlightAll();
+			document.getElementById("html-box").innerHTML = document.getElementById("html-box").innerHTML.replace(/\[x\]/g, "<span class=\"checkbox-checked\"></span> ");
+			document.getElementById("html-box").innerHTML = document.getElementById("html-box").innerHTML.replace(/\[-\]/g, "<span class=\"checkbox-checked\"></span> ");
+			document.getElementById("html-box").innerHTML = document.getElementById("html-box").innerHTML.replace(/\[ \]/g, "<span class=\"checkbox-notchecked\"></span> ");
 		</script>
 <?php exit(); endif; ?>
 		<script type="text/javascript">
@@ -1026,7 +1052,7 @@ if($JavaScript !== ''){
 
 			//内容改变时，已保存按钮 变成 保存
 			function note_change(){
-				$("#note-btns-save-ajax").css({"background-color":"#3498DB","cursor":"pointer"});
+				$("#note-btns-save-ajax").css({"background-color":"#3498DB", "cursor":"pointer", "padding":"11px 25px 13px 25px"});
 				$("#note-btns-save-ajax").removeClass("note-btns-save-ajax-saved");
 				$("#note-btns-save-ajax").css({"cursor":"pointer"}).html("保存");
 				is_need_save = true;
@@ -1450,7 +1476,7 @@ if($JavaScript !== ''){
 
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-login-form" style="display:none;height:40px;">
 				<input id="note-btns-login-form-input" type="text" name="the_username" placeholder="用户名" class="input" style="width:870px;box-shadow:0 0 0;height:20px;background-color:#eee;font-size:16px;"/>
-				<input id="note-btns-login-form-btn" type="submit" value="注册 / 登录" class="btn" style="float:right;font-size:16px;width:130px;height:40px;box-shadow:0 0 0;background-color:#ccc;"/>
+				<input id="note-btns-login-form-btn" type="submit" value="登录 / 注册" class="btn" style="float:right;font-size:16px;width:130px;height:40px;box-shadow:0 0 0;background-color:#ccc;"/>
 			</form>
 
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
@@ -1635,10 +1661,26 @@ if($JavaScript !== ''){
 					line-height: 16px;
 					text-shadow: none;
 					background-color: #ddd;
-					padding: 2px 5px;
+					padding: 4px 8px 2px 8px;
 					margin: 0px 2px;
 					font-size: 14px;
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				}
+				#note-md-show .checkbox-checked{
+					width: 24px;
+					display:inline-block;
+					height:24px;
+					background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+					background-position:-48px 0px;
+					margin-bottom: -7px;
+				}
+				#note-md-show .checkbox-notchecked{
+					width: 24px;
+					display:inline-block;
+					height:24px;
+					background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+					background-position:-24px 0px;
+					margin-bottom: -7px;
 				}
 				pre[class*=language-]>code[data-language]::before{
 					border-radius: 0 !important;
@@ -1734,7 +1776,7 @@ if($JavaScript !== ''){
 					preview=document.getElementById("note-md-show");
 
 					//MarkDown -> HTML
-					preview.innerHTML = markdown.toHTML(EditorAce.getValue());
+					preview.innerHTML = markdown.toHTML( EditorAce.getValue().replace(/\[公开HTML页面\]/g, "") );
 
 					//MathJax公式更新
 					MathJax.Hub.PreProcess(document.getElementById("note-md-show"));
@@ -1762,7 +1804,9 @@ if($JavaScript !== ''){
 						}
 					}
 					Prism.highlightAll();
-
+					preview.innerHTML = preview.innerHTML.replace(/\[x\]/g, "<span class=\"checkbox-checked\"></span> ");
+					preview.innerHTML = preview.innerHTML.replace(/\[-\]/g, "<span class=\"checkbox-checked\"></span> ");
+					preview.innerHTML = preview.innerHTML.replace(/\[ \]/g, "<span class=\"checkbox-notchecked\"></span> ");
 				}
 
 				//页面加载时的首次更新
