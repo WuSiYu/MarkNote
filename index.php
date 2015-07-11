@@ -333,7 +333,7 @@
 
 			if( $have_user ){
 				$user_notes_array = explode(";", $user_notes);
-				if( !in_array($noteId, $user_notes_array) ){
+				if( !in_array($noteId, $user_notes_array) ){	//如果ID没有被记录
 					$user_notes = $user_notes.';'.$noteId;
 					if( !$use_sql ){
 						$users_file = fopen(NOTE_USERS_FILE, 'a+');
@@ -361,7 +361,41 @@
 						mysqli_query($notesql,"UPDATE ".$sql_table_user." SET notes = '". $user_notes ."' WHERE username = '".$username."'");
 					}
 
+				}else{
+					if( isset($_POST['delete_note_in_list']) ){
+						print_r($user_notes_array);
+						$key = array_search($noteId,$user_notes_array);
+						array_splice($user_notes_array, $key, 1);
+						$user_notes =  implode(";", $user_notes_array);
+						if( !$use_sql ){
+							$users_file = fopen(NOTE_USERS_FILE, 'a+');
+
+							//读取密码文件
+							while( !feof($users_file) ){
+								//读取一行
+								$users_file_this_line = fgets($users_file);
+
+								//把这行分为两段
+								$this_line_array = explode(" ",$users_file_this_line);
+
+								if( $this_line_array[0] === $username ){
+									//如果这个ID有密码并在这一行中
+									$users_file_content = file_get_contents(NOTE_USERS_FILE);
+									$users_file_content_part_1 = substr($users_file_content,0,ftell($users_file)-strlen($users_file_this_line) );
+									$users_file_content_part_2 = substr($users_file_content,ftell($users_file));
+									file_put_contents(NOTE_USERS_FILE, $users_file_content_part_1.$username.' '.$user_notes."\n".$users_file_content_part_2);
+									break;
+								}
+							}
+							//关闭文件
+							fclose($users_file);
+						}else{
+							mysqli_query($notesql,"UPDATE ".$sql_table_user." SET notes = '". $user_notes ."' WHERE username = '".$username."'");
+						}
+						exit('ok');
+					}
 				}
+
 				$user_notes_array = explode(";", $user_notes);
 			}else{
 				if( !$use_sql ){
@@ -373,6 +407,9 @@
 			}
 		}
 
+		if( isset($_POST['delete_note_in_list']) ){ //以防万一
+			exit('delete_note_in_list fail');
+		}
 
 		if( $this_ID_have_note ){
 			//如果ID已有笔记
@@ -1079,6 +1116,20 @@ if($JavaScript !== ''){
 				document.getElementById("download-a").click();
 			}
 
+			function delete_note_in_list(noteid,this_btn){
+				if(confirm('确定从列表中移除此记事本？\n注意:这不会真正删除此记事本，仅仅是从您的记事本列表中移除')){
+					this_btn.style.cursor="wait";
+					$.post("./?n="+noteid,
+					{
+						delete_note_in_list:"yes"
+					},
+					function(data,status){
+						$('#note-list-'+noteid).remove();
+					});
+				}
+				return false;
+			}
+
 			//未保存就关闭的警告
 			window.onbeforeunload = onbeforeunload_handler;
 			function onbeforeunload_handler(){
@@ -1468,7 +1519,8 @@ if($JavaScript !== ''){
 			</div>
 
 
-			<?php if(isset($username)) { ?>
+			<!-- 记事本列表 -->
+			<?php if(isset($username)) : ?>
 				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 					<div style="background-color:#2977AB;height:28px;width:230px;padding:6px 10px;">登入用户: <?php echo $username ?></div>
 					<div style="padding:5px 10px;">记事本: </div>
@@ -1478,11 +1530,11 @@ if($JavaScript !== ''){
 							if($x === $noteId)
 								echo '<a href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'" class="note-mynote-list" style="background-color:#2977AB;" >'.$x.'</a>';
 							else
-								echo '<a href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x.'</a>';
+								echo '<a id="note-list-'.$x.'" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x.'<span onclick="return false;" ><span title="从列表中移除此记事本" style="float:right;font-size:20px;cursor:pointer;" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
 						}
 					?>
 				</div>
-			<?php } ?>
+			<?php endif; ?>
 		<?php endif; ?>
 
 
