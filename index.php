@@ -1028,9 +1028,8 @@ if($JavaScript !== ''){
 			//使用ajax保存记事本
 			function ajax_save(){
 				if( is_need_save ){
-					// $("#note-btns-save-ajax").css({"background-color":"#ccc","cursor":"wait","padding":"9px 20px"}).html("正在保存");
-					$("#note-btns-save-ajax").css({"background-color":"#34495E","cursor":"wait"});
-					$("#note-btns-save-ajax").css({"cursor":"wait"}).html("正在保存");
+					$("#note-btns-save-ajax").css({"background-color":"#34495E", "cursor":"wait", "padding":"11px 20px 13px 20px"});
+					$("#note-btns-save-ajax").css({"cursor":"wait"}).html("保存中");
 					$.post("<?php echo_note_url(); ?>",
 					{
 						ajax_save:"yes",
@@ -1042,7 +1041,7 @@ if($JavaScript !== ''){
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						$("#note-btns-save-ajax").css({"background-color":"#34495E","cursor":"default"});
+						$("#note-btns-save-ajax").css({"background-color":"#34495E", "cursor":"default", "padding":"11px 20px 13px 20px"});
 						$("#note-btns-save-ajax").addClass("note-btns-save-ajax-saved");
 						$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
 						is_need_save = false;
@@ -1052,7 +1051,7 @@ if($JavaScript !== ''){
 
 			//内容改变时，已保存按钮 变成 保存
 			function note_change(){
-				$("#note-btns-save-ajax").css({"background-color":"#3498DB", "cursor":"pointer", "padding":"11px 25px 13px 25px"});
+				$("#note-btns-save-ajax").css({"background-color":"#3498DB", "cursor":"pointer", "padding":"11px 28px 13px 28px"});
 				$("#note-btns-save-ajax").removeClass("note-btns-save-ajax-saved");
 				$("#note-btns-save-ajax").css({"cursor":"pointer"}).html("保存");
 				is_need_save = true;
@@ -1285,14 +1284,10 @@ if($JavaScript !== ''){
 				float: left;
 			}
 
-			.header-title:hover{
-				/*background-color: #2387CA;*/
-			}
-
 			.header-btn{
 				display: inline-block;
 				height: 48px;
-				padding: 11px 20px 13px 17px;
+				padding: 11px 21px 13px 17px;
 				float: right;
 			}
 
@@ -1335,6 +1330,11 @@ if($JavaScript !== ''){
 					width: 100%;
 				}
 
+				#note-btns-save-ajax{
+					height: 24px;
+					padding: 11px 20px 13px 20px;
+				}
+
 				.note-btns-save-ajax-saved:hover{
 					background-color: #34495E !important;
 				}
@@ -1352,43 +1352,6 @@ if($JavaScript !== ''){
 					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				}
 
-				/*textarea{
-					line-height: 17px;
-					tab-size: 4;-moz-tab-size: 4;-o-tab-size: 4;
-					padding: 0;
-					margin: 0;
-					color: #555;
-					background:#FCFCFC;
-					border: 0;
-					resize: none;
-					font-size: 16px;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
-				}*/
-
-				/*#note-main-form-div{
-					width: 1180px;
-					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-					background: #FCFCFC;
-					padding: 10px;
-				}*/
-/*
-				@media screen and (max-width: 1240px){
-
-					body{
-						margin: 0 20px 0 20px;
-						width: auto;
-					}
-
-					#note-main-form-div{
-						width: auto;
-						padding: 10px;
-					}
-
-					textarea{
-						width: 100%;
-						margin: 0;
-					}
-				}*/
 
 				@media screen and (max-width: 760px){
 
@@ -1536,7 +1499,7 @@ if($JavaScript !== ''){
 
 				<?php if(isset($username)) : ?>
 					<!-- <span class="header-btn" style="float:left;padding:10px 20px 14px 20px;background-color:#34495E !important;height:24px;cursor:default;" >登入用户: <?php echo $username ?></span> -->
-					<button class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
+					<button title="点击以打开记事本列表侧边栏，再次点击可关闭" class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
 				<?php else : ?>
 					<button class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
 				<?php endif;  ?>
@@ -1586,7 +1549,7 @@ if($JavaScript !== ''){
 
 				<?php if(isset($username)) : ?>
 					<!-- <span class="header-btn" style="float:left;padding:10px 20px 14px 20px;background-color:#34495E !important;height:24px;cursor:default;" >登入用户: <?php echo $username ?></span> -->
-					<button class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
+					<button title="点击以打开记事本列表侧边栏，再次点击可关闭" class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
 				<?php else : ?>
 					<button class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
 				<?php endif;  ?>
@@ -1985,7 +1948,7 @@ if($JavaScript !== ''){
 
 				<?php if( isset($_COOKIE['myNote']) ) : ?>
 					<!-- 强制主页时的返回按钮 -->
-					<a title="根据这个设备上的记录来回到您的笔记本" href="<?php if($rewrite_use_better_url){echo $_COOKIE['myNote'];}else{echo '?n='.$_COOKIE['myNote'];} ?>" id="back-to-note" class="header-btn" style="height:24px;">回到我的笔记</a>
+					<a title="根据这个设备上的记录来回到您的笔记本" href="<?php if($rewrite_use_better_url){echo $_COOKIE['myNote'];}else{echo '?n='.$_COOKIE['myNote'];} ?>" id="back-to-note" class="header-btn" style="height:24px;padding:11px 25px 13px 25px">回到我的笔记</a>
 				<?php endif; ?>
 
 			</div>
