@@ -615,6 +615,38 @@
 						mysqli_query($notesql,"UPDATE ".$sql_table." SET ID = '".$new_id."' WHERE ID = '".$noteId."'");
 					}
 
+					//更新密码md5
+					$new_passwd_md5 = encrypt_pass($new_id, $password);
+					if( !$use_sql ){
+
+						$passwd_file = fopen(NOTE_PASSWD_FILE, 'a+');
+
+						//读取密码文件
+						while( !feof($passwd_file) ){
+							//读取一行
+							$passwd_file_this_line = fgets($passwd_file);
+
+							//把这行分为两段
+							$this_line_array = explode(" ",$passwd_file_this_line);
+
+							if( $this_line_array[0] === $noteId ){
+								//如果这个ID有密码并在这一行中
+								$new_passwd_line = $new_id.' '.$new_passwd_md5."\n";
+								$passwd_file_content = file_get_contents(NOTE_PASSWD_FILE);
+								$passwd_file_content_part_1 = substr($passwd_file_content,0,ftell($passwd_file)-strlen($passwd_file_this_line) );
+								$passwd_file_content_part_2 = substr($passwd_file_content,ftell($passwd_file));
+								file_put_contents(NOTE_PASSWD_FILE, $passwd_file_content_part_1.$new_passwd_line.$passwd_file_content_part_2);
+								break;
+							}
+						}
+						//关闭文件
+						fclose($passwd_file);
+					}else{
+						mysqli_query($notesql,"UPDATE ".$sql_table." SET passwd = '".$new_passwd_md5."' WHERE ID = '".$new_id."'");
+						//有密码标记为假
+						$passwd = false;
+					}
+
 					reLocation($new_id);
 				}
 
