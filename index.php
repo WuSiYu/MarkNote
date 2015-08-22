@@ -1563,13 +1563,18 @@ if($JavaScript !== ''){
 				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 					<div style="background-color:#2977AB;height:28px;width:230px;padding:6px 10px;">登入用户: <?php echo $username ?></div>
 					<div style="padding:5px 10px;">记事本: </div>
-					
+
 					<?php
 						foreach ($user_notes_array as $x) {
+							if(strlen($x)>20){
+								$x_dis=substr($x,1,20).'...';
+							}else{
+								$x_dis=$x;
+							}
 							if($x === $noteId)
-								echo '<a href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'" class="note-mynote-list" style="background-color:#2977AB;" >'.$x.'</a>';
+								echo '<a title="<?php echo $x; ?>" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'" class="note-mynote-list" style="background-color:#2977AB;" >'.$x_dis.'</a>';
 							else
-								echo '<a id="note-list-'.$x.'" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x.'<span onclick="return false;" ><span title="从列表中移除此记事本" style="float:right;font-size:20px;cursor:pointer;" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
+								echo '<a title="'.$x.'" id="note-list-'.$x.'" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x_dis.'<span onclick="return false;" ><span title="从列表中移除此记事本" style="margin-top:-1px;float:right;font-size:16px;cursor:pointer;" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
 						}
 					?>
 				</div>
@@ -1592,11 +1597,11 @@ if($JavaScript !== ''){
 					<!-- <span class="header-btn" style="float:left;padding:10px 20px 14px 20px;background-color:#34495E !important;height:24px;cursor:default;" >登入用户: <?php echo $username ?></span> -->
 					<button title="点击以打开记事本列表侧边栏，再次点击可关闭" class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
 				<?php else : ?>
-					<button class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
+					<button title="输入用户名以登陆，登陆后可以记录所有用过的记事本，若用户名不存在则会新建一个" class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
 				<?php endif;  ?>
 
 				<!-- 保存 -->
-				<button class="header-btn" title="也可按Ctrl+S保存" style="padding: 12px 20px" id="note-btns-save-ajax" onclick="ajax_save();">保存</button>
+				<span class="header-btn" title="也可按Ctrl+S保存" id="note-btns-save-ajax" onclick="ajax_save();">保存</span>
 
 
 				<button class="header-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
@@ -1642,7 +1647,7 @@ if($JavaScript !== ''){
 					<!-- <span class="header-btn" style="float:left;padding:10px 20px 14px 20px;background-color:#34495E !important;height:24px;cursor:default;" >登入用户: <?php echo $username ?></span> -->
 					<button title="点击以打开记事本列表侧边栏，再次点击可关闭" class="header-btn" title="" style="float:left;" onclick="mynote_display();" ><div data-icon="ei-navicon"></div>我的记事本</button>
 				<?php else : ?>
-					<button class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
+					<button title="输入用户名以登陆，登陆后可以记录所有用过的记事本，若用户名不存在则会新建一个" class="header-btn" title="" style="float:left;" onclick="login_display();" ><div data-icon="ei-location"></div>登录 / 注册</button>
 				<?php endif;  ?>
 
 				<!-- 保存 -->
