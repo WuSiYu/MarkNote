@@ -557,7 +557,7 @@
 						}
 					}
 				}else{
-					//没有密码时, 才处理 设置密码的逻辑, 否则单独多次提交设置密码逻辑, 在使用 文件模式时, 会导致文件里同一 noteId 出现多条密码的情况
+					//没有密码时, 才处理设置密码的逻辑
 					if( isset($_POST['the_set_passwd']) ){
 
 						//如果要设置密码
@@ -747,11 +747,11 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 		<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABWVBMVEVhVTVSSjVORzROSDRQSTVfVDVcUTVLRTRHQTRHQjRIQzRZUDVgVDVPSDRMRjRdUjXIojrGoTvFoDvHojv8yD37yT37yD37yD32xT72xT71xT71xT7QsVPOsVTOsFTPsVPwwULvwkLvwULvwkLRsVLPsVPPsVPQsVPqvkXpv0XpvkXpvkXWtFDVtFDUs1DVtFDguUrgukrfuUrfuUrfuUrVtFDUtFDUtFDrv0TrwETqv0Tqv0T6xzz6yDz5vDv3rDr6yDz6xzz6xzz6xzxLRDRLRTTFmTrFjznFoTvFoDr6vjz4rjv7yT37yD30uz3yqzz2xT71xT7NqFPLm1LOsFTuuEHsqD/vwkLvwULOqFLMm1HPsVPotUTmpkPpv0XpvkXTq0/Snk7UtFDUs1DesEndokjfukrfuUresErcokjfuUvTq1DRnU7UtFHptUPop0LrwETqv0T////ZQ5XYAAAAAWJLR0QAiAUdSAAAAAlwSFlzAAAN1wAADdcBQiibeAAAAAd0SU1FB98FCA0SEE9zUCEAAAA2SURBVBjTY+BEAwwYAqKi7qLIAFNAUNBdEBlg1yIGBXi0iCEABbbg14JkB0QLlOPo6OgkKgoAn/UWJhIEn78AAAAASUVORK5CYII=" type="image/x-icon" rel="icon" />
-		<script src="http://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 <?php if ( $page_type == 'html' ) : ?>
-		<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
-		<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
-		<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+		<script src="//cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+		<script src="//cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
+		<link href="//cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
 		<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 		<style type="text/css">
 			body{
@@ -830,7 +830,7 @@
 				width: 24px;
 				display:inline-block;
 				height:24px;
-				background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+				background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
 				background-position:-48px 0px;
 				margin-bottom: -7px;
 			}
@@ -838,7 +838,7 @@
 				width: 24px;
 				display:inline-block;
 				height:24px;
-				background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+				background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
 				background-position:-24px 0px;
 				margin-bottom: -7px;
 			}
@@ -951,6 +951,9 @@
 				}else{
 					$("#note-menu").css("left",winw+'px');
 				}
+				$("#note-btns-setpasswd-form-input").width(winw-120);
+				$("#note-btns-setid-form-input").width(winw-120);
+				$("#note-btns-login-form-input").width(winw-150);
 
 
 				<?php if ( $page_type == 'md_note' ) : ?>
@@ -991,7 +994,8 @@ if($JavaScript !== ''){
 				}
 
 				$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-120);
-				$("#note-btns-idset-form-input").width($("#note-btns-passwdset-form").width()-120);
+				$("#note-btns-setid-form-input").width($("#note-btns-setid-form").width()-120);
+				$("#note-btns-login-form-input").width($("#note-btns-login-form").width()-150);
 
 				$("#note-mynote").height(winh-48);
 				$("#note-menu").height(winh-48);
@@ -1018,14 +1022,13 @@ if($JavaScript !== ''){
 				<?php endif; ?>
 			}
 
-			//显示/隐藏 更改密码框
-			function psaawd_set_display(){
-
-				if( !is_passwd_set_show ){
-					$('#note-btns-passwdset-form').slideDown(500);
+			function set_from_display(the_id, is_display){
+				// $("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-120);
+				// $("#note-btns-setid-form-input").width($("#note-btns-setid-form").width()-120);
+				// $("#note-btns-login-form-input").width($("#note-btns-login-form").width()-150);
+				if( !is_display ){
+					$(the_id).slideDown(500);
 					$('#note-main-form-div').animate({height:'-=40px'},500);
-					$("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-120);
-					is_passwd_set_show = true;
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'-=40px'},500);
 						$("#note-md-show").animate({height:'-=40px'},500);
@@ -1036,9 +1039,8 @@ if($JavaScript !== ''){
 					$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
 					$("#note-mynote").animate({height:'-=40px', top:'+=40px'},500);
 				}else{
-					$('#note-btns-passwdset-form').slideUp(500);
+					$(the_id).slideUp(500);
 					$('#note-main-form-div').animate({height:'+=40px'},500);
-					is_passwd_set_show = false;
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'+=40px'},500);
 						$("#note-md-show").animate({height:'+=40px'},500);
@@ -1051,13 +1053,45 @@ if($JavaScript !== ''){
 				}
 			}
 
+			//显示/隐藏 更改密码框
+			function psaawd_set_display(){
+				// if( !is_passwd_set_show ){
+				// 	$('#note-btns-passwdset-form').slideDown(500);
+				// 	$('#note-main-form-div').animate({height:'-=40px'},500);
+				// 	is_passwd_set_show = true;
+				// 	<?php if ( $page_type == 'md_note' ) : ?>
+				// 		$("#note-md-edit").animate({height:'-=40px'},500);
+				// 		$("#note-md-show").animate({height:'-=40px'},500);
+				// 		$("#note-md-move").animate({height:'-=40px'},500);
+				// 	<?php else : ?>
+				// 		$("#note-text-edit").animate({height:'-=40px'},500);
+				// 	<?php endif; ?>
+				// 	$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
+				// 	$("#note-mynote").animate({height:'-=40px', top:'+=40px'},500);
+				// }else{
+				// 	$('#note-btns-passwdset-form').slideUp(500);
+				// 	$('#note-main-form-div').animate({height:'+=40px'},500);
+				// 	is_passwd_set_show = false;
+				// 	<?php if ( $page_type == 'md_note' ) : ?>
+				// 		$("#note-md-edit").animate({height:'+=40px'},500);
+				// 		$("#note-md-show").animate({height:'+=40px'},500);
+				// 		$("#note-md-move").animate({height:'+=40px'},500);
+				// 	<?php else : ?>
+				// 		$("#note-text-edit").animate({height:'+=40px'},500);
+				// 	<?php endif; ?>
+				// 	$("#note-menu").animate({height:'+=40px', top:'-=40px'},500);
+				// 	$("#note-mynote").animate({height:'+=40px', top:'-=40px'},500);
+				// }
+				set_from_display("#note-btns-passwdset-form", is_passwd_set_show);
+				is_passwd_set_show=!is_passwd_set_show;
+			}
+
 			//显示/隐藏 更改ID框
 			function id_set_display(){
 
 				if( !is_id_set_show ){
-					$('#note-btns-idset-form').slideDown(500);
+					$('#note-btns-setid-form').slideDown(500);
 					$('#note-main-form-div').animate({height:'-=40px'},500);
-					$("#note-btns-setid-form-input").width($("#note-btns-idset-form").width()-120);
 					is_id_set_show = true;
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'-=40px'},500);
@@ -1069,7 +1103,7 @@ if($JavaScript !== ''){
 					$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
 					$("#note-mynote").animate({height:'-=40px', top:'+=40px'},500);
 				}else{
-					$('#note-btns-idset-form').slideUp(500);
+					$('#note-btns-setid-form').slideUp(500);
 					$('#note-main-form-div').animate({height:'+=40px'},500);
 					is_id_set_show = false;
 					<?php if ( $page_type == 'md_note' ) : ?>
@@ -1090,7 +1124,6 @@ if($JavaScript !== ''){
 				if( !is_login_show ){
 					$('#note-btns-login-form').slideDown(500);
 					$('#note-main-form-div').animate({height:'-=40px'},500);
-					$("#note-btns-login-form-input").width($("#note-btns-login-form").width()-150);
 					is_login_show = true;
 					<?php if ( $page_type == 'md_note' ) : ?>
 						$("#note-md-edit").animate({height:'-=40px'},500);
@@ -1119,9 +1152,11 @@ if($JavaScript !== ''){
 				if( !is_mynote_show ){
 					$('#note-mynote').animate({left:'0px'});
 					is_mynote_show = true;
+					$('#note-black').fadeIn();
 				}else{
 					$('#note-mynote').animate({left:'-250px'});
 					is_mynote_show = false;
+					$('#note-black').fadeOut();
 				}
 			}
 
@@ -1132,9 +1167,11 @@ if($JavaScript !== ''){
 				if( is_menu_show ){
 					$('#note-menu').animate({left:winw+'px'});
 					is_menu_show = false;
+					$('#note-menu-black').fadeOut();
 				}else{
 					$('#note-menu').animate({left:winw-250+'px'});
 					is_menu_show = true;
+					$('#note-menu-black').fadeIn();
 				}
 			}
 
@@ -1172,9 +1209,9 @@ if($JavaScript !== ''){
 
 			//显示 在其它设备上范围 对话框
 			function other_dev_show(){
-				$('#note-otherdev-background-div').fadeIn();
+				$('#note-otherdev').fadeIn();
 				if(!is_pic_loaded){
-					$('#note-otherdev-img-add').after("<img alt='Loading...' src='http://qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>'>");
+					$('#note-otherdev-img-add').after("<img alt='Loading...' src='//qr.liantu.com/api.php?m=0&fg=222222&w=240&text=<?php echo 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; ?>'>");
 				is_pic_loaded = true;
 				}
 			}
@@ -1335,8 +1372,9 @@ if($JavaScript !== ''){
 			.header-title{
 				display: inline-block;
 				height: 24px;
-				padding: 12px 16px;
+				padding: 13px 16px 11px 16px;
 				float: left;
+				cursor: pointer;
 			}
 
 			.header-btn{
@@ -1346,8 +1384,12 @@ if($JavaScript !== ''){
 				float: right;
 			}
 
-			.header-btn:hover{
-				background-color: #2387CA !important;
+			.header-btn:hover, .header-title:hover{
+				background-color: #1C3146;
+			}
+
+			#note-btns-save-ajax:hover{
+				background-color: #2387CA;
 			}
 
 			.header-btn{
@@ -1428,26 +1470,30 @@ if($JavaScript !== ''){
 				}
 
 				/***** 在其他设备上访问对话框 *****/
-				#note-otherdev-background-div{
+				#note-otherdev{
+					position: fixed;
+					z-index: 110;
+				}
+				#note-otherdev-black{
 					position: fixed;
 					width: 100%;
 					height: 100%;
 					top: 0;
 					left: 0;
 					background-color: rgba(0,0,0,0.2);
-					z-index: 10;
+					z-index: 111;
 				}
 
 				#note-otherdev-div{
 					position: fixed;
 					width: 300px;
-					height: 400px;
+					height: 412px;
 					top: 50%;
 					left: 50%;
 					background-color: #fff;
-					z-index: 11;
+					z-index: 112;
 					margin: -200px 0 0 -150px;
-					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
 				}
 
 				.note-otherdev-div-divhr{
@@ -1477,6 +1523,7 @@ if($JavaScript !== ''){
 					border: 0px;
 					width: 100%;
 					text-align: left;
+					font-size: 16px;
 				}
 
 				.menu-btn:hover{
@@ -1485,23 +1532,40 @@ if($JavaScript !== ''){
 
 				.menu-btn div{
 					margin-bottom: -7px;
+					margin-right: 5px;
+				}
+
+				.note-btns-set-from{
+					display: none;
+					height: 40px;
+				}
+
+				.note-btns-set-from-input{
+					width:870px;box-shadow:0 0 0;height:20px;background-color:#0C2136;font-size:16px;color:#fff;
+				}
+
+				.note-btns-set-from-btn{
+					float:right;font-size:16px;width:100px;height:40px;box-shadow:0 0 0;background-color:#2387CA;color:#fff;
+				}
+				.note-btns-set-from-btn:hover{
+					background-color:#1377BA;
 				}
 
 			</style>
 
-			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwdset-form" style="display:none;height:40px;">
-				<input id="note-btns-setpasswd-form-input" type="password" name="the_set_passwd" placeholder="新密码" class="input" style="width:870px;box-shadow:0 0 0;height:20px;background-color:#eee;font-size:16px;"/>
-				<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn" style="float:right;font-size:16px;width:100px;height:40px;box-shadow:0 0 0;background-color:#ccc;"/>
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwdset-form" class="note-btns-set-from">
+				<input id="note-btns-setpasswd-form-input" class="input note-btns-set-from-input" type="password" name="the_set_passwd" placeholder="请输入要设置的密码"/>
+				<input id="note-btns-setpasswd-form-btn" type="submit" value="设置" class="btn note-btns-set-from-btn"/>
 			</form>
 
-			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-idset-form" style="display:none;height:40px;">
-				<input id="note-btns-setid-form-input" type="text" name="the_set_id" placeholder="新ID" class="input" style="width:870px;box-shadow:0 0 0;height:20px;background-color:#eee;font-size:16px;"/>
-				<input id="note-btns-setid-form-btn" type="submit" value="设置" class="btn" style="float:right;font-size:16px;width:100px;height:40px;box-shadow:0 0 0;background-color:#ccc;"/>
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-setid-form" class="note-btns-set-from">
+				<input id="note-btns-setid-form-input" class="input note-btns-set-from-input" type="text" name="the_set_id" placeholder="请输入一个新ID"/>
+				<input id="note-btns-setid-form-btn" type="submit" value="设置" class="btn note-btns-set-from-btn"/>
 			</form>
 
-			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-login-form" style="display:none;height:40px;">
-				<input id="note-btns-login-form-input" type="text" name="the_username" placeholder="用户名" class="input" style="width:870px;box-shadow:0 0 0;height:20px;background-color:#eee;font-size:16px;"/>
-				<input id="note-btns-login-form-btn" type="submit" value="登录 / 注册" class="btn" style="float:right;font-size:16px;width:130px;height:40px;box-shadow:0 0 0;background-color:#ccc;"/>
+			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-login-form" class="note-btns-set-from">
+				<input id="note-btns-login-form-input" class="input note-btns-set-from-input" type="text" name="the_username" placeholder="请输入用户名"/>
+				<input id="note-btns-login-form-btn" type="submit" value="登录 / 注册" class="btn note-btns-set-from-btn"  style="width:130px;"/>
 			</form>
 
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-passwddelete-form" style="display:none;margin:0;">
@@ -1509,9 +1573,10 @@ if($JavaScript !== ''){
 			</form>
 
 			<!-- [在其他设备上访问此记事本]对话框 -->
-	 		<div id="note-otherdev-background-div" style="display:none;">
+	 		<div id="note-otherdev" style="display:none;">
+				<div id="note-otherdev-black" onclick="$('#note-otherdev').fadeOut();"></div>
 				<div id="note-otherdev-div">
-					<div style="background:#34495E;padding:10px 0px 8px 10px;"><h4 style="color:#fff">在其他设备上访问此记事本</h4></div>
+					<div style="background:#333;padding:6px 10px 4px 10px;font-size:16px"><h4 style="color:#fff">在其他设备上访问此记事本<span style="float:right;font-size:24px;cursor:pointer;" onclick="$('#note-otherdev').fadeOut();">×</span></h4></div>
 
 					<div class="note-otherdev-div-divhr" style="margin-bottom:8px;"></div>
 
@@ -1524,7 +1589,7 @@ if($JavaScript !== ''){
 					<div class="note-otherdev-div-divhr"></div>
 
 					<div style="background-color:#ddd; height:58px;">
-						<button class="btn" style="float:right;margin:10px 10px 10px 0;" onclick="$('#note-otherdev-background-div').fadeOut();">关闭</button>
+						<button class="btn" style="float:right;margin:10px 10px 10px 0;background-color:#bbb;box-shadow:0 0 0;" onclick="$('#note-otherdev').fadeOut();">关闭</button>
 					</div>
 				</div>
 			</div>
@@ -1532,9 +1597,9 @@ if($JavaScript !== ''){
 
 			<!-- 记事本列表 -->
 			<?php if(isset($username)) : ?>
-				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
-					<div style="background-color:#2387CA;height:28px;width:230px;padding:6px 10px;">登入用户: <?php echo $username ?></div>
-					<div style="padding:5px 10px;">记事本: </div>
+				<div id="note-black" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;" onclick="mynote_display()"></div>
+				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;box-shadow: 1px 10px 10px rgba(0, 0, 0, 0.5);">
+					<div style="padding:5px 10px;background-color:#2387CA;"><?php echo $username ?>的记事本: </div>
 
 					<?php
 						foreach ($user_notes_array as $x) {
@@ -1544,7 +1609,7 @@ if($JavaScript !== ''){
 								$x_dis=$x;
 							}
 							if($x === $noteId)
-								echo '<a title="<?php echo $x; ?>" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'" class="note-mynote-list" style="background-color:#2977AB;" >'.$x_dis.'</a>';
+								echo '<a title="'.$x.'" class="note-mynote-list" style="background-color:#2387CA;" >'.$x_dis.'</a>';
 							else
 								echo '<a title="'.$x.'" id="note-list-'.$x.'" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x_dis.'<span onclick="return false;" ><span title="从列表中移除此记事本" style="margin-top:-1px;float:right;font-size:16px;cursor:pointer;" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
 						}
@@ -1553,6 +1618,7 @@ if($JavaScript !== ''){
 			<?php endif; ?>
 
 			<!-- 侧边栏菜单,用于小分辨率中 -->
+			<div id='note-menu-black' onclick="menu_display();" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
 			<div id="note-menu" style="background-color:#1C3146;height:600px;width:250px;left:1440px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 
 				<button class="menu-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-menu-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
@@ -1584,8 +1650,8 @@ if($JavaScript !== ''){
 			<div id="header">
 
 				<!-- MarkNote标题 && 返回主页按钮 -->
-				<div class="header-title">
-					<h1 title="首页" style="display:inline-block;font-size:24px;color:#FCFCFC;border:0;padding:0;cursor:pointer;margin-top:-3px;" onclick="$('#force-home-form').submit();" >MarkNote</h1>
+				<div class="header-title"  onclick="$('#force-home-form').submit();" >
+					<h1 title="首页" style="display:inline-block;font-size:24px;color:#FCFCFC;border:0;padding:0;cursor:pointer;margin-top:-3px;">MarkNote</h1>
 				</div>
 
 				<!-- 登陆按钮 或 我的记事本按钮 -->
@@ -1703,7 +1769,7 @@ if($JavaScript !== ''){
 					width: 24px;
 					display:inline-block;
 					height:24px;
-					background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+					background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
 					background-position:-48px 0px;
 					margin-bottom: -7px;
 				}
@@ -1711,7 +1777,7 @@ if($JavaScript !== ''){
 					width: 24px;
 					display:inline-block;
 					height:24px;
-					background:transparent url('http://cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+					background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
 					background-position:-24px 0px;
 					margin-bottom: -7px;
 				}
@@ -1721,9 +1787,9 @@ if($JavaScript !== ''){
 
 			</style>
 
-			<script src="http://cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
-			<script src="http://cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
-			<link href="http://cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
+			<script src="//cdn.bootcss.com/markdown.js/0.5.0/markdown.min.js"></script>
+			<script src="//cdn.bootcss.com/prism/0.0.1/prism.min.js"></script>
+			<link href="//cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet">
 			<script src="//cdn.bootcss.com/ace/1.1.9/ace.js"></script>
 			<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
@@ -1952,13 +2018,9 @@ if($JavaScript !== ''){
 				}
 
 				#back-to-note{
-					/*float: right;*/
 					text-decoration: none;
 					background: #3498DB;
 					color: #fff;
-					/*font-size: 15px;*/
-					/*margin: 8px 0 10px 0;*/
-					/*box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);*/
 				}
 
 				#home-btn-new:hover,#home-btn-go:hover,#back-to-note:hover{
