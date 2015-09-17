@@ -250,7 +250,7 @@
 
 	$noteId = @$_GET['n'];
 	$noteTitle = '新建';
-	$JavaScript = '';//用于保存需要在页面中输出的 javascript 代码, 以修正在文档开头输出 <script> 标签的问题
+	$JavaScript = '';//需要在页面中输出的 javascript 代码
 
 	$passwd = false;//代表当前的Note是否有密码
 	$note_content_to_show = '';//记事本的默认内容
@@ -262,16 +262,16 @@
 		$url = '';
 		$isNew = @$_GET['new'] === 'yes';
 
-		if( $isNew !== true && isset($_COOKIE['myNote']) && @$_POST['force_home'] != 'yes'){
+		if( !$isNew && isset($_COOKIE['myNote']) && @$_POST['force_home'] != 'yes'){
 			//如果是已保存cookie的老用户,并不是强制到主页(通过笔记本页的返回主页按钮).则取出记事本ID,并跳转根据ID跳转到笔记本页
 			$url = $_COOKIE['myNote'];
 		}else{
 
-			$page_type = 'home'; //设置是主页标记为真(在最后生成页面时作判断用)
+			$page_type = 'home'; //设置是主页标记为真
 
 			if( $isNew ){
 				//以当前的时间(带毫秒)再加上随机数生成唯一的(理论上) noteId
-				$url = md5(microtime(1) . mt_rand());
+				$url = substr( md5(microtime(1) . mt_rand()) , 15);
 			}
 		}
 
@@ -549,7 +549,7 @@
 						}
 
 						//密码删除成功
-						if($passwd === false){
+						if(!$passwd){
 							//删除Cookie
 							setcookie("myNodePasswdFor".$noteId, '', time()-1);
 							//提示信息
@@ -660,11 +660,8 @@
 					reLocation($noteId);
 				}
 
-				if(
-					isset($_POST['the_note']) && //有POST过来的 记事本 内容
-					(
-						isset($_POST['save']) || @$_POST['ajax_save'] === 'yes'
-					)
+				if( isset($_POST['the_note']) && //有POST过来的 记事本 内容
+					(isset($_POST['save']) || @$_POST['ajax_save'] === 'yes')
 				){
 
 					$to_save_raw = $_POST['the_note'];
@@ -710,7 +707,8 @@
 
 				$note_content_to_show = $IsMd ? ($the_markdown_type . '#MarkDown格式记事本
 - - -
-在**右侧**编辑记事本，会在**左侧**显示效果。') : '';
+在**右侧**编辑记事本，会在**左侧**显示效果。
+') : '';
 
 				//创建新新文件
 
@@ -913,17 +911,21 @@
 			document.getElementById("html-box").innerHTML = document.getElementById("html-box").innerHTML.replace(/\[ \]/g, "<span class=\"checkbox-notchecked\"></span> ");
 		</script>
 <?php exit(); endif; ?>
+
 		<script type="text/javascript">
 			var is_passwd_set_show = false;
 			var is_id_set_show = false;
 			var is_login_show = false;
 			var is_mynote_show = false;
 			var is_menu_show = false;
+			var is_set_show = false;
+
 			var is_need_save = false;
 			var is_pic_loaded = false;
+			var settings = '';
 
 			$(document).ready(function(){
-				$("#note-btns-save-ajax").css({"background-color":"#34495E","cursor":"default"});
+				$("#note-btns-save-ajax").css({"cursor":"default"});
 				$("#note-btns-save-ajax").addClass("note-btns-save-ajax-saved");
 				$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
 
@@ -946,11 +948,8 @@
 				$("textarea").height(winh-68);
 				$("#note-mynote").height(winh-48);
 				$("#note-menu").height(winh-48);
-				if(is_menu_show){
-					$("#note-menu").css("left",winw-250+'px');
-				}else{
-					$("#note-menu").css("left",winw+'px');
-				}
+				$("#note-set").height(winh-48);
+
 				$("#note-btns-setpasswd-form-input").width(winw-120);
 				$("#note-btns-setid-form-input").width(winw-120);
 				$("#note-btns-login-form-input").width(winw-150);
@@ -968,12 +967,21 @@
 						elements: ['note-md-show']
 					});
 				<?php endif; ?>
+
+				var settings_raw = getCookie('myNoteSettings');
+
+				if( !settings_raw ){
+					setCookie('myNoteSettings','blue,14',1000000);
+					settings = 'blue,14'.split(',');
+				}else{
+					settings = settings_raw.split(',');
+				}
+
+				change_theme(settings[0]);
+
 			});
 
-<?php
-if($JavaScript !== ''){
-	echo $JavaScript;
-}?>
+			<?php echo $JavaScript;?>
 
 			//窗口大小改变时调整布局
 			window.onresize = function () {
@@ -999,10 +1007,16 @@ if($JavaScript !== ''){
 
 				$("#note-mynote").height(winh-48);
 				$("#note-menu").height(winh-48);
+				$("#note-set").height(winh-48);
 				if(is_menu_show){
 					$("#note-menu").css("left",winw-250+'px');
 				}else{
 					$("#note-menu").css("left",winw+'px');
+				}
+				if(is_set_show){
+					$("#note-set").css("left",winw-250+'px');
+				}else{
+					$("#note-set").css("left",winw+'px');
 				}
 
 
@@ -1023,9 +1037,6 @@ if($JavaScript !== ''){
 			}
 
 			function set_from_display(the_id, is_display){
-				// $("#note-btns-setpasswd-form-input").width($("#note-btns-passwdset-form").width()-120);
-				// $("#note-btns-setid-form-input").width($("#note-btns-setid-form").width()-120);
-				// $("#note-btns-login-form-input").width($("#note-btns-login-form").width()-150);
 				if( !is_display ){
 					$(the_id).slideDown(500);
 					$('#note-main-form-div').animate({height:'-=40px'},500);
@@ -1055,97 +1066,20 @@ if($JavaScript !== ''){
 
 			//显示/隐藏 更改密码框
 			function psaawd_set_display(){
-				// if( !is_passwd_set_show ){
-				// 	$('#note-btns-passwdset-form').slideDown(500);
-				// 	$('#note-main-form-div').animate({height:'-=40px'},500);
-				// 	is_passwd_set_show = true;
-				// 	<?php if ( $page_type == 'md_note' ) : ?>
-				// 		$("#note-md-edit").animate({height:'-=40px'},500);
-				// 		$("#note-md-show").animate({height:'-=40px'},500);
-				// 		$("#note-md-move").animate({height:'-=40px'},500);
-				// 	<?php else : ?>
-				// 		$("#note-text-edit").animate({height:'-=40px'},500);
-				// 	<?php endif; ?>
-				// 	$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
-				// 	$("#note-mynote").animate({height:'-=40px', top:'+=40px'},500);
-				// }else{
-				// 	$('#note-btns-passwdset-form').slideUp(500);
-				// 	$('#note-main-form-div').animate({height:'+=40px'},500);
-				// 	is_passwd_set_show = false;
-				// 	<?php if ( $page_type == 'md_note' ) : ?>
-				// 		$("#note-md-edit").animate({height:'+=40px'},500);
-				// 		$("#note-md-show").animate({height:'+=40px'},500);
-				// 		$("#note-md-move").animate({height:'+=40px'},500);
-				// 	<?php else : ?>
-				// 		$("#note-text-edit").animate({height:'+=40px'},500);
-				// 	<?php endif; ?>
-				// 	$("#note-menu").animate({height:'+=40px', top:'-=40px'},500);
-				// 	$("#note-mynote").animate({height:'+=40px', top:'-=40px'},500);
-				// }
 				set_from_display("#note-btns-passwdset-form", is_passwd_set_show);
 				is_passwd_set_show=!is_passwd_set_show;
 			}
 
 			//显示/隐藏 更改ID框
 			function id_set_display(){
-
-				if( !is_id_set_show ){
-					$('#note-btns-setid-form').slideDown(500);
-					$('#note-main-form-div').animate({height:'-=40px'},500);
-					is_id_set_show = true;
-					<?php if ( $page_type == 'md_note' ) : ?>
-						$("#note-md-edit").animate({height:'-=40px'},500);
-						$("#note-md-show").animate({height:'-=40px'},500);
-						$("#note-md-move").animate({height:'-=40px'},500);
-					<?php else : ?>
-						$("#note-text-edit").animate({height:'-=40px'},500);
-					<?php endif; ?>
-					$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
-					$("#note-mynote").animate({height:'-=40px', top:'+=40px'},500);
-				}else{
-					$('#note-btns-setid-form').slideUp(500);
-					$('#note-main-form-div').animate({height:'+=40px'},500);
-					is_id_set_show = false;
-					<?php if ( $page_type == 'md_note' ) : ?>
-						$("#note-md-edit").animate({height:'+=40px'},500);
-						$("#note-md-show").animate({height:'+=40px'},500);
-						$("#note-md-move").animate({height:'+=40px'},500);
-					<?php else : ?>
-						$("#note-text-edit").animate({height:'+=40px'},500);
-					<?php endif; ?>
-					$("#note-menu").animate({height:'+=40px', top:'-=40px'},500);
-					$("#note-mynote").animate({height:'+=40px', top:'-=40px'},500);
-				}
+				set_from_display("#note-btns-setid-form", is_id_set_show);
+				is_id_set_show=!is_id_set_show;
 			}
 
 			//显示/隐藏 登录框
 			function login_display(){
-
-				if( !is_login_show ){
-					$('#note-btns-login-form').slideDown(500);
-					$('#note-main-form-div').animate({height:'-=40px'},500);
-					is_login_show = true;
-					<?php if ( $page_type == 'md_note' ) : ?>
-						$("#note-md-edit").animate({height:'-=40px'},500);
-						$("#note-md-show").animate({height:'-=40px'},500);
-						$("#note-md-move").animate({height:'-=40px'},500);
-					<?php else : ?>
-						$("#note-text-edit").animate({height:'-=40px'},500);
-					<?php endif; ?>
-					$("#note-menu").animate({height:'-=40px', top:'+=40px'},500);
-				}else{
-					$('#note-btns-login-form').slideUp(500);
-					$('#note-main-form-div').animate({height:'+=40px'},500);
-					is_login_show = false;
-					<?php if ( $page_type == 'md_note' ) : ?>
-						$("#note-md-edit").animate({height:'+=40px'},500);
-						$("#note-md-show").animate({height:'+=40px'},500);
-						$("#note-md-move").animate({height:'+=40px'},500);
-					<?php else : ?>
-						$("#note-text-edit").animate({height:'+=40px'},500);
-					<?php endif; ?>
-					$("#note-menu").animate({height:'+=40px', top:'-=40px'},500);
-				}
+				set_from_display("#note-btns-login-form", is_login_show);
+				is_login_show=!is_login_show;
 			}
 
 			function mynote_display(){
@@ -1154,7 +1088,7 @@ if($JavaScript !== ''){
 					is_mynote_show = true;
 					$('#note-black').fadeIn();
 				}else{
-					$('#note-mynote').animate({left:'-250px'});
+					$('#note-mynote').animate({left:'-260px'});
 					is_mynote_show = false;
 					$('#note-black').fadeOut();
 				}
@@ -1173,6 +1107,60 @@ if($JavaScript !== ''){
 					is_menu_show = true;
 					$('#note-menu-black').fadeIn();
 				}
+			}
+
+			function set_display(){
+				var winw=window.innerWidth
+					|| document.documentElement.clientWidth
+					|| document.body.clientWidth;
+				if( is_set_show ){
+					$('#note-set').animate({left:winw+'px'});
+					is_set_show = false;
+					$('#note-set-black').fadeOut();
+				}else{
+					$('#note-set').animate({left:winw-250+'px'});
+					is_set_show = true;
+					$('#note-set-black').fadeIn();
+				}
+			}
+
+			function setCookie(c_name,value,expiredays){
+				var exdate=new Date()
+				exdate.setDate(exdate.getDate()+expiredays)
+				document.cookie=c_name+ "=" +escape(value)+
+				((expiredays==null) ? "" : ";expires="+exdate.toGMTString())
+			}
+
+			function getCookie(c_name){
+				if (document.cookie.length>0){
+					c_start=document.cookie.indexOf(c_name + "=")
+					if (c_start!=-1){
+					    c_start=c_start + c_name.length+1
+					    c_end=document.cookie.indexOf(";",c_start)
+					    if (c_end==-1) c_end=document.cookie.length
+					    return unescape(document.cookie.substring(c_start,c_end))
+				    }
+				}
+				return ""
+			}
+
+			function change_theme(color){
+				settings[0]=color;
+				Colors=new Array();
+				Colors['black']=['#000','#222'];
+				Colors['blue']=['#0072C6','#0062B6'];
+				Colors['default']=['#34495E','#1C3146'];
+				Colors['green']=['#008A17','#007A07'];
+				Colors['green2']=['#03B3B2','#03A3A2'];
+				Colors['red']=['#AC193D','#9C092D'];
+
+				$("#header").css("background-color", Colors[color][0]);
+				$("#note-set").css("background-color", Colors[color][1]);
+				$("#note-mynote").css("background-color", Colors[color][1]);
+				$("#note-menu").css("background-color", Colors[color][1]);
+				$(".menu-btn").css("background-color", Colors[color][1]);
+
+				setCookie('myNoteSettings', settings, 1000000);
 			}
 
 			//使用ajax保存记事本
@@ -1348,6 +1336,7 @@ if($JavaScript !== ''){
 				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 				cursor: pointer;
 				font-size: 14px;
+				transition: background-color 0.2s;
 			}
 
 			.btn:hover{
@@ -1375,6 +1364,8 @@ if($JavaScript !== ''){
 				padding: 13px 16px 11px 16px;
 				float: left;
 				cursor: pointer;
+
+				transition: background-color 0.2s;
 			}
 
 			.header-btn{
@@ -1382,23 +1373,22 @@ if($JavaScript !== ''){
 				height: 48px;
 				padding: 11px 21px 13px 17px;
 				float: right;
-			}
-
-			.header-btn:hover, .header-title:hover{
-				background-color: #1C3146;
-			}
-
-			#note-btns-save-ajax:hover{
-				background-color: #2387CA;
-			}
-
-			.header-btn{
 				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				color: #fff;
 				background-color: transparent;
 				border: 0px;
 				font-size: 16px;
 				margin: 0;
+
+				transition: background-color 0.2s;
+			}
+
+			.header-btn:hover, .header-title:hover{
+				background-color: #0C2136;
+			}
+
+			#note-btns-save-ajax:hover{
+				background-color: #2387CA;
 			}
 
 			.header-btn div{
@@ -1461,7 +1451,7 @@ if($JavaScript !== ''){
 				}
 
 				@media screen and (max-width: 965px){
-					#note-btns-passwd-btn, #note-btns-changeid-btn, #note-btns-tohtml-btn, #note-btns-otherdev-btn{
+					#note-btns-passwd-btn, #note-btns-changeid-btn, #note-btns-tohtml-btn, #note-btns-otherdev-btn, #note-btns-setting-btn{
 						display: none;
 					}
 					#note-btns-showall{
@@ -1487,7 +1477,7 @@ if($JavaScript !== ''){
 				#note-otherdev-div{
 					position: fixed;
 					width: 300px;
-					height: 412px;
+					height: auto;
 					top: 50%;
 					left: 50%;
 					background-color: #fff;
@@ -1508,26 +1498,32 @@ if($JavaScript !== ''){
 					display: block;
 					color: #fff;
 					cursor: default;
+					transition: background-color 0.2s;
 				}
 
 				.note-mynote-list:hover{
 					background-color: #0C2136;
 				}
 
+				.note-mynote-list div{
+					margin-bottom: -8px;
+				}
+
 				.menu-btn{
 					padding: 10px 20px;
 					display: block;
 					cursor: default;
-					background-color: #1C3146;
 					color: #fff;
 					border: 0px;
 					width: 100%;
+					background-color: #1C3146;
 					text-align: left;
 					font-size: 16px;
+					transition: background-color 0.2s;
 				}
 
 				.menu-btn:hover{
-					background-color: #0C2136;
+					background-color: #0C2136 !important;
 				}
 
 				.menu-btn div{
@@ -1549,6 +1545,15 @@ if($JavaScript !== ''){
 				}
 				.note-btns-set-from-btn:hover{
 					background-color:#1377BA;
+				}
+
+				.remove-note-x{
+					margin-top:-1px;float:right;font-size:16px;cursor:pointer;
+					transition: color 0.2s;
+				}
+
+				.remove-note-x:hover{
+					color: #ccc;
 				}
 
 			</style>
@@ -1588,7 +1593,7 @@ if($JavaScript !== ''){
 
 					<div class="note-otherdev-div-divhr"></div>
 
-					<div style="background-color:#ddd; height:58px;">
+					<div style="background-color:#ddd; height:59px;">
 						<button class="btn" style="float:right;margin:10px 10px 10px 0;background-color:#bbb;box-shadow:0 0 0;" onclick="$('#note-otherdev').fadeOut();">关闭</button>
 					</div>
 				</div>
@@ -1598,7 +1603,7 @@ if($JavaScript !== ''){
 			<!-- 记事本列表 -->
 			<?php if(isset($username)) : ?>
 				<div id="note-black" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;" onclick="mynote_display()"></div>
-				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-250px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;box-shadow: 1px 10px 10px rgba(0, 0, 0, 0.5);">
+				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-260px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;box-shadow: 1px 10px 10px rgba(0, 0, 0, 0.5);">
 					<div style="padding:5px 10px;background-color:#2387CA;"><?php echo $username ?>的记事本: </div>
 
 					<?php
@@ -1611,9 +1616,10 @@ if($JavaScript !== ''){
 							if($x === $noteId)
 								echo '<a title="'.$x.'" class="note-mynote-list" style="background-color:#2387CA;" >'.$x_dis.'</a>';
 							else
-								echo '<a title="'.$x.'" id="note-list-'.$x.'" href="'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x_dis.'<span onclick="return false;" ><span title="从列表中移除此记事本" style="margin-top:-1px;float:right;font-size:16px;cursor:pointer;" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
+								echo '<a title="'.$x.'" id="note-list-'.$x.'" href="./'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x_dis.'<span onclick="return false;" ><span title="从列表中移除此记事本" class="remove-note-x" style="" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
 						}
 					?>
+					<a title="使用一个随机的ID创建一个记事本，ID可在稍后更改" href="./?new=yes" class="note-mynote-list" style="margin-left:-5px;"><div data-icon="ei-plus" style="margin-bottom: -8px;"></div> 新建记事本</a>
 				</div>
 			<?php endif; ?>
 
@@ -1621,7 +1627,7 @@ if($JavaScript !== ''){
 			<div id='note-menu-black' onclick="menu_display();" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
 			<div id="note-menu" style="background-color:#1C3146;height:600px;width:250px;left:1440px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 
-				<button class="menu-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-menu-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
+				<button class="menu-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-menu-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
 
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
@@ -1643,8 +1649,25 @@ if($JavaScript !== ''){
 				<button class="menu-btn" title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-menu-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>
 
 				<button class="menu-btn" id="note-menu-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
+
+				<button class="menu-btn" id="note-menu-btns-setting-btn" title="设置" onclick="set_display();" ><div data-icon="ei-gear"></div><span>设置</span></button>
 			</div>
 
+
+			<!-- 设置侧边栏 -->
+			<div id='note-set-black' onclick="set_display();" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
+			<div id="note-set" style="background-color:#1C3146;height:600px;width:250px;left:1440px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
+				<div style="padding:5px 10px;">
+					<b style="margin-bottom:5px;">颜色</b><br/>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#0072C6" onclick="change_theme('blue')"></span>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#34495E" onclick="change_theme('default')"></span>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#000" onclick="change_theme('black')"></span>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#008A17" onclick="change_theme('green')"></span>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#03B3B2" onclick="change_theme('green2')"></span>
+					<span style="cursor:pointer;display:inline-block;margin-left:6px;width:20px;height:20px;background-color:#AC193D" onclick="change_theme('red')"></span>
+				</div>
+
+			</div>
 
 			<!-- 顶栏 -->
 			<div id="header">
@@ -1664,7 +1687,7 @@ if($JavaScript !== ''){
 				<!-- 保存 -->
 				<span class="header-btn" title="也可按Ctrl+S保存" id="note-btns-save-ajax" onclick="ajax_save();">保存</span>
 
-				<button class="header-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>在其它设备上访问</span></button>
+				<button class="header-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
 
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
@@ -1690,6 +1713,9 @@ if($JavaScript !== ''){
 				<!-- 更换ID按钮 -->
 				<button class="header-btn" id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
 
+				<!-- 设置侧边栏按钮 -->
+				<button class="header-btn" id="note-btns-setting-btn" title="设置" onclick="set_display();" ><div data-icon="ei-gear"></div><span>设置</span></button>
+
 				<!-- 在小分辨率下,显示这个菜单按钮 -->
 				<button class="header-btn" id="note-btns-showall" title="显示其他功能" onclick="menu_display();"><div data-icon="ei-navicon"></div><span>菜单</span></button>
 
@@ -1699,7 +1725,6 @@ if($JavaScript !== ''){
 
 
 		<!-- 纯文本记事本编辑页 -->
-
 		<?php if ( $page_type == 'text_note' ) : ?>
 
 			<!-- 大框子 -->
@@ -1837,10 +1862,6 @@ if($JavaScript !== ''){
 						document.getElementById("note-md-show").scrollTop=t * (document.getElementById("note-md-show").scrollHeight-document.getElementById("note-md-show").offsetHeight) / (document.getElementById("note-md-edit-scrollbar").scrollHeight-document.getElementById("note-md-edit-scrollbar").offsetHeight);
 					});
 				};
-			</script>
-
-			<script type="text/javascript">
-
 			</script>
 
 			<!-- 大框子 -->
@@ -2082,7 +2103,7 @@ if($JavaScript !== ''){
 					</span>
 
 					<form action="?new=yes" method="post" id="home-form-new">
-						<button title="使用一个随机的ID创建一个记事本" id="home-btn-new" class="btn">立刻创建</button>
+						<button title="使用一个随机的ID创建一个记事本，ID可在稍后更改" id="home-btn-new" class="btn">立刻创建</button>
 					</form>
 
 				</div>
