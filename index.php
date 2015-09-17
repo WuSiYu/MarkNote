@@ -1166,7 +1166,7 @@
 			//使用ajax保存记事本
 			function ajax_save(){
 				if( is_need_save ){
-					$("#note-btns-save-ajax").css({"background-color":"#34495E", "cursor":"wait", "padding":"11px 20px 13px 20px"});
+					$("#note-btns-save-ajax").css({"background-color":"transparent", "cursor":"wait", "padding":"11px 20px 13px 20px"});
 					$("#note-btns-save-ajax").css({"cursor":"wait"}).html("保存中");
 					$.post("<?php echo_note_url(); ?>",
 					{
@@ -1179,7 +1179,7 @@
 						note_type:"<?php echo $page_type ?>"
 					},
 					function(data,status){
-						$("#note-btns-save-ajax").css({"background-color":"#34495E", "cursor":"default", "padding":"11px 20px 13px 20px"});
+						$("#note-btns-save-ajax").css({"cursor":"default", "padding":"11px 20px 13px 20px"});
 						$("#note-btns-save-ajax").addClass("note-btns-save-ajax-saved");
 						$("#note-btns-save-ajax").css({"cursor":"default"}).html("已保存");
 						is_need_save = false;
@@ -1423,7 +1423,7 @@
 				}
 
 				.note-btns-save-ajax-saved:hover{
-					background-color: #34495E !important;
+					background-color: transparent !important;
 				}
 
 				textarea{
@@ -1604,7 +1604,7 @@
 			<?php if(isset($username)) : ?>
 				<div id="note-black" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;" onclick="mynote_display()"></div>
 				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-260px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;box-shadow: 1px 10px 10px rgba(0, 0, 0, 0.5);">
-					<div style="padding:5px 10px;background-color:#2387CA;"><?php echo $username ?>的记事本: </div>
+					<div style="padding:5px 10px;background-color:#1D81C4;"><?php echo $username ?>的记事本: </div>
 
 					<?php
 						foreach ($user_notes_array as $x) {
