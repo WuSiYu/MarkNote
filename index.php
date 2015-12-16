@@ -316,7 +316,7 @@
 					$this_line_array = explode(" ", $passwd_file_this_line);
 
 					if( $this_line_array[0] === $username ){
-						//如果这个ID有密码并在这一行中
+						//如果找到用户名并在这一行中
 
 						$have_user = true;//有USER标记为真
 
@@ -370,7 +370,6 @@
 
 				}else{
 					if( isset($_POST['delete_note_in_list']) ){
-						print_r($user_notes_array);
 						$key = array_search($noteId,$user_notes_array);
 						array_splice($user_notes_array, $key, 1);
 						$user_notes =  implode(";", $user_notes_array);
@@ -386,7 +385,7 @@
 								$this_line_array = explode(" ",$users_file_this_line);
 
 								if( $this_line_array[0] === $username ){
-									//如果这个ID有密码并在这一行中
+									//如果找到用户名并在这一行中
 									$users_file_content = file_get_contents(NOTE_USERS_FILE);
 									$users_file_content_part_1 = substr($users_file_content,0,ftell($users_file)-strlen($users_file_this_line) );
 									$users_file_content_part_2 = substr($users_file_content,ftell($users_file));
@@ -590,13 +589,16 @@
 					}
 				}
 
+
+				//修改ID
 				if( isset($_POST['the_set_id']) ){
 					$new_id = $_POST['the_set_id'];
 					if( !preg_match('/^[A-Za-z0-9]+$/', $new_id) || strlen($new_id) < 3 || strlen($new_id) > 200){
 						//如果ID不符合规范
 						show_error_exit("错误：输入的ID不合法");
 					}
-					//判断是否已有笔记本
+
+					//判断新ID是否已有笔记本
 					if( !$use_sql ){
 						$this_ID_have_note = file_exists(NOTE_DATA . $new_id);
 					}else{
@@ -609,6 +611,7 @@
 						show_error_exit("错误：输入的ID已存在");
 					}
 
+					//设置新ID
 					if( !$use_sql ){
 						rename(NOTE_DATA.$noteId,NOTE_DATA.$new_id);
 					}else{
@@ -647,6 +650,38 @@
 						$passwd = false;
 					}
 
+
+					//如果用户中已记录这个ID，则删除它
+					if( isset($_COOKIE['myNoteUsername']) ){
+						$key = array_search($noteId,$user_notes_array);
+						array_splice($user_notes_array, $key, 1);
+						$user_notes =  implode(";", $user_notes_array);
+						if( !$use_sql ){
+							$users_file = fopen(NOTE_USERS_FILE, 'a+');
+
+							//读取密码文件
+							while( !feof($users_file) ){
+								//读取一行
+								$users_file_this_line = fgets($users_file);
+
+								//把这行分为两段
+								$this_line_array = explode(" ",$users_file_this_line);
+
+								if( $this_line_array[0] === $username ){
+									//如果找到用户名并在这一行中
+									$users_file_content = file_get_contents(NOTE_USERS_FILE);
+									$users_file_content_part_1 = substr($users_file_content,0,ftell($users_file)-strlen($users_file_this_line) );
+									$users_file_content_part_2 = substr($users_file_content,ftell($users_file));
+									file_put_contents(NOTE_USERS_FILE, $users_file_content_part_1.$username.' '.$user_notes."\n".$users_file_content_part_2);
+									break;
+								}
+							}
+							//关闭文件
+							fclose($users_file);
+						}else{
+							mysqli_query($notesql,"UPDATE ".$sql_table_user." SET notes = '". $user_notes ."' WHERE username = '".$username."'");
+						}
+					}
 					reLocation($new_id);
 				}
 
@@ -1952,7 +1987,7 @@
 					background: #fff;
 					display: inline-block;
 					width: 440px;
-					height: 550px;
+					height: 577px;
 					padding: 20px;
 				}
 
@@ -2063,7 +2098,7 @@
 					}
 
 					.homediv{
-						height: 140px;
+						height: 167px;
 						clear: both;
 						display: block;
 						float: none !important;
@@ -2097,6 +2132,7 @@
 				<div class="homediv">
 
 					<h2>还没有记事本?</h2>
+					<p style="margin:12px 0 0 0;">将使用随机的ID新建，可随时更改。也可直接在右侧指定ID新建。</p>
 
 					<span class="icon icon-mid">
 						<span class="icon-plus"></span>
@@ -2110,7 +2146,8 @@
 
 				<div style="float:right;" class="homediv">
 
-					<h2>已有记事本</h2>
+					<h2>已有记事本 或 指定ID新建记事本</h2>
+					<p style="margin:12px 0 0 0;">根据输入的ID访问记事本，若该ID不存在会自动新建。</p>
 
 					<span class="icon icon-mid">
 						<span class="icon-file"></span>
@@ -2118,7 +2155,7 @@
 
 					<form action="" method="get" id="home-form-go">
 						<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" />
-						<button title="根据输入的记事本ID来访问记事本" id="home-btn-go" class="btn">访问</button>
+						<button title="根据输入的记事本ID来访问记事本" id="home-btn-go" class="btn">提交</button>
 					</form>
 
 				</div>
