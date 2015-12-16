@@ -1,8 +1,8 @@
-#过滤文件存储模式下的记事本数据
-NoteData/
+#过滤数据
+data/
 
 #过滤自动生成的伪静态配置文件
 .htaccess
 
 #过滤自动生成的配置文件
-NoteConfig.php
+config.php
