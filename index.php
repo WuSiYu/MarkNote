@@ -10,8 +10,8 @@
 	// 5. 可将记事本下载到本地
 	// 6. 可以将Markdown记事本一键生成网页
 	// 7. 支持伪静态(http://233333.net/记事本名),仅限apache,默认开启,若环境不支持请关闭
-	// 8. 支持使用任意英文和数字作为ID
-	// 9. 可随时更改记事本的ID
+	// 8. 支持使用任意英文和数字作为名称
+	// 9. 可随时更改记事本的名称
 	// 10.Markdown记事本支持代码高亮,在代码块的首行用[Python code]这样的格式来规定语言,大写小写均可
 
 	//=== 选项 =============================
@@ -35,11 +35,11 @@
 	function show_error_exit($output,$show_return=true){
 		//输出错误信息并终止
 		echo '<!DOCTYPE html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-			<style>body{font-family: "文泉驛正黑","Microsoft yahei UI","Microsoft yahei","微软雅黑","Lato",Helvetica,Arial,sans-serif !important;}button{border: 0;background: #3498DB;color: #fff;font-size: 16px;padding:5px 10px;box-shadow: 0px 1px 3px rgba(100, 100, 100, 0.3);}</style><title>MarkNote</title></head>';
+			<style>body{font-family: "文泉驛正黑","Microsoft yahei UI","Microsoft yahei","微软雅黑","Lato",Helvetica,Arial,sans-serif !important;}button{border: 0;background: #3498DB;color: #fff;font-size: 16px;padding:5px 10px;box-shadow: 0 1px 3px rgba(100, 100, 100, 0.3);}</style><title>MarkNote</title></head>';
 		echo '<body style="background-color:#eee;margin:50px auto;width:800px;">';
-		echo '<div style="padding:20px;margin:0;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);">';
+		echo '<div style="padding:20px;margin:0;color:#555;background:#fff;border:0;box-shadow:0 2px 6px rgba(100, 100, 100, 0.3);">';
 		echo '<p style="margin:0 0 5px 0;">'.$output.'</p>';
-		if($show_return) echo '<br/><button onclick="history.go(-1)">< 返回</button>';
+		if($show_return) echo '<br/><button onclick="history.go(-1)" style="cursor: pointer;" >< 返回</button>';
 		echo '</div>';
 		echo '</body></html>';
 		exit();
@@ -53,23 +53,62 @@
 		<title>输入密码</title>
 		<style type="text/css">
 			body{
-				background:#eee;width:500px;margin:20px auto 20px auto;
+				background: #eee;
+				margin: 0;
+				font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+				line-height: 27px;
+			}
+			h1,h2,h3{
+				font-weight: 400;
+				margin: 0;
 			}
 			#input-passwd{
-				font-size:14px;width:400px;padding:10px;margin:0;font-size:14px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);
+				font-size: 16px;
+				width: 480px;
+				padding: 10px;
+				margin: 0 15px 0 0;
+				color: #333;
+				background: #C6E8FF;
+				border: 0;
+				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 			}
 			#input-submit{
-				font-size:14px;padding:9px 20px;color:#555;background:#fff;border:0;box-shadow:0px 2px 6px rgba(100, 100, 100, 0.3);cursor:pointer;
+				font-size: 16px;
+				padding: 9px 20px;
+				color: #fff;
+				background: #3498DB;
+				border: 0;
+				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+			#input-submit:hover{
+				background: #45A9EC;
+			}
+			#header{
+				width: 100%;
+				background-color: #0072C6;
+				height: 48px;
+			}
+			.header-title{
+				display: inline-block;
+				height: 24px;
+				padding: 13px 16px 11px 16px;
+				float: left;
+				cursor: pointer;
+			}
+			#box{
+				max-width: 600px;
+				margin: 40px auto;
+				padding: 20px;
+				background-color: #fff;
+				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
 			}
 
-			@media screen and (max-width: 500px){
-				body{
-					width:100%;
-					padding: 20px;
-					margin: 0;
-				}
-				form{
-					width:100%;
+			@media screen and (max-width: 700px){
+				#box{
+					width:auto;
+					margin: 40px 30px;
 				}
 				#input-passwd{
 					width: 70%;
@@ -78,15 +117,49 @@
 					width: 20%;
 				}
 			}
+			@media screen and (max-width: 500px){
+				#input-passwd{
+					width: 55%;
+					margin: 0 10px 0 0;
+				}
+				#input-submit{
+					width: 30%;
+				}
+			}
+			@media screen and (max-width: 500px){
+				#input-passwd{
+					width: 100%;
+					margin: 0 0 10px 0;
+					box-sizing: border-box;
+				}
+				#input-submit{
+					width: 100%;
+				}
+			}
 
 		</style>
 	</head>
 	<body>
-		<h3 style="font-weight:400;">此记事本有密码, 请输入密码以继续访问</h3>
-		<form action="<?php echo_note_url(); ?>" method="post">
-			<input id="input-passwd" type="password" name="GiveYouPasswd" placeholder="密码" style=""/>
-			<input id="input-submit" type="submit" value="提交" style="" />
+		<!-- 强制主页表单 -->
+		<form action="./" method="post" style="display:none;" id="force-home-form">
+			<input type="hidden" name="force_home" value="yes">
 		</form>
+
+		<!-- 顶栏 -->
+		<div id="header">
+			<!-- MarkNote标题 && 返回主页按钮 -->
+			<div class="header-title"  onclick="$('#force-home-form').submit();" >
+				<h1 title="首页" style="display:inline-block;font-size:24px;color:#FCFCFC;border:0;padding:0;cursor:pointer;margin-top:-3px;">MarkNote</h1>
+			</div>
+		</div>
+
+		<div id="box">
+			<h3 style="margin-bottom:20px;">此记事本设有密码, 请输入密码以继续访问</h3>
+			<form action="<?php echo_note_url(); ?>" method="post">
+				<input id="input-passwd" type="password" name="GiveYouPasswd" placeholder="密码" style=""/>
+				<input id="input-submit" type="submit" value="提交" style="" />
+			</form>
+		</div>
 	</body>
 </html>
 		<?php
@@ -263,7 +336,7 @@
 		$isNew = @$_GET['new'] === 'yes';
 
 		if( !$isNew && isset($_COOKIE['myNote']) && @$_POST['force_home'] != 'yes'){
-			//如果是已保存cookie的老用户,并不是强制到主页(通过笔记本页的返回主页按钮).则取出记事本ID,并跳转根据ID跳转到笔记本页
+			//如果是已保存cookie的老用户,并不是强制到主页(通过笔记本页的返回主页按钮).则取出记事本名称,并跳转根据名称跳转到笔记本页
 			$url = $_COOKIE['myNote'];
 		}else{
 
@@ -279,10 +352,10 @@
 			reLocation($url);
 		}
 	}else{
-		//如果指定了ID
+		//如果指定了名称
 		if( !preg_match('/^[A-Za-z0-9]+$/', $noteId) || strlen($noteId) < 3 || strlen($noteId) > 200){
-			//如果ID不符合规范
-			show_error_exit("错误：输入的ID不合法");
+			//如果名称不符合规范
+			show_error_exit("错误：输入的名称不合法，仅英文字母和数字。");
 		}
 
 		$noteTitle = $noteId;
@@ -340,7 +413,7 @@
 
 			if( $have_user ){
 				$user_notes_array = explode(";", $user_notes);
-				if( !in_array($noteId, $user_notes_array) ){	//如果ID没有被记录
+				if( !in_array($noteId, $user_notes_array) ){	//如果名称没有被记录
 					$user_notes = $user_notes.';'.$noteId;
 					if( !$use_sql ){
 						$users_file = fopen(NOTE_USERS_FILE, 'a+');
@@ -354,7 +427,7 @@
 							$this_line_array = explode(" ",$users_file_this_line);
 
 							if( $this_line_array[0] === $username ){
-								//如果这个ID有密码并在这一行中
+								//如果这个名称有密码并在这一行中
 								$users_file_content = file_get_contents(NOTE_USERS_FILE);
 								$users_file_content_part_1 = substr($users_file_content,0,ftell($users_file)-strlen($users_file_this_line) );
 								$users_file_content_part_2 = substr($users_file_content,ftell($users_file));
@@ -418,7 +491,7 @@
 		}
 
 		if( $this_ID_have_note ){
-			//如果ID已有笔记
+			//如果名称已有笔记
 			if( !$use_sql ){
 				$note_content_to_show = file_get_contents(NOTE_DATA . $noteId);
 				$note_content_to_show = str_replace("&#92;", "\\",$note_content_to_show);
@@ -464,7 +537,7 @@
 
 				$realpasswd = '';
 
-				//检查是这个ID是否有密码
+				//检查是这个名称是否有密码
 				if( !$use_sql ){
 
 					//打开密码文件
@@ -479,7 +552,7 @@
 						$this_line_array = explode(" ", $passwd_file_this_line);
 
 						if( $this_line_array[0] === $noteId ){
-							//如果这个ID有密码并在这一行中
+							//如果这个名称有密码并在这一行中
 
 							//有密码标记为真
 							$passwd = true;
@@ -789,11 +862,11 @@
 		<style type="text/css">
 			body{
 				font-size: 16px;
-				font-family: Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+				font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 				line-height: 27px;
 				background: #eee;
 				width: 1100px;
-				margin: 0px auto 10px auto;
+				margin: 0 auto 10px auto;
 				color: #34495E;
 			}
 			h1{
@@ -808,7 +881,7 @@
 				max-width: 100%;
 			}
 			#html-box{
-				box-shadow: 0px 2px 6px rgba(100, 100, 100, 0.3);
+				box-shadow: 0 2px 6px rgba(100, 100, 100, 0.3);
 				background-color: #fff;
 				padding: 20px;
 				margin: 50px 0;
@@ -832,7 +905,7 @@
 				margin: 5px 0;
 				padding: 5px;
 				background-color: #F2F2F5;
-				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 			}
 			#html-box pre code{
 				background-color: #F2F2F5;
@@ -845,8 +918,8 @@
 				line-height: 16px;
 				background-color: #ddd;
 				padding: 4px 8px 2px 8px;
-				margin: 0px 2px;
-				font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+				margin: 0 2px;
+				font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 			}
 			#html-box .MathJax_Display,#note-md-show .MathJax_Preview .MJXc-math{
 				padding: 10px 0;
@@ -864,7 +937,7 @@
 				display:inline-block;
 				height:24px;
 				background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
-				background-position:-48px 0px;
+				background-position:-48px 0;
 				margin-bottom: -7px;
 			}
 			#html-box .checkbox-notchecked{
@@ -872,7 +945,7 @@
 				display:inline-block;
 				height:24px;
 				background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
-				background-position:-24px 0px;
+				background-position:-24px 0;
 				margin-bottom: -7px;
 			}
 			:focus {
@@ -907,7 +980,7 @@
 				background: rgba(0,0,0,0.3);
 			}
 			h1,h2,h3,h4,h4,h5,h6{
-				font-weight:100;
+				font-weight:400;
 				margin: 0;
 			}
 			@media screen and (max-width: 1140px){
@@ -1119,7 +1192,7 @@
 
 			function mynote_display(){
 				if( !is_mynote_show ){
-					$('#note-mynote').animate({left:'0px'});
+					$('#note-mynote').animate({left:'0'});
 					is_mynote_show = true;
 					$('#note-black').fadeIn();
 				}else{
@@ -1290,18 +1363,18 @@
 			body{
 				color: #555;
 				font-size: 14px;
-				font-family: Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+				font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 				line-height: 27px;
 				background: #fcfcfc;
 				width: 1200px;
-				margin: 0px auto 10px auto;
+				margin: 0 auto 10px auto;
 			}
 
 			a,input,button{
 				outline: none !important;
 				-webkit-appearance: none;
 				border-radius: 0;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 			}
 
 			button::-moz-focus-inner,input::-moz-focus-inner{
@@ -1359,7 +1432,7 @@
 			}
 
 			h1,h2,h3,h4,h4,h5,h6{
-				font-weight:100;
+				font-weight:400;
 				margin: 0;
 			}
 
@@ -1368,7 +1441,7 @@
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 				cursor: pointer;
 				font-size: 14px;
 				transition: background-color 0.2s;
@@ -1383,7 +1456,7 @@
 				color: #555;
 				background: #fff;
 				border: 0;
-				box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 				padding: 10px;
 			}
 
@@ -1408,10 +1481,10 @@
 				height: 48px;
 				padding: 11px 21px 13px 17px;
 				float: right;
-				font-family: '文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+				font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 				color: #fff;
 				background-color: transparent;
-				border: 0px;
+				border: 0;
 				font-size: 16px;
 				margin: 0;
 
@@ -1471,7 +1544,7 @@
 					border: 0;
 					resize: none;
 					font-size: 16px;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
+					font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",'文泉驛正黑','Microsoft yahei UI','Microsoft yahei','微软雅黑',"Lato",Helvetica,Arial,sans-serif !important;
 				}
 
 
@@ -1491,6 +1564,13 @@
 					}
 					#note-btns-showall{
 						display: block;
+					}
+				}
+
+
+				@media screen and (max-width: 480px){
+					.header-title{
+						display: none;
 					}
 				}
 
@@ -1518,7 +1598,7 @@
 					background-color: #fff;
 					z-index: 112;
 					margin: -200px 0 0 -150px;
-					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 				}
 
 				.note-otherdev-div-divhr{
@@ -1549,7 +1629,7 @@
 					display: block;
 					cursor: default;
 					color: #fff;
-					border: 0px;
+					border: 0;
 					width: 100%;
 					background-color: #1C3146;
 					text-align: left;
@@ -1599,7 +1679,7 @@
 			</form>
 
 			<form action="<?php echo_note_url(); ?>" method="post" id="note-btns-setid-form" class="note-btns-set-from">
-				<input id="note-btns-setid-form-input" class="input note-btns-set-from-input" type="text" name="the_set_id" placeholder="请输入一个新ID"/>
+				<input id="note-btns-setid-form-input" class="input note-btns-set-from-input" type="text" name="the_set_id" placeholder="请输入一个新名称，仅字母和数字"/>
 				<input id="note-btns-setid-form-btn" type="submit" value="设置" class="btn note-btns-set-from-btn"/>
 			</form>
 
@@ -1620,7 +1700,7 @@
 
 					<div class="note-otherdev-div-divhr" style="margin-bottom:8px;"></div>
 
-					<span style="margin-left:10px;">记事本ID: <strong><?php echo $noteId; ?></strong></span>
+					<span style="margin-left:10px;">记事本名称: <strong><?php echo $noteId; ?></strong></span>
 
 					<div style="width:240px; height:240px; margin:10px 30px 30px 30px;">
 						<span id='note-otherdev-img-add'></span>
@@ -1637,7 +1717,7 @@
 
 			<!-- 记事本列表 -->
 			<?php if(isset($username)) : ?>
-				<div id="note-black" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;" onclick="mynote_display()"></div>
+				<div id="note-black" style="position:fixed;top:48px;left:0;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;" onclick="mynote_display()"></div>
 				<div id="note-mynote" style="background-color:#1C3146;height:600px;width:250px;left:-260px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;box-shadow: 1px 10px 10px rgba(0, 0, 0, 0.5);">
 					<div style="padding:5px 10px;background-color:#1D81C4;"><?php echo $username ?>的记事本: </div>
 
@@ -1654,15 +1734,15 @@
 								echo '<a title="'.$x.'" id="note-list-'.$x.'" href="./'.($rewrite_use_better_url ? '' : '?n=') .$x.'"" class="note-mynote-list" >'.$x_dis.'<span onclick="return false;" ><span title="从列表中移除此记事本" class="remove-note-x" style="" onclick="delete_note_in_list(\''.$x.'\',this);">×</span></span></a>';
 						}
 					?>
-					<a title="使用一个随机的ID创建一个记事本，ID可在稍后更改" href="./?new=yes" class="note-mynote-list" style="margin-left:-5px;"><div data-icon="ei-plus" style="margin-bottom: -8px;"></div> 新建记事本</a>
+					<a title="使用一个随机的名称创建一个记事本，名称可在稍后更改" href="./?new=yes" class="note-mynote-list" style="margin-left:-5px;"><div data-icon="ei-plus" style="margin-bottom: -8px;"></div> 新建记事本</a>
 				</div>
 			<?php endif; ?>
 
 			<!-- 侧边栏菜单,用于小分辨率中 -->
-			<div id='note-menu-black' onclick="menu_display();" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
+			<div id='note-menu-black' onclick="menu_display();" style="position:fixed;top:48px;left:0;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
 			<div id="note-menu" style="background-color:#1C3146;height:600px;width:250px;left:1440px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 
-				<button class="menu-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-menu-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
+				<button class="menu-btn" title="显示记事本名称并生成二维码" onclick="other_dev_show();" id="note-menu-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
 
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
@@ -1683,14 +1763,14 @@
 
 				<button class="menu-btn" title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-menu-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>
 
-				<button class="menu-btn" id="note-menu-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
+				<button class="menu-btn" id="note-menu-btns-changeid-btn" title="给这个记事本更换一个新的名称"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换名称</span></button>
 
 				<button class="menu-btn" id="note-menu-btns-setting-btn" title="设置" onclick="set_display();" ><div data-icon="ei-gear"></div><span>设置</span></button>
 			</div>
 
 
 			<!-- 设置侧边栏 -->
-			<div id='note-set-black' onclick="set_display();" style="position:fixed;top:48px;left:0px;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
+			<div id='note-set-black' onclick="set_display();" style="position:fixed;top:48px;left:0;background:rgba(0, 0, 0, 0.4);width:100%;height:100%;z-index:99;display:none;"></div>
 			<div id="note-set" style="background-color:#1C3146;height:600px;width:250px;left:1440px;position:fixed;top:48px;z-index:100;overflow-x:hidden;overflow-y:auto;color:#fff;">
 				<div style="padding:5px 10px;">
 					<b style="margin-bottom:5px;">颜色</b><br/>
@@ -1722,7 +1802,7 @@
 				<!-- 保存 -->
 				<span class="header-btn" title="也可按Ctrl+S保存" id="note-btns-save-ajax" onclick="ajax_save();">保存</span>
 
-				<button class="header-btn" title="获取记事本ID并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
+				<button class="header-btn" title="显示记事本名称并生成二维码" onclick="other_dev_show();" id="note-btns-otherdev-btn"><div data-icon="ei-link"></div><span>二维码</span></button>
 
 				<!-- 密码 设置 && 删除 表单+按钮 -->
 				<?php if($passwd) : ?>
@@ -1740,19 +1820,19 @@
 					<?php endif ?>
 				<?php endif ?>
 
-				<!-- 用于下载的data-url的链接表情-->
+				<!-- 用于下载的data-url的链接标签-->
 				<a id="download-a" style="display:none"></a>
 				<!-- 下载按钮 -->
 				<button class="header-btn" title="将记事本的内容以文件的方式下载" onclick="download_note();" id="note-btns-download-btn"><div data-icon="ei-arrow-down"></div><span>下载</span></button>
 
-				<!-- 更换ID按钮 -->
-				<button class="header-btn" id="note-btns-changeid-btn" title="给这个记事本更换一个新的ID"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换ID</span></button>
+				<!-- 更换名称按钮 -->
+				<button class="header-btn" id="note-btns-changeid-btn" title="给这个记事本更换一个新的名称"  onclick="id_set_display();"><div data-icon="ei-retweet"></div><span>更换名称</span></button>
 
 				<!-- 设置侧边栏按钮 -->
 				<button class="header-btn" id="note-btns-setting-btn" title="设置" onclick="set_display();" ><div data-icon="ei-gear"></div><span>设置</span></button>
 
 				<!-- 在小分辨率下,显示这个菜单按钮 -->
-				<button class="header-btn" id="note-btns-showall" title="显示其他功能" onclick="menu_display();"><div data-icon="ei-navicon"></div><span>菜单</span></button>
+				<button class="header-btn" id="note-btns-showall" title="显示其他功能" onclick="menu_display();"><div data-icon="ei-navicon"></div><span>功能</span></button>
 
 			</div>
 
@@ -1797,7 +1877,7 @@
 					margin: 5px 0;
 					padding: 5px;
 					background-color: #F2F2F5;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+					font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
 				#note-md-show pre code{
 					overflow: auto;
@@ -1821,16 +1901,16 @@
 					text-shadow: none;
 					background-color: #ddd;
 					padding: 4px 8px 2px 8px;
-					margin: 0px 2px;
+					margin: 0 2px;
 					font-size: 14px;
-					font-family: "Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+					font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 				}
 				#note-md-show .checkbox-checked{
 					width: 24px;
 					display:inline-block;
 					height:24px;
 					background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
-					background-position:-48px 0px;
+					background-position:-48px 0;
 					margin-bottom: -7px;
 				}
 				#note-md-show .checkbox-notchecked{
@@ -1838,7 +1918,7 @@
 					display:inline-block;
 					height:24px;
 					background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
-					background-position:-24px 0px;
+					background-position:-24px 0;
 					margin-bottom: -7px;
 				}
 				pre[class*=language-]>code[data-language]::before{
@@ -1886,7 +1966,7 @@
 						return false
 					};
 
-					$(".ace_scrollbar-v").attr("id","note-md-edit-scrollbar"); //给ACE编辑器的滚动条添加ID
+					$(".ace_scrollbar-v").attr("id","note-md-edit-scrollbar"); //给ACE编辑器的滚动条添加名称
 
 					//滚动条事件
 					$("#note-md-edit-scrollbar").scroll(function(){
@@ -1983,7 +2063,7 @@
 				}
 
 				.homediv{
-					box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 					background: #fff;
 					display: inline-block;
 					width: 440px;
@@ -1998,6 +2078,8 @@
 					position: relative;
 					display: block;
 					float: left;
+					clear: both;
+
 				}
 
 				.icon-plus,
@@ -2049,28 +2131,30 @@
 					border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
 				}
 
-				#home-input{
-					margin:460px 0px 0px 0px;
-					font-size:23px;
-					width:265px;
-					background:#C6E8FF;
+				#home-btn-new{
+					margin: 442px 0 0 0;
+					background: #3498DB;
+					color: #fff;
+					font-size: 24px;
+					padding: 9px 0;
+					width: 100%;
 				}
 
-				#home-btn-new{
-					margin:460px 0px 0px 0px;
-					background:#3498DB;
-					color:#fff;
-					font-size:24px;
-					padding:9px 154px 9px 154px;
+				#home-input{
+					margin: 442px 0 0 0;
+					font-size: 23px;
+					width: 285px;
+					background: #C6E8FF;
 				}
 
 				#home-btn-go{
-					margin:460px 15px 0px 0px;
-					background:#3498DB;
-					color:#fff;
-					font-size:24px;
-					padding:9px 30px 9px 30px;
-					float:right;
+					margin: 442px 0 0 0;
+					background: #3498DB;
+					color: #fff;
+					font-size: 24px;
+					padding: 9px 0;
+					float: right;
+					width: 119px;
 				}
 
 				#back-to-note{
@@ -2080,7 +2164,7 @@
 				}
 
 				#home-btn-new:hover,#home-btn-go:hover,#back-to-note:hover{
-					background:#45A9EC;
+					background: #45A9EC;
 				}
 
 				@media screen and (max-width: 1030px){
@@ -2108,6 +2192,48 @@
 					#home-btn-new,#home-input,#home-btn-go{
 						margin: 0;
 					}
+
+					#home-input{
+						width: 265px;
+					}
+				}
+
+
+				@media screen and (max-width: 520px){
+					.homediv{
+						width: auto;
+						height: auto;
+						margin: 20px 7px;
+					}
+
+					#home-form-new,#home-form-go{
+						width: auto;
+						margin: 40px auto 0 auto;
+					}
+
+					#home-btn-new{
+						width: 100%;
+						/*margin: 40px 20px 0 20px;*/
+					}
+
+					#home-input{
+						width: 66%;
+					}
+
+					#home-btn-go{
+						width: 27%;
+					}
+
+				}
+				@media screen and (max-width: 420px){
+					#home-input{
+						width: 60%;
+					}
+
+					#home-btn-go{
+						width: 27%;
+					}
+
 				}
 			</style>
 
@@ -2132,30 +2258,30 @@
 				<div class="homediv">
 
 					<h2>还没有记事本?</h2>
-					<p style="margin:12px 0 0 0;">将使用随机的ID新建，可随时更改。也可直接在右侧指定ID新建。</p>
+					<p style="margin:12px 0 0 0;">将使用随机的名称新建，可随时更改。也可直接在右侧指定名称新建。</p>
 
 					<span class="icon icon-mid">
 						<span class="icon-plus"></span>
 					</span>
 
-					<form action="?new=yes" method="post" id="home-form-new">
-						<button title="使用一个随机的ID创建一个记事本，ID可在稍后更改" id="home-btn-new" class="btn">立刻创建</button>
+					<form action="?new=yes" method="post" id="home-form-new" style="clear: both;">
+						<button title="使用一个随机的名称创建一个记事本，名称可在稍后更改" id="home-btn-new" class="btn">立刻创建</button>
 					</form>
 
 				</div>
 
 				<div style="float:right;" class="homediv">
 
-					<h2>已有记事本 或 指定ID新建记事本</h2>
-					<p style="margin:12px 0 0 0;">根据输入的ID访问记事本，若该ID不存在会自动新建。</p>
+					<h2>已有记事本 或 指定名称新建记事本</h2>
+					<p style="margin:12px 0 0 0;">根据输入的名称访问记事本，若该名称不存在会自动新建。</p>
 
 					<span class="icon icon-mid">
 						<span class="icon-file"></span>
 					</span>
 
-					<form action="" method="get" id="home-form-go">
-						<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本ID" />
-						<button title="根据输入的记事本ID来访问记事本" id="home-btn-go" class="btn">提交</button>
+					<form action="" method="get" id="home-form-go" style="clear: both;">
+						<input id="home-input" name="n" type="text" class="input" autofocus="autofocus" placeholder="记事本名称" />
+						<button title="根据输入的记事本名称来访问记事本" id="home-btn-go" class="btn">提交</button>
 					</form>
 
 				</div>
