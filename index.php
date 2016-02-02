@@ -319,6 +319,7 @@
 	if($use_sql){
 		$notesql = mysqli_connect($sql_host, $sql_user, $sql_passwd, $sql_name);
 		if(!$notesql) show_error_exit('无法连接数据库');
+		mysqli_query($notesql, 'SET NAMES utf8');
 	}
 
 	$noteId = @$_GET['n'];
@@ -2298,7 +2299,9 @@
 			</style>
 
 			<div id="header" style="margin-bottom:10px;">
-				<h2 class="header-title" style="color:#fff;font-size:21px;margin-top:-2px;">请选择将要创建的记事本类型</h2>
+				<div class="header-title" style="cursor:default">
+					<h1 style="color:#fff;font-size:24px;margin-top:-4px;">请选择将要创建的记事本类型</h1>
+				</div>
 			</div>
 
 			<form id="choose-form-md" action="" method="post">
