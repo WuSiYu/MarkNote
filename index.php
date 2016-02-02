@@ -1,9 +1,7 @@
 <?php
 	//MarkNote 轻量级云记事本系统
 
-	//=== 选项 =============================
-	define('MD5_SALT', 'faowifankjsnvlaiuwef2480rasdlkvj');			//加密记事本密码时, 所使用的盐, 请一定要修改为自己设置的
-
+	require 'include/user.php';
 
 	error_reporting(E_ALL);
 	ini_set('display_errors', '1');
@@ -14,20 +12,32 @@
 		exit();
 	}
 
-	echo 'index.php<br/>type='.$_GET['type'].'<br/>';
+	if( isset($_GET['type']) ){
+		$type = $_GET['type'];
+	}else{
+		$type = 'home';
+	}
+
+	echo 'index.php<br/>type='.$type.'<br/>';
 
 
-	if( $_GET['type'] == 'user' ){
+	if( $type == 'user' ){
 		require 'user.php';
 	}
 
-	if( $_GET['type'] == 'notebook' ){
+	if( $type == 'notebook' ){
 		require 'notebook.php';
 	}
 
-	if( $_GET['type'] == 'note' ){
+	if( $type == 'note' ){
 		require 'note.php';
 	}
 
+	if( $type == 'home' ){
+		if(hasLogin())
+			require 'edit.php';
+		else
+			require 'login.php';
+	}
 
 ?>

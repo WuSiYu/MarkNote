@@ -168,6 +168,7 @@
 			$sql_user	=	$_POST['sql-user'];
 			$sql_passwd	=	$_POST['sql-passwd'];
 			$sql_name	=	$_POST['sql-name'];
+			$enable_rewrite	=	$_POST['enable-rewrite'];
 
 			$sql = new mysqli($sql_host, $sql_user, $sql_passwd, $sql_name);
 			if( $sql->connect_errno ){
@@ -179,23 +180,29 @@
 				exit();
 			}
 
+			if($enable_rewrite=='on'){
+				$enable_rewrite=true;
+			}else{
+				$enable_rewrite=false;
+			}
+
 			$sql->query('CREATE TABLE note_content (
 						ID int NOT NULL AUTO_INCREMENT,
 						PRIMARY KEY(ID),
-						user tinytext,
-						notebook tinytext,
-						settings text,
-						content longtext,
-						comments longtext
+						user		tinytext,
+						settings	text,
+						content		longtext,
+						comments	longtext
 					)');
 
 			$sql->query('CREATE TABLE note_users (
 						UID int NOT NULL AUTO_INCREMENT,
 						PRIMARY KEY(UID),
-						username tinytext,
-						passwd tinytext,
-						settings text,
-						notebooks longtext
+						username	tinytext,
+						passwd		tinytext,
+						email		tinytext,
+						settings	text,
+						notebooks	longtext
 					)');
 
 
@@ -205,6 +212,7 @@
 	$sql_user="'.$sql_user.'";
 	$sql_passwd="'.$sql_passwd.'";
 	$sql_name="'.$sql_name.'";
+	$enable_rewrite='.$enable_rewrite.';
 ?>';
 
 
