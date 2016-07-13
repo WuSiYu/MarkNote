@@ -6,6 +6,11 @@
 
 	$FORCESTATUS = 0;
 
+	function checkUsername($username){
+		return true;
+	}
+
+
 	function hasUser($username){
 		global $sql;
 		$sql_output = $sql->query("SELECT username FROM note_users
@@ -36,6 +41,9 @@
 		}
 
 		if( $truePasswd == $_COOKIE['MarkNotePasswd'] ){
+			$sql_output = $sql->query("SELECT username FROM note_users
+				WHERE username = '$username'");
+			$username = $sql_output->fetch_array()['username'];
 			$USERNAME = $username;
 			return true;
 		}else{
@@ -47,7 +55,8 @@
 	function register($username, $email, $passwd, $nickname){
 		global $sql;
 		//something
-
+		if( hasUser($username) )
+			exit('Username already exist');
 		$passwd = md5('ffffffffff'.$passwd.'蛤蛤蛤');
 		$sql->query("INSERT INTO note_users (username, passwd, email, settings)
 			VALUES ('$username', '$passwd', '$email', '{\"nickname\" = \"$nickname\" }')");
@@ -61,14 +70,20 @@
 			$truePasswd = $sql_output->fetch_array()['passwd'];
 		}else{
 			echo "no this user";
+			return -1;
 		}
 		if(md5('ffffffffff'.$passwd.'蛤蛤蛤') == $truePasswd){
+			$sql_output = $sql->query("SELECT username FROM note_users
+				WHERE username = '$username'");
+			$username = $sql_output->fetch_array()['username'];
 			setcookie('MarkNoteUser', $username, time()+604800);
 			setcookie('MarkNotePasswd', md5('ffffffffff'.$passwd.'蛤蛤蛤'), time()+604800);
 			$USERNAME = $username;
 			$FORCESTATUS = 1;
+			return 0;
 		}else{
 			echo "wrong passwd";
+			return -1;
 		}
 	}
 
@@ -79,12 +94,26 @@
 		$FORCESTATUS = 2;
 	}
 
-	function addNoteBookToUser(){
+	function addNoteBookToUser($username, $id, $notebook){
 		//
 	}
 
-	function addSingleNoteToUser(){
-		
+	function addNoteToNoteBook($username, $id, $notebook){
+		//
 	}
 
-?>
+	function addSingleNoteToUser($username, $id){
+		global $sql;
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$notebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($notebooks)
+			array_push($notebooks, $id);
+		else
+			$notebooks = array($id);
+		$notebooks = json_encode($notebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$notebooks'
+			WHERE username = '$username'");
+
+	}
+

@@ -1,16 +1,17 @@
 <?php
 	//MarkNote 轻量级云记事本系统
 
-	require 'include/user.php';
-
 	error_reporting(E_ALL);
 	ini_set('display_errors', '1');
-
 
 	if( !file_exists('config.php') ){
 		header("Location: include/install.php");
 		exit();
 	}
+
+
+
+	require 'include/user.php';
 
 	if( isset($_GET['type']) ){
 		$type = $_GET['type'];
@@ -39,5 +40,3 @@
 		else
 			require 'login.php';
 	}
-
-?>

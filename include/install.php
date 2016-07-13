@@ -33,7 +33,9 @@
 		input[type="text"]{
 			border: 1px solid #AAA;
 			padding: 5px;
-			transition: border .25s linear
+			background-color: #fff;
+			color: #333;
+			transition: border .25s linear;
 		}
 		input[type="text"]:hover{
 			border: 1px solid #44a8eb;

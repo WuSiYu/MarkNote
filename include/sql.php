@@ -1,5 +1,7 @@
 <?php
 	require dirname(__FILE__).'/../config.php';
+
+
 	$sql = new mysqli($sql_host, $sql_user, $sql_passwd, $sql_name);
 	if( $sql->connect_errno ){
 		?>
@@ -10,4 +12,4 @@
 		exit();
 	}
 
-?>
+
