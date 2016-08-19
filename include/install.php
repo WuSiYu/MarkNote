@@ -195,7 +195,7 @@
 						settings	text,
 						content		longtext,
 						comments	longtext
-					)');
+					) DEFAULT CHARSET=utf8');
 
 			$sql->query('CREATE TABLE note_users (
 						UID int NOT NULL AUTO_INCREMENT,
@@ -205,7 +205,7 @@
 						email		tinytext,
 						settings	text,
 						notebooks	longtext
-					)');
+					) DEFAULT CHARSET=utf8');
 
 
 			$to_config_file=
