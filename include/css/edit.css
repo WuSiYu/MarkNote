@@ -1,0 +1,141 @@
+/* CSS for /edit.php */
+
+
+body{
+	background: #191919;
+	margin: 0;
+	font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif;
+	line-height: 27px;
+	color: #fff;
+	font-size: 14px;
+	overflow: hidden;
+}
+
+a{
+	color: #3498DB;
+	text-decoration: none;
+}
+img{
+	max-width: 100%;
+}
+
+h1,h2,h3{
+	font-weight: 400;
+	margin: 0;
+}
+
+:focus {
+	border: none;
+	outline: 0;
+}
+::selection {
+	background:#3498DB;
+	color:#fff;
+}
+::-moz-selection {
+	background:#3498DB;
+	color:#fff;
+}
+::-webkit-selection {
+	background:#3498DB;
+	color:#fff;
+}
+
+#header{
+	height: 48px;
+	width: 100%;
+	background-color: #2B2B2B;
+}
+
+#header-title{
+	display: inline-block;
+	font-size: 24px;
+	border: 0;
+	padding: 12px 16px 12px 16px;
+	cursor: pointer;
+	margin-top: -3px;
+}
+
+#content{
+	width: 100%;
+	height: 100%;
+}
+
+#sidebar{
+	position: absolute;
+	width: 240px;
+	height: 100%;
+	background-color: #222222;
+	/*float: left;*/
+}
+
+#editor{
+	position: absolute;
+	left: 240px;
+}
+
+.div-notelist-item{
+	height: 28px
+}
+
+.div-notelist-item:hover{
+	background-color: #292929;
+}
+
+.div-notelist-item-selected{
+	background-color: #2F2F2F;
+}
+
+.div-notelist-item-selected:hover{
+	background-color: #2F2F2F;
+}
+
+.span-notelist-item-left{
+	width: 5px;
+	height: 100%;
+	margin-right: 30px;
+	margin-bottom: -9px;
+	display: inline-block;
+}
+
+.span-notelist-item-text{
+	width: 180px;
+	cursor: default;
+	display: inline-block;
+}
+
+.div-notelist-item-subnote .span-notelist-item-text{
+	width: 160px;
+}
+
+.span-notelist-item-text i{
+	margin-right: 5px;
+}
+
+.span-notelist-item-left-subnote{
+	margin-right: 50px;
+}
+
+.span-notelist-item-left-selected{
+	background-color: #3498DB;
+}
+
+.div-notelist-folder{
+	position: relative;
+	overflow: hidden;
+}
+
+.i-notelist-folder-arrow{
+	position: absolute;
+	left: 16px;
+	top: 7px;
+}
+
+.i-notelist-item-del{
+	color: red;
+	cursor: pointer;
+	/*float: right;*/
+	margin-right: 9px;
+	margin-top: 7px;
+	display: none;
+}
