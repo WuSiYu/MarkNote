@@ -50,7 +50,9 @@
 		exit();
 	}
 
-?><!DOCTYPE html>
+?>
+
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8" />
@@ -59,37 +61,49 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
 	<script src="//cdn.bootcss.com/jquery/2.2.0/jquery.min.js"></script>
+	<script src="//cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
+	<script src="//cdn.bootcss.com/ace/1.2.5/ace.js"></script>
+	<!-- <script src="//cdn.bootcss.com/prism/0.0.1/prism.min.js"></script> -->
+	<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 	<script src="include/js/edit.js"></script>
+	<script src="include/js/prism.js"></script>
+
 	<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css" rel="stylesheet">
+	<!-- <link href="//cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet"> -->
 	<link rel="stylesheet" type="text/css" href="include/css/edit.css">
+	<link rel="stylesheet" type="text/css" href="include/css/prism.css">
 
 </head>
 
 <body>
 
-	<div id='header'>
-		<h1 id='header-title'>MarkNote</h1>
+	<div id="header">
+		<h1 id="header-title">MarkNote</h1>
+		<div id="header-user">
+			<div id="header-user-head">
+				<i class="fa fa-user fa-2x" aria-hiddem="true" style="margin: 7px 0px 0px 5px;"></i>
+			</div>
+			<span id="header-user-name"><?php echo $USERNAME; ?></span>
+			<span id="header-user-emailandlogout"><?php echo getUserEmail($USERNAME); ?> | <a style="cursor: pointer;" onclick="$('#header-user-logoutform').submit();">logout</a></span>
+			<form id="header-user-logoutform" method="post" action="login.php">
+				<input type="hidden" name="type" value="logout">
+			</form>
+
+		</div>
 	</div>
 
 
 	<div id="content">
 	 	<div id="sidebar">
-			<div id="div-notelist">load</div>
+	 		<div id="sidebar-status">Status: <span id="sidebar-status-icon">●</span> <span id="sidebar-status-text">page loding...</span></div>
+			<div id="sidebar-notelist">load</div>
 	 	</div>
 	 	<div id="editor">
-<!-- 
-			<input type="text" id="input-newnote"></input>
-			<button id="btn-newnote">new note</button><br/>
+			<div id="editor-ace"># Welcome to Marknote
 
-			<input type="text" id="input-newnotebook"></input>
-			<button id="btn-newnotebook">new notebook</button><br/>
-
-			<input type="text" id="input-subnote-book"></input>
-			<input type="text" id="input-subnote-note"></input>
-			<button id="btn-subnote">new notebook->note</button><br/>
- -->
-			<textarea id="textarea-note" style="width: 800px;height: 600px;background-color: #191919;color: #fff;border: 0;padding: 20px;resize: none;"></textarea>
-			<button id="button-savenote" onclick="saveNote();">save</button>
+Please select a __note__ in the list on the left.</div>
+			<div id="editor-move"></div>
+			<div id="editor-show"></div>
 		</div>
 	</div>
 

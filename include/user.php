@@ -109,6 +109,14 @@
 		}
 	}
 
+	function getUserEmail($username){
+		global $sql;
+		checkUsername($username);
+		$sql_output = $sql->query("SELECT email FROM note_users
+			WHERE username = '$username'");
+		return $sql_output->fetch_array()['email'];
+	}
+
 	function logout(){
 		global $FORCESTATUS;
 		setcookie('MarkNoteUser', '', time()-100);

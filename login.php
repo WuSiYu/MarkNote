@@ -13,51 +13,71 @@
 		}
 	}
 
+	if(hasLogin()){
+		header("location: ./"); 
+	}else{
+		if(!(isset($_GET['t']) && $_GET['t'] == 'register') ){
 
-?>
+		?>
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<meta charset="utf-8" />
+				<title>MarkNote</title>
+				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-<?php if( !hasLogin() ): ?>
-<h1>login</h1>
+				<link rel="stylesheet" type="text/css" href="include/css/login.css">
+			</head>
+			<body>
+				<h1 class="title">Log In to MarkNote</h1>
 
-<form method="post" action="login.php">
-	username:
-	<input type="text"		name="username" />
-	passwd:
-	<input type="password"	name="passwd" />
-	<input type="submit"	name="submit">
+				<form method="post" action="login.php">
+					Enter username
+					<input class="input-text"	type="text"		name="username" autofocus="autofocus" />
+					Enter password
+					<input class="input-text"	type="password"	name="passwd" />
 
-	<input type="hidden"	name="type"		value="login">
-</form>
+					<input class="input-btn"	type="submit"	name="submit"	value="CONTINUE" />
+					<input type="hidden"		name="type"		value="login" />
 
+				</form>
 
+				<p style="text-align: center;"><a href="login.php?t=register">No account? Register here.</a></p>
 
-<h1>register</h1>
+			</body>
+			</html>
+		<?php }else{ ?>
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8" />
+					<title>MarkNote</title>
+					<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+					<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-<form method="post" action="login.php">
-	username:
-	<input type="text"		name="username" />
-	nickname:
-	<input type="text"		name="nickname" />
-	passwd:
-	<input type="password"	name="passwd" />
-	email:
-	<input type="text"		name="email" />
-	<input type="submit"	name="submit">
+					<link rel="stylesheet" type="text/css" href="include/css/login.css">
+				</head>
+				<body>
+					<h1 class="title">Register to MarkNote</h1>
 
-	<input type="hidden"	name="type"		value="register">
-</form>
+					<form method="post" action="login.php">
+						Enter username:
+						<input class="input-text"	type="text"		name="username" autofocus="autofocus"/>
+						Enter nickname:
+						<input class="input-text"	type="text"		name="nickname" />
+						Enter password:
+						<input class="input-text"	type="password"	name="passwd" />
+						Enter email:
+						<input class="input-text"	type="text"		name="email" />
+						<input class="input-btn"	type="submit"	name="submit" value="CONTINUE" />
 
-<?php else: ?>
+						<input type="hidden"	name="type"		value="register">
+					</form>
 
-	user: <?php echo $USERNAME; ?>
+					<p style="text-align: center;"><a href="./">Have account? Login here.</a></p>
 
-	<form method="post" action="login.php">
-		<input type="submit"	name="submit"	value="logout">
-
-		<input type="hidden"	name="type"		value="logout">
-	</form>
-
-<?php endif; ?>
-
-
-<a href="./">home</a>
+				</body>
+				</html>
+		<?php } ?>
+	<?php }

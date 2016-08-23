@@ -8,7 +8,7 @@ body{
 	line-height: 27px;
 	color: #fff;
 	font-size: 14px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 a{
@@ -22,6 +22,12 @@ img{
 h1,h2,h3{
 	font-weight: 400;
 	margin: 0;
+}
+
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 :focus {
@@ -42,7 +48,7 @@ h1,h2,h3{
 }
 
 #header{
-	height: 48px;
+	height: 56px;
 	width: 100%;
 	background-color: #2B2B2B;
 }
@@ -51,9 +57,39 @@ h1,h2,h3{
 	display: inline-block;
 	font-size: 24px;
 	border: 0;
-	padding: 12px 16px 12px 16px;
+	padding: 16px 20px 16px 20px;
 	cursor: pointer;
 	margin-top: -3px;
+	/*color: #5AAAFA;*/
+}
+
+#header-user{
+	display: inline-block;
+	float: right;
+	width: 240px;
+	padding: 10px;
+}
+
+#header-user-head{
+	float: left;
+	width: 36px;
+	height: 36px;
+	margin-right: 8px;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	overflow: hidden;
+}
+
+#header-user-name{
+	display: block;
+	margin-top: -4px;
+	font-size: 16px;
+}
+
+#header-user-emailandlogout{
+	display: block;
+	margin-top: -8px;
+	font-size: 11px;
 }
 
 #content{
@@ -66,12 +102,23 @@ h1,h2,h3{
 	width: 240px;
 	height: 100%;
 	background-color: #222222;
-	/*float: left;*/
+	overflow: auto;
 }
 
-#editor{
-	position: absolute;
-	left: 240px;
+#sidebar-status{
+	height: 32px;
+	padding: 2px 15px;
+	background-color: #333;
+}
+
+#sidebar-status-icon{
+/*	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background-color: green;*/
+	margin-left: 2px;
+	color: #f1c40f;
 }
 
 .div-notelist-item{
@@ -90,6 +137,14 @@ h1,h2,h3{
 	background-color: #2F2F2F;
 }
 
+.div-notelist-item-selected2{
+	background-color: #3C8CDC;
+}
+
+.div-notelist-item-selected2:hover{
+	background-color: #3C8CDC;
+}
+
 .span-notelist-item-left{
 	width: 5px;
 	height: 100%;
@@ -99,13 +154,13 @@ h1,h2,h3{
 }
 
 .span-notelist-item-text{
-	width: 180px;
+	width: 160px;
 	cursor: default;
 	display: inline-block;
 }
 
 .div-notelist-item-subnote .span-notelist-item-text{
-	width: 160px;
+	width: 140px;
 }
 
 .span-notelist-item-text i{
@@ -117,7 +172,8 @@ h1,h2,h3{
 }
 
 .span-notelist-item-left-selected{
-	background-color: #3498DB;
+	/*background-color: #3498DB;*/
+	background-color: #3C8CDC;
 }
 
 .div-notelist-folder{
@@ -134,8 +190,105 @@ h1,h2,h3{
 .i-notelist-item-del{
 	color: red;
 	cursor: pointer;
-	/*float: right;*/
+	float: right;
 	margin-right: 9px;
 	margin-top: 7px;
 	display: none;
 }
+
+#editor{
+	position: absolute;
+	left: 240px;
+	overflow: hidden;
+}
+
+#editor-ace, #editor-move, #editor-show{
+	display: inline-block;
+	position: absolute;
+	height: 100%;
+}
+
+#editor-ace{
+	
+}
+
+#editor-move{
+	width: 5px;
+	background-color: #191919;
+	cursor: ew-resize;
+}
+
+#editor-show{
+	padding: 20px;
+	overflow: auto;
+}
+
+#editor-show p{
+	margin: 5px 0 12px 0;
+}
+#editor-show h2{
+	border-bottom:solid 2px #ddd;
+	margin-bottom: 5px;
+	padding-bottom: 2px;
+}
+#editor-show blockquote{
+	border-left: 5px solid #ccc;
+	padding: 5px 0 1px 10px;
+	margin: 16px 0;
+	background-color: #F2F2F5;
+}
+#editor-show pre{
+	border-left: 5px solid #666;
+	margin: 5px 0;
+	padding: 5px;
+	background-color: #333;
+	font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+	border-radius: 0;
+}
+#editor-show pre code{
+	overflow: auto;
+	background-color: #333;
+	margin: 0;
+	padding: 0;
+}
+#editor-show hr{
+	border: 1px solid #888;
+}
+#editor-show .MathJax_Display,#editor-show .MathJax_Preview .MJXc-math{
+	padding: 10px 0;
+	background-color: #333;
+	display: block;
+}
+#editor-show .MathJax_Preview span{
+	font-size: 16px !important;
+}
+#editor-show code{
+	line-height: 16px;
+	text-shadow: none;
+	background-color: #333;
+	padding: 4px 8px 2px 8px;
+	margin: 0 2px;
+	font-size: 14px;
+	font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
+}
+#editor-show .checkbox-checked{
+	width: 24px;
+	display:inline-block;
+	height:24px;
+	background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+	background-position:-48px 0;
+	margin-bottom: -7px;
+}
+#editor-show .checkbox-notchecked{
+	width: 24px;
+	display:inline-block;
+	height:24px;
+	background:transparent url('//cdn.bootcss.com/iCheck/1.0.1/skins/square/blue.png') no-repeat scroll 0% 0%;
+	background-position:-24px 0;
+	margin-bottom: -7px;
+}
+pre[class*=language-]>code[data-language]::before{
+	border-radius: 0 !important;
+}
+
+

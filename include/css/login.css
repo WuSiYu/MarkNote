@@ -1,0 +1,83 @@
+body{
+	background: #191919;
+	margin: 0;
+	font-family: Noto Sans CJK SC,Microsoft Yahei,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif;
+	line-height: 27px;
+	color: #fff;
+	font-size: 14px;
+	max-width: 460px;
+	margin: 20px auto;
+}
+
+a{
+	color: #3498DB;
+	text-decoration: none;
+}
+img{
+	max-width: 100%;
+}
+
+h1,h2,h3{
+	font-weight: 400;
+	margin: 0;
+}
+
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+:focus {
+	border: none;
+	outline: 0;
+}
+::selection {
+	background:#3498DB;
+	color:#fff;
+}
+::-moz-selection {
+	background:#3498DB;
+	color:#fff;
+}
+::-webkit-selection {
+	background:#3498DB;
+	color:#fff;
+}
+
+.input-text{
+	display: block;
+	font-size: 20px;
+	padding: 10px;
+	border: 0;
+	background-color: #333;
+	width: 460px;
+	margin-bottom: 30px;
+	color: #fff;
+}
+
+.input-text:focus{
+	background-color: #3f3f3f;
+}
+
+.input-btn{
+	display: block;
+	padding: 18px 0;
+	width: 260px;
+	margin: 60px auto 20px auto;
+	font-size: 18px;
+	color: #222;
+	border: 0;
+	background-color: #5AAAFA;
+	cursor: pointer;
+}
+
+.input-btn:hover{
+	background-color: #6BBBFB;
+}
+
+.title{
+	font-size: 25px;
+	text-align: center;
+	margin: 60px 0 40px 0;
+}

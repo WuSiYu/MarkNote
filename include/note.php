@@ -101,7 +101,15 @@
 		$sql_output = $sql->query("SELECT content FROM note_content
 			WHERE ID = '$id'");
 		if( $sql_output->num_rows > 0 ){
-			return $sql_output->fetch_array()['content'];
+			$content = $sql_output->fetch_array()['content'];
+			$content = str_replace("&amp;", "&",$content);
+			$content = str_replace("&#39;", "'",$content);
+			$content = str_replace("&#42;", "\"",$content);
+			$content = str_replace("&#61;", "=",$content);
+			$content = str_replace("&#63;", "?",$content);
+			$content = str_replace("&#92;", "\\",$content);
+			return $content;
+
 		}else{
 			return false;
 		}
@@ -136,6 +144,13 @@
 	function saveNote($id, $content){
 		global $sql;
 		if( hasNote($id) ){
+			$content = str_replace("&", "&amp;", $content);
+			$content = str_replace("'", "&#39;", $content);
+			$content = str_replace("\"", "&#42;", $content);
+			$content = str_replace("=", "&#61;", $content);
+			$content = str_replace("?", "&#63;", $content);
+			$content = str_replace("\\", "&#92;", $content);
+
 			$sql->query("UPDATE note_content SET content = '$content'
 				WHERE ID = '$id'");
 			return 'ok';
