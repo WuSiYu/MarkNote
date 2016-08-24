@@ -47,10 +47,17 @@
 					echo delNotebook($_POST['notebook']);
 				}
 			}
+
+			if( $_POST['action'] == 'updateNoteList' ){
+				if( isset($_POST['list']) ){
+					echo updatetUserNotebooks($USERNAME, json_decode($_POST['list']));
+				}
+			}
 		}
 
 
 	}
+
 
 	function checkTitle($theTitle){
 		return true;

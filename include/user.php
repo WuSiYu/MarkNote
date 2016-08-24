@@ -191,6 +191,36 @@
 		return json_decode( $sql_output->fetch_array()['notebooks'] );
 	}
 
+	function getIDListFromNoteList($list){
+		$IDList = array();
+		foreach ($list as $value) {
+			if(is_int($value)){
+				$IDList[] = $value;
+			}
+			if(is_array($value)){
+				foreach ($value as $value2) {
+					if(is_int($value2)){
+						$IDList[] = $value2;
+					}
+				}
+			}
+		}
+		sort($IDList);
+		return $IDList;
+	}
+
+	function updatetUserNotebooks($username, $list){
+		global $sql;
+		$oldList = getUserNotebooks($username);
+		if( getIDListFromNoteList($oldList) == getIDListFromNoteList($list) ){
+
+			$list = json_encode_fix($list);
+			$sql->query("UPDATE note_users SET notebooks = '$list'
+				WHERE username = '$username'");
+
+		}
+	}
+
 	function removeNoteFromUser($username, $id){
 		global $sql;
 		$sql_output = $sql->query("SELECT notebooks FROM note_users

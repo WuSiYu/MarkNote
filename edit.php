@@ -13,16 +13,18 @@
 		foreach ($theNotebooks as $value) {
 			if(is_int($value)){
 				?>
-				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
+				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
+					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
 				</div>
 				<?php
 			}
 			if(is_array($value)){
 				?>
+				<div class="div-notelist-item-single" style="height: 0.5px;"></div>
+
 				<div class="div-notelist-folder">
 					<i class="fa fa-angle-down fa-lg i-notelist-folder-arrow" aria-hidden="true"></i>
-					<div class="div-notelist-item notebook-opened" onmouseover="showNotebookDelIcon(this)" onmouseout="hideNotebookDelIcon(this)" onclick="toggleNotebook(this);"><span class="span-notelist-item-left"></span><span class="span-notelist-item-text"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNotebook('<?php echo $value[0]; ?>');"></i></div>
+					<div class="div-notelist-item notebook-opened div-notelist-item-notebook-title" onmouseover="showNotebookDelIcon(this)" onmouseout="hideNotebookDelIcon(this)" onclick="toggleNotebook(this);"><span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNotebook('<?php echo $value[0]; ?>');"></i></div>
 					<?php
 					foreach ($value as $note) {
 						if(is_int($note)){
@@ -33,7 +35,7 @@
 							<?php
 						}
 					}?>
-					<div class="div-notelist-item div-notelist-item-subnote">
+					<div class="div-notelist-item">
 						<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" onclick="newSubnote('<?php echo $value[0]; ?>');"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
 					</div>
 				</div><?php
@@ -64,7 +66,9 @@
 	<script src="//cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
 	<script src="//cdn.bootcss.com/ace/1.2.5/ace.js"></script>
 	<!-- <script src="//cdn.bootcss.com/prism/0.0.1/prism.min.js"></script> -->
-	<script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<!-- <script src="//cdn.bootcss.com/mathjax/2.5.3/MathJax.js"></script> -->
+	<script src="//cdn.bootcss.com/mathjax/2.6.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	<script src="//cdn.bootcss.com/Sortable/1.4.2/Sortable.min.js"></script>
 	<script src="include/js/edit.js"></script>
 	<script src="include/js/prism.js"></script>
 
@@ -104,6 +108,7 @@
 Please select a __note__ in the list on the left.</div>
 			<div id="editor-move"></div>
 			<div id="editor-show"></div>
+			<div id="editor-show-preprocess"></div>
 		</div>
 	</div>
 

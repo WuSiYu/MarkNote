@@ -16,10 +16,10 @@ function doLayout(){
 
 	$("#editor").width(winw-240);
 
-	document.getElementById('editor-move').style.left  = (winw-240)/2 + "px";
-	document.getElementById('editor-ace').style.width = (winw-240)/2 + "px";
-	document.getElementById('editor-show').style.width = (winw-240)/2 - 5 + "px";
-	document.getElementById('editor-show').style.marginLeft = (winw-240)/2 + 5 + "px";
+	document.getElementById("editor-move").style.left  = (winw-240)/2 + "px";
+	document.getElementById("editor-ace").style.width = (winw-240)/2 + "px";
+	document.getElementById("editor-show").style.width = (winw-240)/2 - 5 + "px";
+	document.getElementById("editor-show").style.marginLeft = (winw-240)/2 + 5 + "px";
 
 }
 
@@ -28,17 +28,115 @@ window.onresize = function () {
 }
 
 function loadNotelist(){
-	$.post('edit.php',{
-		action:'getNotelist'
+	$.post("edit.php",{
+		action:"getNotelist"
 	},
 	function(data,status){
 		$("#sidebar-notelist").html(data);
+		var notelist = document.getElementById("sidebar-notelist");
+
+		// list 1: notes in lost
+		Sortable.create(notelist, {
+			group: {
+			  name: "notelist",
+			  put: ["notebooklist", "sublist"],
+			  pull:true
+			},
+			ghostClass: 'div-notelist-item-moving',
+			animation: 150,
+			draggable: ".div-notelist-item-single",
+			handle: ".handle1",
+			onSort: function(evt){
+				updateList();
+			}
+		});
+
+		// list 2: notebooks in list
+		Sortable.create(notelist, {
+			group: {
+			  name: "notebooklist",
+			  put: ["notelist", "sublist"],
+			  pull:true
+			},
+			ghostClass: 'div-notelist-item-moving',
+			animation: 150,
+			draggable: ".div-notelist-folder",
+			handle: ".handle1",
+			onSort: function(evt){
+				updateList();
+			}
+		});
+
+		// other lists: notes in each notebooks
+		$("#sidebar-notelist .div-notelist-folder").each(function(){
+			Sortable.create(this, {
+				group: {
+				  name: "sublist",
+				  put: ["notelist"],
+				  pull:true
+				},
+				ghostClass: 'div-notelist-item-moving',
+				animation: 150,
+				draggable: ".div-notelist-item-subnote",
+				onSort: function(evt){
+					updateList();
+				}
+			});
+		});
 	});
 }
 
+function updateList(){
+	theList = $("#sidebar-notelist");
+
+	theList.children(".div-notelist-item-subnote").children(".span-notelist-item-left").removeClass("span-notelist-item-left-subnote");
+	theList.children(".div-notelist-item-subnote").children(".span-notelist-item-text").addClass("handle1");
+	theList.children(".div-notelist-item-subnote").addClass("div-notelist-item-single");
+	theList.children(".div-notelist-item-subnote").removeClass("div-notelist-item-subnote");
+
+	theList.children(".div-notelist-folder").children(".div-notelist-item-single").children(".span-notelist-item-left").addClass("span-notelist-item-left-subnote");
+	theList.children(".div-notelist-folder").children(".div-notelist-item-single").children(".span-notelist-item-text").removeClass("handle1");
+	theList.children(".div-notelist-folder").children(".div-notelist-item-single").addClass("div-notelist-item-subnote");
+	theList.children(".div-notelist-folder").children(".div-notelist-item-single").removeClass("div-notelist-item-single");
+
+	newList = new Array();
+
+	theList.children().each(function(){
+		if( $(this).hasClass("div-notelist-item-single") ){
+			if($(this).attr("id")){
+				newList.push(parseInt( $(this).attr("id").substring(18) ));
+			}
+		}
+		if( $(this).hasClass("div-notelist-folder") ){
+			tmp = new Array();
+			tmp.push( $(this).children(".div-notelist-item-notebook-title").text() );
+			$(this).children(".div-notelist-item-subnote").each(function(){
+				tmp.push(parseInt( $(this).attr("id").substring(18) ));
+				// alert($(this).attr("id"));
+			});
+			// alert(tmp);
+			newList.push(tmp);
+			// newList.push(parseInt( $(this).attr("id").substring(18) ));
+			// alert(parseInt($(this).attr("id").substring(18)));
+		}
+	});
+
+	newListJSON = JSON.stringify(newList);
+	// alert(newListJSON);
+
+	$.post("include/note.php",{
+		action:"updateNoteList",
+		list:newListJSON
+	},
+	function(data,status){
+		// alert("Status: " + status + data );
+	});
+
+}
+
 function newNote(){
-	$.post('include/note.php',{
-		action:'newNote',
+	$.post("include/note.php",{
+		action:"newNote",
 		title:prompt()
 	},
 	function(data,status){
@@ -47,8 +145,8 @@ function newNote(){
 }
 
 function newNotebook(){
-	$.post('include/note.php',{
-		action:'newNotebook',
+	$.post("include/note.php",{
+		action:"newNotebook",
 		notebook:prompt()
 	},
 	function(data,status){
@@ -57,8 +155,8 @@ function newNotebook(){
 }
 
 function newSubnote(notebook){
-	$.post('include/note.php',{
-		action:'newSubnote',
+	$.post("include/note.php",{
+		action:"newSubnote",
 		notebook:notebook,
 		title:prompt()
 	},
@@ -68,10 +166,10 @@ function newSubnote(notebook){
 }
 
 function loadNote(id){
-	updateStatusBar('#f1c40f', 'Loading note...');
+	updateStatusBar("#f1c40f", "Loading note...");
 	if(NOTEID){
 		if(NOTEID == id){
-			updateStatusBar('#2ecc71', 'Note loaded');
+			updateStatusBar("#2ecc71", "Note loaded");
 			return 0;
 		}
 		$("#div-notelist-item-"+NOTEID).removeClass("div-notelist-item-selected2");
@@ -91,50 +189,77 @@ function loadNote(id){
 		$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").children(".span-notelist-item-left").addClass("span-notelist-item-left-selected");
 	}
 	NoteLoding=true;
-	$.post('include/note.php',{
-		action:'getNote',
+	$.post("include/note.php",{
+		action:"getNote",
 		id:id
 	},
 	function(data,status){
-		// alert('Status: ' + status + data );
+		// alert("Status: " + status + data );
 		EditorAce.session.setValue(data);
 		updateEditorShow();
-		updateStatusBar('#2ecc71', 'Note loaded');
+		updateStatusBar("#2ecc71", "Note loaded");
 		NoteLoding=false;
 	});
 }
 
+var NoteAutosaving = false;
+var NoteAutosaveWaiting = false;
+function autosaveNote(){
+	if(!NoteAutosaving){
+		NoteAutosaving = true;
+		setTimeout(function(){
+			NoteAutosaving = false;
+			if(NoteAutosaveWaiting){
+				NoteAutosaveWaiting = false;
+				autosaveNote();
+			}
+		}, 1500);
+		updateStatusBar("#f1c40f", "Saving...");
+		$.post("include/note.php",{
+			action:"saveNote",
+			id:NOTEID,
+			content:EditorAce.getValue()
+		},
+		function(data,status){
+			// alert("Status: " + status + data );
+			updateStatusBar("#2ecc71", "Note saved");
+		});
+	}else{
+		NoteAutosaveWaiting = true;
+	}
+}
+
 function saveNote(){
-	updateStatusBar('#f1c40f', 'Saving...');
-	$.post('include/note.php',{
-		action:'saveNote',
+	updateStatusBar("#f1c40f", "Saving...");
+	$.post("include/note.php",{
+		action:"saveNote",
 		id:NOTEID,
 		content:EditorAce.getValue()
 	},
 	function(data,status){
-		// alert('Status: ' + status + data );
-		updateStatusBar('#2ecc71', 'Note saved');
+		// alert("Status: " + status + data );
+		updateStatusBar("#2ecc71", "Note saved");
 	});
 }
 
 function delNote(id){
-	$.post('include/note.php',{
-		action:'delNote',
+	$.post("include/note.php",{
+		action:"delNote",
 		id:id
 	},
 	function(data,status){
-		// alert('Status: ' + status + data );
+		// alert("Status: " + status + data );
 		loadNotelist();
 	});
 }
 
 function delNotebook(notebook){
-	$.post('include/note.php',{
-		action:'delNotebook',
+	$.post("include/note.php",{
+		action:"delNotebook",
 		notebook:notebook
 	},
 	function(data,status){
-		// alert('Status: ' + status + data );
+		// alert("Status: " + status + data );
 		loadNotelist();
 	});
 }
@@ -160,7 +285,7 @@ function hideNotebookDelIcon(item){
 function toggleNotebook(item){
 
 	if($(item).hasClass("notebook-opened")){
-		$(item).parent().animate({height:'28px'});
+		$(item).parent().animate({height:"28px"});
 		$(item).parent().children("i").animate({rotation: -90});
 	}else{
 		$(item).parent().animate({height:$(item).parent().children(".div-notelist-item").size()*28+"px" });
@@ -169,11 +294,37 @@ function toggleNotebook(item){
 	$(item).toggleClass("notebook-opened");
 }
 
+var EditorShowProcessing = false;
+var EditorShowWaiting = false;
 function updateEditorShow(){
-	document.getElementById('editor-show').innerHTML = marked(EditorAce.getValue());
-	Prism.highlightAll();
-	MathJax.Hub.PreProcess(document.getElementById("editor-show"));
-	MathJax.Hub.Update();
+	if(!EditorShowProcessing){
+		EditorShowProcessing = true;
+
+		document.getElementById("editor-show-preprocess").innerHTML = marked(EditorAce.getValue());
+		Prism.highlightAll();
+		// MathJax.Hub.Process(document.getElementById("editor-show-preprocess"));
+		// MathJax.Hub.Update(document.getElementById("editor-show-preprocess"));
+
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editor-show-preprocess"], function(){
+			document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML;
+			EditorShowProcessing = false;
+			if(EditorShowWaiting){
+				updateEditorShow();
+				EditorShowWaiting = false;
+			}
+		});
+	}else{
+		EditorShowWaiting = true;
+	}
+
+	// MathJax.Hub.Reprocess(document.getElementById("editor-show"));
+	// MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editor-show-preprocess"], function(){
+	// 	document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
+	// });
+	// MathJax.Hub.Reprocess(document.getElementById("editor-show-preprocess"), function(){
+	// 	document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
+	// });
+	// document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
 
 }
 
@@ -187,42 +338,41 @@ var NoteLoding=false;
 $(document).ready(function(){
 	loadNotelist();
 	doLayout();
-	updateStatusBar('#bdc3c7', 'Ready');
+	updateStatusBar("#bdc3c7", "Ready");
 
 	$("#btn-newnote").click(function(){
-		$.post('include/note.php',{
-			action:'newNote',
+		$.post("include/note.php",{
+			action:"newNote",
 			title:$("#input-newnote").val()
 		},
 		function(data,status){
-			// alert('Status: ' + status + data );
+			// alert("Status: " + status + data );
 			loadNotelist();
 		});
 	});	
 
 	$("#btn-newnotebook").click(function(){
-		$.post('include/note.php',{
-			action:'newNotebook',
+		$.post("include/note.php",{
+			action:"newNotebook",
 			notebook:$("#input-newnotebook").val()
 		},
 		function(data,status){
-			// alert('Status: ' + status + data );
+			// alert("Status: " + status + data );
 			loadNotelist();
 		});
 	});	
 
 	$("#btn-subnote").click(function(){
-		$.post('include/note.php',{
-			action:'newSubnote',
+		$.post("include/note.php",{
+			action:"newSubnote",
 			notebook:$("#input-subnote-book").val(),
 			title:$("#input-subnote-note").val()
 		},
 		function(data,status){
-			// alert('Status: ' + status + data );
+			// alert("Status: " + status + data );
 			loadNotelist();
 		});
 	});
-
 
 	var oBox = document.getElementById("editor"), oLeft = document.getElementById("editor-ace"), oRight = document.getElementById("editor-show"), oMove = document.getElementById("editor-move");
 	oMove.onmousedown = function(e){
@@ -261,16 +411,16 @@ $(document).ready(function(){
 	updateEditorShow();
 
 	//ACE编辑器的内容改变事件
-	EditorAce.getSession().on('change', function(e){
+	EditorAce.getSession().on("change", function(e){
 		if(!NoteLoding){
 			updateEditorShow();
-			saveNote();
+			autosaveNote();
 		}
 	});
 
 	MathJax.Hub.Config({
 		showProcessingMessages: false,
-		elements: ['editor-show']
+		elements: ["editor-show"]
 	});
 
 	$(".ace_scrollbar-v").attr("id","editor-ace-scrollbar"); //给ACE编辑器的滚动条添加名称
@@ -308,10 +458,10 @@ var getMatches = function (string, regex) {
 	}
 	return matches;
 };
-$.cssHooks['rotation'] = {
+$.cssHooks["rotation"] = {
 	get: function (elem) {
 		var $elem = $(elem);
-		var matrix = getMatches($elem.css('transform'));
+		var matrix = getMatches($elem.css("transform"));
 		if (matrix.length != 6) {
 			return 0;
 		}
@@ -322,7 +472,7 @@ $.cssHooks['rotation'] = {
 		var deg = parseFloat(val);
 		if (!isNaN(deg)) {
 			$elem.css({
-				transform: 'rotate(' + deg + 'deg)'
+				transform: "rotate(" + deg + "deg)"
 			});
 		}
 	}

@@ -129,6 +129,10 @@ h1,h2,h3{
 	background-color: #292929;
 }
 
+.div-notelist-item-moving{
+	background-color: #333;
+}
+
 .div-notelist-item-selected{
 	background-color: #2F2F2F;
 }
@@ -226,6 +230,9 @@ h1,h2,h3{
 #editor-show p{
 	margin: 5px 0 12px 0;
 }
+#editor-show h1{
+	margin-bottom: 10px;
+}
 #editor-show h2{
 	border-bottom:solid 2px #ddd;
 	margin-bottom: 5px;
@@ -240,7 +247,7 @@ h1,h2,h3{
 #editor-show pre{
 	border-left: 5px solid #666;
 	margin: 5px 0;
-	padding: 5px;
+	padding: 5px 15px;
 	background-color: #333;
 	font-family: "Source Code Pro","Menlo","Liberation Mono","Consolas","DejaVu Sans Mono","Ubuntu Mono","Courier New","andale mono","lucida console",monospace !important;
 	border-radius: 0;
@@ -254,13 +261,13 @@ h1,h2,h3{
 #editor-show hr{
 	border: 1px solid #888;
 }
-#editor-show .MathJax_Display,#editor-show .MathJax_Preview .MJXc-math{
+#editor-show .MJXc-display,#editor-show .MJXp-display{
 	padding: 10px 0;
 	background-color: #333;
 	display: block;
 }
-#editor-show .MathJax_Preview span{
-	font-size: 16px !important;
+#editor-show .MJXp-display{
+	font-size: 14px !important;
 }
 #editor-show code{
 	line-height: 16px;
@@ -291,4 +298,6 @@ pre[class*=language-]>code[data-language]::before{
 	border-radius: 0 !important;
 }
 
-
+#editor-show-preprocess{
+	display: none;
+}
