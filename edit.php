@@ -42,6 +42,7 @@
 			}
 		}
 		?>
+		<div class="div-notelist-item-single" style="height: 0.5px;"></div>
 		<div class="div-notelist-item">
 			<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="newNote();"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
 		</div>
@@ -110,6 +111,15 @@ Please select a __note__ in the list on the left.</div>
 			<div id="editor-show"></div>
 			<div id="editor-show-preprocess"></div>
 		</div>
+	</div>
+
+	<div id="contextmenu-1">
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Open</div>
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Rename</div>
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Clone</div>
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Download</div>
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Share</div>
+		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Delete</div>
 	</div>
 
 </body>

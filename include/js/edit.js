@@ -83,6 +83,13 @@ function loadNotelist(){
 				}
 			});
 		});
+
+		$("#sidebar-notelist .div-notelist-item-single").each(function(){
+			this.oncontextmenu = function(event){
+				showNoteContext(this, event);
+				return false;
+			}
+		});
 	});
 }
 
@@ -333,6 +340,22 @@ function updateStatusBar(color, text){
 	document.getElementById("sidebar-status-text").innerHTML = text;
 }
 
+function showNoteContext(item, event){
+	var e = event || window.event;
+	var context = $("#contextmenu-1");
+	context.show();
+	$("#contextmenu-1").css({
+		"top" : e.clientY-1+'px',
+		"left" : e.clientX-1+'px'
+	});
+	// alert(e.clientX, e.clientY);
+
+}
+
+function showNotebookContext(){
+
+}
+
 var EditorAce;
 var NoteLoding=false;
 $(document).ready(function(){
@@ -373,6 +396,10 @@ $(document).ready(function(){
 			loadNotelist();
 		});
 	});
+
+	document.onclick=function(){
+		$("#contextmenu-1").hide();
+	}; 
 
 	var oBox = document.getElementById("editor"), oLeft = document.getElementById("editor-ace"), oRight = document.getElementById("editor-show"), oMove = document.getElementById("editor-move");
 	oMove.onmousedown = function(e){

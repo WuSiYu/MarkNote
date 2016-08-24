@@ -50,7 +50,7 @@ h1,h2,h3{
 #header{
 	height: 56px;
 	width: 100%;
-	background-color: #2B2B2B;
+	background-color: #000;
 }
 
 #header-title{
@@ -101,14 +101,14 @@ h1,h2,h3{
 	position: absolute;
 	width: 240px;
 	height: 100%;
-	background-color: #222222;
+	background-color: #121212;
 	overflow: auto;
 }
 
 #sidebar-status{
 	height: 32px;
 	padding: 2px 15px;
-	background-color: #333;
+	background-color: #202020;
 }
 
 #sidebar-status-icon{
@@ -300,4 +300,31 @@ pre[class*=language-]>code[data-language]::before{
 
 #editor-show-preprocess{
 	display: none;
+}
+
+
+
+
+
+
+
+
+#contextmenu-1{
+	z-index: 100;
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 180px;
+	/*padding: 5px 0;*/
+	background-color: #000;
+}
+
+.contextmenu-item{
+	padding: 2px 24px;
+	width: 180px;
+}
+
+.contextmenu-item:hover{
+	background-color: #222;
 }
