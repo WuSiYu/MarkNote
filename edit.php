@@ -20,7 +20,7 @@
 			}
 			if(is_array($value)){
 				?>
-				<div class="div-notelist-item-single" style="height: 0.5px;"></div>
+				<div class="div-notelist-item-single" style="height: 1px;"></div>
 
 				<div class="div-notelist-folder">
 					<i class="fa fa-angle-down fa-lg i-notelist-folder-arrow" aria-hidden="true"></i>
@@ -42,7 +42,7 @@
 			}
 		}
 		?>
-		<div class="div-notelist-item-single" style="height: 0.5px;"></div>
+		<div class="div-notelist-item-single" style="height: 1px;"></div>
 		<div class="div-notelist-item">
 			<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="newNote();"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
 		</div>
@@ -113,13 +113,22 @@ Please select a __note__ in the list on the left.</div>
 		</div>
 	</div>
 
-	<div id="contextmenu-1">
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Open</div>
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Rename</div>
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Clone</div>
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Download</div>
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Share</div>
-		<div class="contextmenu-item"><i class="fa fa-folder" aria-hidden="true"></i> Delete</div>
+	<div id="contextmenu-1" class="contextmenu">
+		<div class="contextmenu-item" onclick=""><i class="fa fa-file" aria-hidden="true"></i> Open</div>
+		<div class="contextmenu-item" onclick=""><i class="fa fa-edit" aria-hidden="true"></i> Rename</div>
+		<div class="contextmenu-item" onclick=""><i class="fa fa-clone" aria-hidden="true"></i> Clone</div>
+		<div class="contextmenu-item" onclick=""><i class="fa fa-download" aria-hidden="true"></i> Download</div>
+		<div class="contextmenu-item" onclick=""><i class="fa fa-share-alt" aria-hidden="true"></i> Share</div>
+		<div class="contextmenu-item" onclick="contextDelNote()"><i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
+	</div>
+
+	<div id="contextmenu-2" class="contextmenu">
+		<div class="contextmenu-item"><i class="fa fa-file" aria-hidden="true"></i> Open</div>
+		<div class="contextmenu-item"><i class="fa fa-edit" aria-hidden="true"></i> Rename</div>
+		<div class="contextmenu-item"><i class="fa fa-clone" aria-hidden="true"></i> Clone</div>
+		<div class="contextmenu-item"><i class="fa fa-download" aria-hidden="true"></i> Download</div>
+		<div class="contextmenu-item"><i class="fa fa-share-alt" aria-hidden="true"></i> Share</div>
+		<div class="contextmenu-item"><i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
 	</div>
 
 </body>

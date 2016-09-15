@@ -117,7 +117,8 @@ h1,h2,h3{
 	height: 12px;
 	border-radius: 50%;
 	background-color: green;*/
-	margin-left: 2px;
+	margin-left: 5px;
+	/*margin-right: 5px;*/
 	color: #f1c40f;
 }
 
@@ -125,8 +126,8 @@ h1,h2,h3{
 	height: 28px
 }
 
-.div-notelist-item:hover{
-	background-color: #292929;
+.div-notelist-item:hover, .div-notelist-item-contextmenu-show{
+	background-color: rgba(0,127,200,0.6);
 }
 
 .div-notelist-item-moving{
@@ -134,19 +135,19 @@ h1,h2,h3{
 }
 
 .div-notelist-item-selected{
-	background-color: #2F2F2F;
+	background-color: #282828;
 }
 
 .div-notelist-item-selected:hover{
-	background-color: #2F2F2F;
+	background-color: #282828;
 }
 
 .div-notelist-item-selected2{
-	background-color: #3C8CDC;
+	background-color: #007FDC;
 }
 
 .div-notelist-item-selected2:hover{
-	background-color: #3C8CDC;
+	background-color: #007FDC;
 }
 
 .span-notelist-item-left{
@@ -177,7 +178,7 @@ h1,h2,h3{
 
 .span-notelist-item-left-selected{
 	/*background-color: #3498DB;*/
-	background-color: #3C8CDC;
+	background-color: #007FDC;
 }
 
 .div-notelist-folder{
@@ -309,7 +310,7 @@ pre[class*=language-]>code[data-language]::before{
 
 
 
-#contextmenu-1{
+.contextmenu{
 	z-index: 100;
 	display: none;
 	position: fixed;
@@ -317,14 +318,21 @@ pre[class*=language-]>code[data-language]::before{
 	left: 0;
 	width: 180px;
 	/*padding: 5px 0;*/
-	background-color: #000;
+	background-color: #333;
+	box-shadow: 0 3px 6px 0px rgba(0,0,0,0.16);
+}
+
+.contextmenu i{
+	margin-right: 6px;
+	width: 14px;
 }
 
 .contextmenu-item{
-	padding: 2px 24px;
+	padding: 2px 12px;
 	width: 180px;
+	cursor: default;
 }
 
 .contextmenu-item:hover{
-	background-color: #222;
+	background-color: #007FDC;
 }

@@ -90,6 +90,12 @@ function loadNotelist(){
 				return false;
 			}
 		});
+		$(".div-notelist-item-subnote").each(function(){
+			this.oncontextmenu = function(event){
+				showNoteContext(this, event);
+				return false;
+			}
+		});
 	});
 }
 
@@ -176,7 +182,7 @@ function loadNote(id){
 	updateStatusBar("#f1c40f", "Loading note...");
 	if(NOTEID){
 		if(NOTEID == id){
-			updateStatusBar("#2ecc71", "Note loaded");
+			updateStatusBar("#0f2", "Note loaded");
 			return 0;
 		}
 		$("#div-notelist-item-"+NOTEID).removeClass("div-notelist-item-selected2");
@@ -204,7 +210,7 @@ function loadNote(id){
 		// alert("Status: " + status + data );
 		EditorAce.session.setValue(data);
 		updateEditorShow();
-		updateStatusBar("#2ecc71", "Note loaded");
+		updateStatusBar("#0f2", "Note loaded");
 		NoteLoding=false;
 	});
 }
@@ -212,27 +218,29 @@ function loadNote(id){
 var NoteAutosaving = false;
 var NoteAutosaveWaiting = false;
 function autosaveNote(){
-	if(!NoteAutosaving){
-		NoteAutosaving = true;
-		setTimeout(function(){
-			NoteAutosaving = false;
-			if(NoteAutosaveWaiting){
-				NoteAutosaveWaiting = false;
-				autosaveNote();
-			}
-		}, 1500);
-		updateStatusBar("#f1c40f", "Saving...");
-		$.post("include/note.php",{
-			action:"saveNote",
-			id:NOTEID,
-			content:EditorAce.getValue()
-		},
-		function(data,status){
-			// alert("Status: " + status + data );
-			updateStatusBar("#2ecc71", "Note saved");
-		});
-	}else{
-		NoteAutosaveWaiting = true;
+	if(NOTEID){
+		if(!NoteAutosaving){
+			NoteAutosaving = true;
+			setTimeout(function(){
+				NoteAutosaving = false;
+				if(NoteAutosaveWaiting){
+					NoteAutosaveWaiting = false;
+					autosaveNote();
+				}
+			}, 1500);
+			updateStatusBar("#f1c40f", "Saving...");
+			$.post("include/note.php",{
+				action:"saveNote",
+				id:NOTEID,
+				content:EditorAce.getValue()
+			},
+			function(data,status){
+				// alert("Status: " + status + data );
+				updateStatusBar("#0f2", "Note saved");
+			});
+		}else{
+			NoteAutosaveWaiting = true;
+		}
 	}
 }
 
@@ -245,7 +253,7 @@ function saveNote(){
 	},
 	function(data,status){
 		// alert("Status: " + status + data );
-		updateStatusBar("#2ecc71", "Note saved");
+		updateStatusBar("#0f2", "Note saved");
 	});
 }
 
@@ -340,16 +348,22 @@ function updateStatusBar(color, text){
 	document.getElementById("sidebar-status-text").innerHTML = text;
 }
 
+var noteContextID = 0;
 function showNoteContext(item, event){
 	var e = event || window.event;
 	var context = $("#contextmenu-1");
 	context.show();
 	$("#contextmenu-1").css({
-		"top" : e.clientY-1+'px',
-		"left" : e.clientX-1+'px'
+		"top" : e.clientY+'px',
+		"left" : e.clientX+'px'
 	});
-	// alert(e.clientX, e.clientY);
+	noteContextID = parseInt($(item).attr("id").substring(18));
+	$(item).addClass("div-notelist-item-contextmenu-show");
+}
 
+function contextDelNote(){
+	delNote(noteContextID);
+	$("#contextmenu-1").hide();
 }
 
 function showNotebookContext(){
@@ -397,8 +411,26 @@ $(document).ready(function(){
 		});
 	});
 
-	document.onclick=function(){
-		$("#contextmenu-1").hide();
+	document.onclick=function(event){
+		var e = event || window.event;
+		var doHide = true;
+		$(".contextmenu").each(function(){
+			contextmenuPos = $(this).offset();
+			if( contextmenuPos.left <= e.clientX && e.clientX <= contextmenuPos.left+$(this).width() &&
+				contextmenuPos.top <= e.clientY && e.clientY <= contextmenuPos.top+$(this).height() ){
+				doHide = false;
+			}
+			// alert(contextmenuPos.x+"px "+contextmenuPos.y+"px "+e.clientX+"px "+e.clientY+"px ");
+		});
+
+
+		// alert("hide");
+		if(doHide){
+			if(noteContextID){
+				$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+			}
+			$("#contextmenu-1").hide();
+		}
 	}; 
 
 	var oBox = document.getElementById("editor"), oLeft = document.getElementById("editor-ace"), oRight = document.getElementById("editor-show"), oMove = document.getElementById("editor-move");
@@ -424,7 +456,7 @@ $(document).ready(function(){
 			document.onmousemove = null;
 			document.onmouseup = null;
 			oMove.releaseCapture && oMove.releaseCapture();
-			// EditorAce.resize();
+			EditorAce.resize();
 		};
 		oMove.setCapture && oMove.setCapture();
 		return false
@@ -441,7 +473,6 @@ $(document).ready(function(){
 	EditorAce.getSession().on("change", function(e){
 		if(!NoteLoding){
 			updateEditorShow();
-			autosaveNote();
 		}
 	});
 
