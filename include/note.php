@@ -36,6 +36,18 @@
 				}
 			}
 
+			if( $_POST['action'] == 'renameNote' ){
+				if( isset($_POST['id']) && isset($_POST['newname']) && checkNoteUser($_POST['id'], $USERNAME) ){
+					echo renameNote($_POST['id'], $_POST['newname']);
+				}
+			}
+
+			if( $_POST['action'] == 'cloneNote' ){
+				if( isset($_POST['id']) && checkNoteUser($_POST['id'], $USERNAME) ){
+					echo cloneNote($_POST['id']);
+				}
+			}
+
 			if( $_POST['action'] == 'delNote' ){
 				if( isset($_POST['id']) && checkNoteUser($_POST['id'], $USERNAME) ){
 					echo delNote($_POST['id']);
@@ -59,8 +71,16 @@
 	}
 
 
-	function checkTitle($theTitle){
+	function checkUsername($theTitle){
 		return true;
+	}
+
+	function checkID($theTitle){
+		return true;
+	}
+
+	function checkTitle($theTitle){
+		return preg_match("/^(?!_|\\s\\')[A-Za-z0-9_\\x80-\\xff\\s\\']{1,256}$/",$theTitle);
 	}
 
 	function hasNote($id){
@@ -82,7 +102,7 @@
 			VALUES ('$username', '{\"title\" : \"$title\" }' )");
 		$id = $sql->insert_id;
 		addSingleNoteToUser($username, $id);
-		return 'ok';
+		return $id;
 	}	
 
 	function newNotebook($username, $notebook){
@@ -160,6 +180,35 @@
 
 			$sql->query("UPDATE note_content SET content = '$content'
 				WHERE ID = '$id'");
+			return 'ok';
+		}
+	}
+
+	function renameNote($id, $newname){
+		global $sql;
+		if( hasNote($id) ){
+			$sql_output = $sql->query("SELECT settings FROM note_content
+				WHERE ID = '$id'");
+			$noteSettings = json_decode($sql_output->fetch_array()['settings'], true);
+			$noteSettings['title'] = $newname;
+			$noteSettings = json_encode_fix($noteSettings);
+			echo $noteSettings;
+			$sql->query("UPDATE note_content SET settings = '$noteSettings'
+				WHERE ID = '$id'");
+			return 'ok';
+		}
+	}
+
+	function cloneNote($id){
+		global $sql, $USERNAME;
+		if( hasNote($id) ){
+			// $newNoteID = newNote($USERNAME, getNoteTitle($id).' - COPY');
+			$newTitle = getNoteTitle($id).' - COPY';
+			$sql->query("INSERT INTO note_content (user, settings)
+				VALUES ('$USERNAME', '{\"title\" : \"$newTitle\" }' )");
+			$newNoteID = $sql->insert_id;
+			saveNote($newNoteID, getNote($id));
+			cloneNoteToUser($USERNAME, $id, $newNoteID);
 			return 'ok';
 		}
 	}

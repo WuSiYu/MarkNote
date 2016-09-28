@@ -1,6 +1,5 @@
 var NOTEID=0;
 
-
 function doLayout(){
 	var winh=window.innerHeight
 		|| document.documentElement.clientHeight
@@ -148,9 +147,14 @@ function updateList(){
 }
 
 function newNote(){
+	var newname = prompt();
+	if(newname == null){
+		return 1;
+	}
+
 	$.post("include/note.php",{
 		action:"newNote",
-		title:prompt()
+		title:newname
 	},
 	function(data,status){
 		loadNotelist();
@@ -158,9 +162,14 @@ function newNote(){
 }
 
 function newNotebook(){
+	var newname = prompt();
+	if(newname == null){
+		return 1;
+	}
+
 	$.post("include/note.php",{
 		action:"newNotebook",
-		notebook:prompt()
+		notebook:newname
 	},
 	function(data,status){
 		loadNotelist();
@@ -168,10 +177,15 @@ function newNotebook(){
 }
 
 function newSubnote(notebook){
+	var newname = prompt();
+	if(newname == null){
+		return 1;
+	}
+
 	$.post("include/note.php",{
 		action:"newSubnote",
 		notebook:notebook,
-		title:prompt()
+		title:newname
 	},
 	function(data,status){
 		loadNotelist();
@@ -212,6 +226,27 @@ function loadNote(id){
 		updateEditorShow();
 		updateStatusBar("#0f2", "Note loaded");
 		NoteLoding=false;
+	});
+}
+
+function renameNote(id){
+	var newname;
+	notebook = $("#div-notelist-item-"+id);
+	newname = prompt();
+	if(newname == null){
+		return 1;
+	}
+
+	updateStatusBar("#f1c40f", "Rename note...");
+	$.post("include/note.php",{
+		action:"renameNote",
+		newname:newname,
+		id:id
+	},
+	function(data,status){
+		// alert("Status: " + status + data );
+		loadNotelist();
+		updateStatusBar("#0f2", "Note Renamed");
 	});
 }
 
@@ -257,6 +292,20 @@ function saveNote(){
 	});
 }
 
+function cloneNote(id){
+	updateStatusBar("#f1c40f", "Cloning...");
+	$.post("include/note.php",{
+		action:"cloneNote",
+		id:id
+	},
+	function(data,status){
+		alert("Status: " + status + data );
+		loadNotelist();
+		updateStatusBar("#0f2", "Note cloned");
+	});
+}
+
+
 function delNote(id){
 	$.post("include/note.php",{
 		action:"delNote",
@@ -280,7 +329,7 @@ function delNotebook(notebook){
 }
 
 function showNoteDelIcon(item){
-	$(item).find(".i-notelist-item-del").show();
+	// $(item).find(".i-notelist-item-del").show();
 }
 
 function hideNoteDelIcon(item){
@@ -289,7 +338,7 @@ function hideNoteDelIcon(item){
 
 function showNotebookDelIcon(item){
 	if($(item).parent().children(".div-notelist-item").size()==2){
-		$(item).find(".i-notelist-item-del").show();
+		// $(item).find(".i-notelist-item-del").show();
 	}
 }
 
@@ -300,10 +349,10 @@ function hideNotebookDelIcon(item){
 function toggleNotebook(item){
 
 	if($(item).hasClass("notebook-opened")){
-		$(item).parent().animate({height:"28px"});
+		$(item).parent().animate({height:"32px"});
 		$(item).parent().children("i").animate({rotation: -90});
 	}else{
-		$(item).parent().animate({height:$(item).parent().children(".div-notelist-item").size()*28+"px" });
+		$(item).parent().animate({height:$(item).parent().children(".div-notelist-item").size()*32+"px" });
 		$(item).parent().children("i").animate({rotation: 0});
 	}
 	$(item).toggleClass("notebook-opened");
@@ -352,7 +401,12 @@ var noteContextID = 0;
 function showNoteContext(item, event){
 	var e = event || window.event;
 	var context = $("#contextmenu-1");
-	context.show();
+	if(noteContextID){
+		$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+		noteContextID = 0;
+	}
+	context.hide();
+	context.show(150);
 	$("#contextmenu-1").css({
 		"top" : e.clientY+'px',
 		"left" : e.clientX+'px'
@@ -361,14 +415,42 @@ function showNoteContext(item, event){
 	$(item).addClass("div-notelist-item-contextmenu-show");
 }
 
-function contextDelNote(){
-	delNote(noteContextID);
-	$("#contextmenu-1").hide();
+function noteContextClick(operation){
+	switch(operation){
+		case "open":
+			loadNote(noteContextID);
+			break;
+		case "rename":
+			renameNote(noteContextID);
+			break;
+		case "clone":
+			cloneNote(noteContextID);
+			break;
+		case "share":
+
+			break;
+		case "export":
+
+			break;
+		case "delete":
+			delNote(noteContextID);
+			break;
+		case "properties":
+
+			break;
+	}
+	$("#contextmenu-1").hide(150);
+	if(noteContextID){
+		$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+		noteContextID = 0;
+	}
 }
 
-function showNotebookContext(){
 
-}
+
+// function showNotebookContext(){
+
+// }
 
 var EditorAce;
 var NoteLoding=false;
@@ -428,8 +510,9 @@ $(document).ready(function(){
 		if(doHide){
 			if(noteContextID){
 				$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+				noteContextID = 0;
 			}
-			$("#contextmenu-1").hide();
+			$("#contextmenu-1").hide(150);
 		}
 	}; 
 
@@ -459,7 +542,7 @@ $(document).ready(function(){
 			EditorAce.resize();
 		};
 		oMove.setCapture && oMove.setCapture();
-		return false
+		return false;
 	};
 
 	//初始化ACE编辑器
@@ -473,6 +556,7 @@ $(document).ready(function(){
 	EditorAce.getSession().on("change", function(e){
 		if(!NoteLoding){
 			updateEditorShow();
+			autosaveNote();
 		}
 	});
 

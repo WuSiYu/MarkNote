@@ -221,6 +221,34 @@
 		}
 	}
 
+	function cloneNoteToUser($username, $id, $newid){
+		global $sql;
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			foreach($theNotebooks as $key => $value) {
+				if( is_int($value) && $value == $id ){
+					array_splice($theNotebooks, $key+1, 0, $newid);
+					echo 'ok';
+					break;
+				}
+				if( is_array($value) ){
+					foreach($value as $key2 => $note) {
+						if( is_int($note) && $note == $id){
+							array_splice($theNotebooks[$key], $key2+1, 0, $newid);
+							echo 'ok';
+							break 2;
+						}
+					}
+				}
+			}
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
+	}
+
 	function removeNoteFromUser($username, $id){
 		global $sql;
 		$sql_output = $sql->query("SELECT notebooks FROM note_users

@@ -14,7 +14,7 @@
 			if(is_int($value)){
 				?>
 				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
+					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
 				</div>
 				<?php
 			}
@@ -30,12 +30,12 @@
 						if(is_int($note)){
 							?>
 							<div id="div-notelist-item-<?php echo $note?>" class="div-notelist-item div-notelist-item-subnote" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-								<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $note; ?>);"></i>
+								<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $note; ?>);"></i>
 							</div>
 							<?php
 						}
 					}?>
-					<div class="div-notelist-item">
+					<div class="div-notelist-item div-notelist-item-subnote2">
 						<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" onclick="newSubnote('<?php echo $value[0]; ?>');"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
 					</div>
 				</div><?php
@@ -114,22 +114,25 @@ Please select a __note__ in the list on the left.</div>
 	</div>
 
 	<div id="contextmenu-1" class="contextmenu">
-		<div class="contextmenu-item" onclick=""><i class="fa fa-file" aria-hidden="true"></i> Open</div>
-		<div class="contextmenu-item" onclick=""><i class="fa fa-edit" aria-hidden="true"></i> Rename</div>
-		<div class="contextmenu-item" onclick=""><i class="fa fa-clone" aria-hidden="true"></i> Clone</div>
-		<div class="contextmenu-item" onclick=""><i class="fa fa-download" aria-hidden="true"></i> Download</div>
-		<div class="contextmenu-item" onclick=""><i class="fa fa-share-alt" aria-hidden="true"></i> Share</div>
-		<div class="contextmenu-item" onclick="contextDelNote()"><i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
+		<div class="contextmenu-item" onclick="noteContextClick('open');">		<i class="fa fa-file" aria-hidden="true"></i> Open</div>
+		<div class="contextmenu-item" onclick="noteContextClick('rename');">	<i class="fa fa-edit" aria-hidden="true"></i> Rename</div>
+		<div class="contextmenu-item" onclick="noteContextClick('clone');">		<i class="fa fa-clone" aria-hidden="true"></i> Clone</div>
+		<!-- <div class="contextmenu-item" onclick="noteContextClick('share');">		<i class="fa fa-share-alt" aria-hidden="true"></i> Share</div> -->
+		<!-- <div class="contextmenu-item" onclick="noteContextClick('export');">	<i class="fa fa-external-link " aria-hidden="true"></i> Export</div> -->
+		<div class="contextmenu-item" onclick="noteContextClick('delete');">		<i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
+		<!-- <div class="contextmenu-item" onclick="noteContextClick('properties');">	<i class="fa fa-info-circle" aria-hidden="true"></i> Properties</div> -->
 	</div>
 
 	<div id="contextmenu-2" class="contextmenu">
 		<div class="contextmenu-item"><i class="fa fa-file" aria-hidden="true"></i> Open</div>
 		<div class="contextmenu-item"><i class="fa fa-edit" aria-hidden="true"></i> Rename</div>
 		<div class="contextmenu-item"><i class="fa fa-clone" aria-hidden="true"></i> Clone</div>
-		<div class="contextmenu-item"><i class="fa fa-download" aria-hidden="true"></i> Download</div>
 		<div class="contextmenu-item"><i class="fa fa-share-alt" aria-hidden="true"></i> Share</div>
 		<div class="contextmenu-item"><i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
 	</div>
+
+	<input id="float-input" type="text">
+
 
 </body>
 </html>
