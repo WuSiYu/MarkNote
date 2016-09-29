@@ -71,20 +71,10 @@
 	}
 
 
-	function checkUsername($theTitle){
-		return true;
-	}
-
-	function checkID($theTitle){
-		return true;
-	}
-
-	function checkTitle($theTitle){
-		return preg_match("/^(?!_|\\s\\')[A-Za-z0-9_\\x80-\\xff\\s\\']{1,256}$/",$theTitle);
-	}
-
 	function hasNote($id){
 		global $sql;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT ID FROM note_content
 			WHERE ID = '$id'");
 		if( $sql_output->num_rows > 0 ){
@@ -96,6 +86,7 @@
 
 	function newNote($username, $title='New Note'){
 		global $sql;
+		if(!checkUsername($username)) return -1;
 		if(!checkTitle($title)) return -1;
 		
 		$sql->query("INSERT INTO note_content (user, settings)
@@ -106,13 +97,15 @@
 	}	
 
 	function newNotebook($username, $notebook){
+		if(!checkUsername($username)) return -1;
 		if(!checkTitle($notebook)) return -1;
-		
+
 		addNotebookToUser($username, $notebook);
 	}	
 
 	function newSubnote($username, $notebook, $title='New Note'){
 		global $sql;
+		if(!checkUsername($username)) return -1;
 		if(!checkTitle($notebook)) return -1;
 		if(!checkTitle($title)) return -1;
 		
@@ -125,6 +118,8 @@
 
 	function getNote($id){
 		global $sql;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT content FROM note_content
 			WHERE ID = '$id'");
 		if( $sql_output->num_rows > 0 ){
@@ -144,6 +139,8 @@
 
 	function getNoteTitle($id){
 		global $sql;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT settings FROM note_content
 			WHERE ID = '$id'");
 		if( $sql_output->num_rows > 0 ){
@@ -155,6 +152,8 @@
 
 	function getNoteUser($id){
 		global $sql;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT user FROM note_content
 			WHERE ID = '$id'");
 		if( $sql_output->num_rows > 0 ){
@@ -165,11 +164,16 @@
 	}
 
 	function checkNoteUser($id, $username){
+		if(!checkID($id)) return -1;
+		if(!checkUsername($username)) return -1;
+
 		return getNoteUser($id) == $username;
 	}
 
 	function saveNote($id, $content){
 		global $sql;
+		if(!checkID($id)) return -1;
+
 		if( hasNote($id) ){
 			$content = str_replace("&", "&amp;", $content);
 			$content = str_replace("'", "&#39;", $content);
@@ -186,6 +190,9 @@
 
 	function renameNote($id, $newname){
 		global $sql;
+		if(!checkID($id)) return -1;
+		if(!checkTitle($newname)) return -1;
+
 		if( hasNote($id) ){
 			$sql_output = $sql->query("SELECT settings FROM note_content
 				WHERE ID = '$id'");
@@ -201,6 +208,9 @@
 
 	function cloneNote($id){
 		global $sql, $USERNAME;
+		if(!checkID($id)) return -1;
+		if(!checkUsername($USERNAME)) return -1;
+
 		if( hasNote($id) ){
 			// $newNoteID = newNote($USERNAME, getNoteTitle($id).' - COPY');
 			$newTitle = getNoteTitle($id).' - COPY';
@@ -215,6 +225,9 @@
 
 	function delNote($id){
 		global $sql, $USERNAME;
+		if(!checkID($id)) return -1;
+		if(!checkUsername($USERNAME)) return -1;
+
 		if( hasNote($id) ){
 			$sql->query("DELETE FROM note_content
 				WHERE ID = '$id'");
@@ -224,6 +237,8 @@
 
 	function delNotebook($notebook){
 		global $USERNAME;
+		if(!checkTitle($notebook)) return -1;
+		if(!checkUsername($USERNAME)) return -1;
 
 		removeNotebookFromUser($USERNAME, $notebook);
 	}

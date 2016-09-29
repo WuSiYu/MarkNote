@@ -95,6 +95,15 @@ function loadNotelist(){
 				return false;
 			}
 		});
+
+		//re-select current note if has
+		if(NOTEID){
+			$("#div-notelist-item-"+NOTEID).addClass("div-notelist-item-selected2");
+			if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
+				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").addClass("div-notelist-item-selected");
+				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").children(".span-notelist-item-left").addClass("span-notelist-item-left-selected");
+			}
+		}
 	});
 }
 
@@ -299,7 +308,7 @@ function cloneNote(id){
 		id:id
 	},
 	function(data,status){
-		alert("Status: " + status + data );
+		// alert("Status: " + status + data );
 		loadNotelist();
 		updateStatusBar("#0f2", "Note cloned");
 	});
@@ -433,7 +442,9 @@ function noteContextClick(operation){
 
 			break;
 		case "delete":
-			delNote(noteContextID);
+			if(confirm("Delete this note?")){
+				delNote(noteContextID);
+			}
 			break;
 		case "properties":
 

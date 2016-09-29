@@ -7,34 +7,11 @@
 
 	$FORCESTATUS = 0;
 
-	function json_encode_fix($input){
-		if(version_compare(PHP_VERSION, '5.4.0', '>=') && false){
-			return json_encode($input, JSON_UNESCAPED_UNICODE);
-		}else{
-			$input = json_encode_fix_array($input);
-			return urldecode(json_encode($input));
-		}
-	}
-
-	function json_encode_fix_array($array){
-		foreach($array as $key => $value) {
-			if(is_string($value)){
-				$array[$key] = urlencode($value);
-			}
-			if(is_array($value)){
-				$array[$key] = json_encode_fix_array($value);
-			}
-		}
-		return $array;
-	}
-
-	function checkUsername($username){
-		return true;
-	}
-
 
 	function hasUser($username){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT username FROM note_users
 			WHERE username = '$username'");
 		if( $sql_output->num_rows > 0 ){
@@ -53,6 +30,7 @@
 			return false;
 
 		$username = $_COOKIE['MarkNoteUser'];
+		if(!checkUsername($username)) return -1;
 
 		$sql_output = $sql->query("SELECT passwd FROM note_users
 			WHERE username = '$username'");
@@ -76,7 +54,10 @@
 
 	function register($username, $email, $passwd, $nickname){
 		global $sql;
-		//something
+		if(!checkUsername($username)) return -1;
+		if(!checkEmail($email)) return -1;
+		if(!checkTitle($nickname)) return -1;
+
 		if( hasUser($username) )
 			exit('Username already exist');
 		$passwd = md5('ffffffffff'.$passwd.'蛤蛤蛤');
@@ -86,6 +67,8 @@
 
 	function login($username, $passwd){
 		global $sql, $USERNAME, $FORCESTATUS;
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT passwd FROM note_users
 			WHERE username = '$username'");
 		if( $sql_output->num_rows > 0 ){
@@ -111,7 +94,8 @@
 
 	function getUserEmail($username){
 		global $sql;
-		checkUsername($username);
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT email FROM note_users
 			WHERE username = '$username'");
 		return $sql_output->fetch_array()['email'];
@@ -126,6 +110,9 @@
 
 	function addNotebookToUser($username, $notebook){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -148,6 +135,10 @@
 
 	function addNoteToNotebook($username, $notebook, $id){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -169,6 +160,9 @@
 
 	function addSingleNoteToUser($username, $id){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -185,7 +179,8 @@
 
 	function getUserNotebooks($username){
 		global $sql;
-		checkUsername($username);
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		return json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -211,18 +206,22 @@
 
 	function updatetUserNotebooks($username, $list){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+
 		$oldList = getUserNotebooks($username);
 		if( getIDListFromNoteList($oldList) == getIDListFromNoteList($list) ){
-
 			$list = json_encode_fix($list);
 			$sql->query("UPDATE note_users SET notebooks = '$list'
 				WHERE username = '$username'");
-
 		}
 	}
 
 	function cloneNoteToUser($username, $id, $newid){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+		if(!checkID($newid)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -251,6 +250,9 @@
 
 	function removeNoteFromUser($username, $id){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
@@ -279,6 +281,9 @@
 
 	function removeNotebookFromUser($username, $notebook){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
 		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
