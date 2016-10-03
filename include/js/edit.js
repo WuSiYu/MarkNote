@@ -11,7 +11,11 @@ function convertDate(unixTime){
 	// return Y+M+D+h+m+s;
 
 	var unixTimestamp = new Date(unixTime * 1000);
-	return unixTimestamp.toLocaleString();
+	var text = unixTimestamp.toLocaleString();
+	if(text == "Invalid Date"){
+		text = "Unknown"
+	}
+	return text;
 }
 
 
@@ -412,8 +416,6 @@ function showProperties(id, notesettings){
 	$("#sidebar-properties-body-name").html(notesettings['title']);
 	$("#sidebar-properties-body-lastmodify").html(convertDate(notesettings['lastmodify']));
 	$("#sidebar-properties-body-lastaccess").html(convertDate(notesettings['lastaccess']));
-	// $("#sidebar-properties-body-lastmodify").html(notesettings['lastmodify']);
-	// $("#sidebar-properties-body-lastaccess").html(notesettings['lastaccess']);
 
 	$("#sidebar-properties").css("left", winw+'px');
 	$("#sidebar-properties").show(function(){
