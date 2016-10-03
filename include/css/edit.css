@@ -163,7 +163,7 @@ h1,h2,h3{
 	color: #f1c40f;
 }
 
-.div-notelist-item{
+.notelist-item{
 	padding: 5px 10px 5px 35px;
 	height: 32px;
 	cursor: default;
@@ -171,41 +171,41 @@ h1,h2,h3{
 	white-space: nowrap;
 }
 
-.div-notelist-item:hover, .div-notelist-item-contextmenu-show{
+.notelist-item:hover, .notelist-item-contextmenu-show{
 	background-color: rgba(0,127,200,0.6);
 }
 
-.div-notelist-item i{
+.notelist-item i{
 	margin-right: 5px;
 }
 
-.div-notelist-item-moving{
+.notelist-item-moving{
 	background-color: #333;
 }
 
-.div-notelist-item-selected{
+.notelist-item-selected{
 	padding: 5px 10px 5px 30px;
 	border-left: 5px solid #007FDC;
 	background-color: #282828;
 }
 
-.div-notelist-item-selected:hover{
+.notelist-item-selected:hover{
 	background-color: #282828;
 }
 
-.div-notelist-item-selected2{
+.notelist-item-selected2{
 	background-color: #007FDC;
 }
 
-.div-notelist-item-selected2:hover{
+.notelist-item-selected2:hover{
 	background-color: #007FDC;
 }
 
-.div-notelist-item-subnote, .div-notelist-item-subnote2{
+.notelist-item-subnote, .notelist-item-subnote2{
 	padding: 5px 10px 5px 55px;
 }
 
-.div-notelist-folder{
+.notelist-folder{
 	position: relative;
 	overflow: hidden;
 }

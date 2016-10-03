@@ -13,25 +13,25 @@
 		foreach ($theNotebooks as $value) {
 			if(is_int($value)){
 				?>
-				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" title="<?php echo getNoteTitle($value); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></div>
+				<div id="notelist-item-<?php echo $value?>" class="notelist-item notelist-item-single" title="<?php echo getNoteTitle($value); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></div>
 				<?php
 			}
 			if(is_array($value)){
 				?>
-				<div class="div-notelist-item-single" style="height: 1px;"></div>
-				<div class="div-notelist-folder">
+				<div class="notelist-item-single" style="height: 1px;"></div>
+				<div class="notelist-folder">
 					<i class="fa fa-angle-down fa-lg i-notelist-folder-arrow" aria-hidden="true"></i>
-					<div class="div-notelist-item notebook-opened div-notelist-item-notebook-title" onclick="toggleNotebook(this);"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></div>
+					<div class="notelist-item notebook-opened notelist-item-notebook-title" onclick="toggleNotebook(this);"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></div>
 					<?php
 					foreach ($value as $note) {
 						if(is_int($note)){
 							?>
-							<div id="div-notelist-item-<?php echo $note?>" class="div-notelist-item div-notelist-item-subnote" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></div>
+							<div id="notelist-item-<?php echo $note?>" class="notelist-item notelist-item-subnote" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></div>
 							<?php
 						}
 					}
 					?>
-					<div class="div-notelist-item div-notelist-item-subnote2" onclick="newSubnote('<?php echo $value[0]; ?>');">
+					<div class="notelist-item notelist-item-subnote2" onclick="newSubnote('<?php echo $value[0]; ?>');">
 						<i class="fa fa-plus" aria-hidden="true"></i>
 						New Note
 					</div>
@@ -39,12 +39,12 @@
 			}
 		}
 		?>
-		<div class="div-notelist-item-single" style="height: 1px;"></div>
-		<div class="div-notelist-item" onclick="newNote();">
+		<div class="notelist-item-single" style="height: 1px;"></div>
+		<div class="notelist-item" onclick="newNote();">
 			<i class="fa fa-plus" aria-hidden="true"></i>
 			New Note
 		</div>
-		<div class="div-notelist-item" onclick="newNotebook();">
+		<div class="notelist-item" onclick="newNotebook();">
 			<i class="fa fa-plus" aria-hidden="true"></i>
 			New Notebook
 		</div>

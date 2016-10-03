@@ -61,9 +61,9 @@ function loadNotelist(){
 			  put: ["notebooklist", "sublist"],
 			  pull:true
 			},
-			ghostClass: 'div-notelist-item-moving',
+			ghostClass: 'notelist-item-moving',
 			animation: 150,
-			draggable: ".div-notelist-item-single",
+			draggable: ".notelist-item-single",
 			onSort: function(evt){
 				updateList();
 			}
@@ -76,38 +76,38 @@ function loadNotelist(){
 			  put: ["notelist", "sublist"],
 			  pull:true
 			},
-			ghostClass: 'div-notelist-item-moving',
+			ghostClass: 'notelist-item-moving',
 			animation: 150,
-			draggable: ".div-notelist-folder",
+			draggable: ".notelist-folder",
 			onSort: function(evt){
 				updateList();
 			}
 		});
 
 		// other lists: notes in each notebooks
-		$("#sidebar-notelist .div-notelist-folder").each(function(){
+		$("#sidebar-notelist .notelist-folder").each(function(){
 			Sortable.create(this, {
 				group: {
 				  name: "sublist",
 				  put: ["notelist"],
 				  pull:true
 				},
-				ghostClass: 'div-notelist-item-moving',
+				ghostClass: 'notelist-item-moving',
 				animation: 150,
-				draggable: ".div-notelist-item-subnote",
+				draggable: ".notelist-item-subnote",
 				onSort: function(evt){
 					updateList();
 				}
 			});
 		});
 
-		$("#sidebar-notelist .div-notelist-item-single").each(function(){
+		$("#sidebar-notelist .notelist-item-single").each(function(){
 			this.oncontextmenu = function(event){
 				showNoteContext(this, event);
 				return false;
 			}
 		});
-		$(".div-notelist-item-subnote").each(function(){
+		$(".notelist-item-subnote").each(function(){
 			this.oncontextmenu = function(event){
 				showNoteContext(this, event);
 				return false;
@@ -116,10 +116,9 @@ function loadNotelist(){
 
 		//re-select current note if has
 		if(NOTEID){
-			$("#div-notelist-item-"+NOTEID).addClass("div-notelist-item-selected2");
-			if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
-				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").addClass("div-notelist-item-selected");
-				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").children(".span-notelist-item-left").addClass("span-notelist-item-left-selected");
+			$("#notelist-item-"+NOTEID).addClass("notelist-item-selected2");
+			if($("#notelist-item-"+NOTEID).hasClass("notelist-item-subnote")){
+				$("#notelist-item-"+NOTEID).parent().children(".notelist-item-notebook-title").addClass("notelist-item-selected");
 			}
 		}
 	});
@@ -128,24 +127,31 @@ function loadNotelist(){
 function updateList(){
 	theList = $("#sidebar-notelist");
 
-	theList.children(".div-notelist-item-subnote").addClass("div-notelist-item-single");
-	theList.children(".div-notelist-item-subnote").removeClass("div-notelist-item-subnote");
+	theList.children(".notelist-item-subnote").addClass("notelist-item-single");
+	theList.children(".notelist-item-subnote").removeClass("notelist-item-subnote");
 
-	theList.children(".div-notelist-folder").children(".div-notelist-item-single").addClass("div-notelist-item-subnote");
-	theList.children(".div-notelist-folder").children(".div-notelist-item-single").removeClass("div-notelist-item-single");
+	theList.children(".notelist-folder").children(".notelist-item-single").addClass("notelist-item-subnote");
+	theList.children(".notelist-folder").children(".notelist-item-single").removeClass("notelist-item-single");
+
+	if($("#notelist-item-"+NOTEID).hasClass("notelist-item-subnote")){
+		$("#notelist-item-"+NOTEID).parent().parent().children(".notelist-folder").children(".notelist-item-notebook-title").removeClass("notelist-item-selected");
+		$("#notelist-item-"+NOTEID).parent().children(".notelist-item-notebook-title").addClass("notelist-item-selected");
+	}else{
+		$("#notelist-item-"+NOTEID).parent().children(".notelist-folder").children(".notelist-item-notebook-title").removeClass("notelist-item-selected");
+	}
 
 	newList = new Array();
 
 	theList.children().each(function(){
-		if( $(this).hasClass("div-notelist-item-single") ){
+		if( $(this).hasClass("notelist-item-single") ){
 			if($(this).attr("id")){
 				newList.push(parseInt( $(this).attr("id").substring(18) ));
 			}
 		}
-		if( $(this).hasClass("div-notelist-folder") ){
+		if( $(this).hasClass("notelist-folder") ){
 			tmp = new Array();
-			tmp.push( $(this).children(".div-notelist-item-notebook-title").text() );
-			$(this).children(".div-notelist-item-subnote").each(function(){
+			tmp.push( $(this).children(".notelist-item-notebook-title").text() );
+			$(this).children(".notelist-item-subnote").each(function(){
 				tmp.push(parseInt( $(this).attr("id").substring(18) ));
 			});
 			newList.push(tmp);
@@ -234,19 +240,17 @@ function loadNote(id){
 			updateStatusBar("#0f2", "Note loaded");
 			return 0;
 		}
-		$("#div-notelist-item-"+NOTEID).removeClass("div-notelist-item-selected2");
-		// $("#div-notelist-item-"+NOTEID+" .span-notelist-item-left").removeClass("span-notelist-item-left-selected");
-		if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
-			if( $("#div-notelist-item-"+NOTEID).parent() !=  $("#div-notelist-item-"+id).parent() ){
-				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").removeClass("div-notelist-item-selected");
+		$("#notelist-item-"+NOTEID).removeClass("notelist-item-selected2");
+		if($("#notelist-item-"+NOTEID).hasClass("notelist-item-subnote")){
+			if( $("#notelist-item-"+NOTEID).parent() !=  $("#notelist-item-"+id).parent() ){
+				$("#notelist-item-"+NOTEID).parent().children(".notelist-item-notebook-title").removeClass("notelist-item-selected");
 			}
 		}
 	}
 	NOTEID=id;
-	$("#div-notelist-item-"+NOTEID).addClass("div-notelist-item-selected2");
-	// $("#div-notelist-item-"+NOTEID+" .span-notelist-item-left").addClass("span-notelist-item-left-selected");
-	if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
-		$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").addClass("div-notelist-item-selected");
+	$("#notelist-item-"+NOTEID).addClass("notelist-item-selected2");
+	if($("#notelist-item-"+NOTEID).hasClass("notelist-item-subnote")){
+		$("#notelist-item-"+NOTEID).parent().children(".notelist-item-notebook-title").addClass("notelist-item-selected");
 	}
 	NoteLoding=true;
 	$.post("include/note.php",{
@@ -276,7 +280,7 @@ function getNoteSettings(id){
 
 function renameNote(id){
 	var newname;
-	notebook = $("#div-notelist-item-"+id);
+	notebook = $("#notelist-item-"+id);
 	newname = prompt();
 	if(newname == null){
 		return 1;
@@ -379,7 +383,7 @@ function delNotebook(notebook){
 }
 
 function showNotebookDelIcon(item){
-	if($(item).parent().children(".div-notelist-item").size()==2){
+	if($(item).parent().children(".notelist-item").size()==2){
 		// $(item).find(".i-notelist-item-del").show();
 	}
 }
@@ -394,7 +398,7 @@ function toggleNotebook(item){
 		$(item).parent().animate({height:"32px"});
 		$(item).parent().children("i").animate({rotation: -90});
 	}else{
-		$(item).parent().animate({height:$(item).parent().children(".div-notelist-item").size()*32+"px" });
+		$(item).parent().animate({height:$(item).parent().children(".notelist-item").size()*32+"px" });
 		$(item).parent().children("i").animate({rotation: 0});
 	}
 	$(item).toggleClass("notebook-opened");
@@ -483,7 +487,7 @@ function showNoteContext(item, event){
 	var e = event || window.event;
 	var context = $("#contextmenu-1");
 	if(noteContextID){
-		$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+		$("#notelist-item-"+noteContextID).removeClass("notelist-item-contextmenu-show");
 		noteContextID = 0;
 	}
 	context.hide();
@@ -493,7 +497,7 @@ function showNoteContext(item, event){
 		"left" : e.clientX+'px'
 	});
 	noteContextID = parseInt($(item).attr("id").substring(18));
-	$(item).addClass("div-notelist-item-contextmenu-show");
+	$(item).addClass("notelist-item-contextmenu-show");
 }
 
 function noteContextClick(operation){
@@ -524,7 +528,7 @@ function noteContextClick(operation){
 	}
 	$("#contextmenu-1").hide(150);
 	if(noteContextID){
-		$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+		$("#notelist-item-"+noteContextID).removeClass("notelist-item-contextmenu-show");
 		noteContextID = 0;
 	}
 }
@@ -586,7 +590,7 @@ $(document).ready(function(){
 
 		if(doHide){
 			if(noteContextID){
-				$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
+				$("#notelist-item-"+noteContextID).removeClass("notelist-item-contextmenu-show");
 				noteContextID = 0;
 			}
 			$("#contextmenu-1").hide(150);
