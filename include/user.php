@@ -24,7 +24,7 @@
 		global $sql, $USERNAME, $FORCESTATUS;
 
 		if($FORCESTATUS == 1) return true;
-		if($FORCESTATUS == 2) return false; 
+		if($FORCESTATUS == 2) return false;
 
 		if(!isset($_COOKIE['MarkNoteUser']) || !isset($_COOKIE['MarkNotePasswd']))
 			return false;
@@ -49,7 +49,7 @@
 		}else{
 			return false;
 		}
-		
+
 	}
 
 	function register($username, $email, $passwd, $nickname){
@@ -213,6 +213,9 @@
 			$list = json_encode_fix($list);
 			$sql->query("UPDATE note_users SET notebooks = '$list'
 				WHERE username = '$username'");
+		}else{
+			echo "bad list";
+			return -1;
 		}
 	}
 
@@ -304,4 +307,3 @@
 		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
 			WHERE username = '$username'");
 	}
-

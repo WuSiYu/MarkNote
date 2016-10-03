@@ -13,41 +13,40 @@
 		foreach ($theNotebooks as $value) {
 			if(is_int($value)){
 				?>
-				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" title="<?php echo getNoteTitle($value); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
-				</div>
+				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)" title="<?php echo getNoteTitle($value); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></div>
 				<?php
 			}
 			if(is_array($value)){
 				?>
-				<!-- <div class="div-notelist-item-single" style="height: 1px;"></div> -->
-
+				<div class="div-notelist-item-single" style="height: 1px;"></div>
 				<div class="div-notelist-folder">
 					<i class="fa fa-angle-down fa-lg i-notelist-folder-arrow" aria-hidden="true"></i>
-					<div class="div-notelist-item notebook-opened div-notelist-item-notebook-title" onmouseover="showNotebookDelIcon(this)" onmouseout="hideNotebookDelIcon(this)" onclick="toggleNotebook(this);"><span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNotebook('<?php echo $value[0]; ?>');"></i></div>
+					<div class="div-notelist-item notebook-opened div-notelist-item-notebook-title" onmouseover="showNotebookDelIcon(this)" onmouseout="hideNotebookDelIcon(this)" onclick="toggleNotebook(this);"><i class="fa fa-book" aria-hidden="true"></i><?php echo $value[0]; ?></div>
 					<?php
 					foreach ($value as $note) {
 						if(is_int($note)){
 							?>
-							<div id="div-notelist-item-<?php echo $note?>" class="div-notelist-item div-notelist-item-subnote" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-								<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $note; ?>);"></i>
-							</div>
+							<div id="div-notelist-item-<?php echo $note?>" class="div-notelist-item div-notelist-item-subnote" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $note?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($note); ?></div>
 							<?php
 						}
-					}?>
-					<div class="div-notelist-item div-notelist-item-subnote2">
-						<span class="span-notelist-item-left span-notelist-item-left-subnote"></span><span class="span-notelist-item-text" onclick="newSubnote('<?php echo $value[0]; ?>');"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
+					}
+					?>
+					<div class="div-notelist-item div-notelist-item-subnote2" onclick="newSubnote('<?php echo $value[0]; ?>');">
+						<i class="fa fa-plus" aria-hidden="true"></i>
+						New Note
 					</div>
 				</div><?php
 			}
 		}
 		?>
-		<!-- <div class="div-notelist-item-single" style="height: 1px;"></div> -->
-		<div class="div-notelist-item">
-			<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="newNote();"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
+		<div class="div-notelist-item-single" style="height: 1px;"></div>
+		<div class="div-notelist-item" onclick="newNote();">
+			<i class="fa fa-plus" aria-hidden="true"></i>
+			New Note
 		</div>
-		<div class="div-notelist-item">
-			<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="newNotebook();"><i class="fa fa-plus" aria-hidden="true"></i>New Notebook</span>
+		<div class="div-notelist-item" onclick="newNotebook();">
+			<i class="fa fa-plus" aria-hidden="true"></i>
+			New Notebook
 		</div>
 		<?php
 		exit();

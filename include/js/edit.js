@@ -60,7 +60,6 @@ function loadNotelist(){
 			ghostClass: 'div-notelist-item-moving',
 			animation: 150,
 			draggable: ".div-notelist-item-single",
-			handle: ".handle1",
 			onSort: function(evt){
 				updateList();
 			}
@@ -76,7 +75,6 @@ function loadNotelist(){
 			ghostClass: 'div-notelist-item-moving',
 			animation: 150,
 			draggable: ".div-notelist-folder",
-			handle: ".handle1",
 			onSort: function(evt){
 				updateList();
 			}
@@ -126,13 +124,9 @@ function loadNotelist(){
 function updateList(){
 	theList = $("#sidebar-notelist");
 
-	theList.children(".div-notelist-item-subnote").children(".span-notelist-item-left").removeClass("span-notelist-item-left-subnote");
-	theList.children(".div-notelist-item-subnote").children(".span-notelist-item-text").addClass("handle1");
 	theList.children(".div-notelist-item-subnote").addClass("div-notelist-item-single");
 	theList.children(".div-notelist-item-subnote").removeClass("div-notelist-item-subnote");
 
-	theList.children(".div-notelist-folder").children(".div-notelist-item-single").children(".span-notelist-item-left").addClass("span-notelist-item-left-subnote");
-	theList.children(".div-notelist-folder").children(".div-notelist-item-single").children(".span-notelist-item-text").removeClass("handle1");
 	theList.children(".div-notelist-folder").children(".div-notelist-item-single").addClass("div-notelist-item-subnote");
 	theList.children(".div-notelist-folder").children(".div-notelist-item-single").removeClass("div-notelist-item-single");
 
@@ -149,12 +143,8 @@ function updateList(){
 			tmp.push( $(this).children(".div-notelist-item-notebook-title").text() );
 			$(this).children(".div-notelist-item-subnote").each(function(){
 				tmp.push(parseInt( $(this).attr("id").substring(18) ));
-				// alert($(this).attr("id"));
 			});
-			// alert(tmp);
 			newList.push(tmp);
-			// newList.push(parseInt( $(this).attr("id").substring(18) ));
-			// alert(parseInt($(this).attr("id").substring(18)));
 		}
 	});
 
@@ -245,7 +235,6 @@ function loadNote(id){
 		if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
 			if( $("#div-notelist-item-"+NOTEID).parent() !=  $("#div-notelist-item-"+id).parent() ){
 				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").removeClass("div-notelist-item-selected");
-				$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").children(".span-notelist-item-left").removeClass("span-notelist-item-left-selected");
 			}
 		}
 	}
@@ -254,7 +243,6 @@ function loadNote(id){
 	// $("#div-notelist-item-"+NOTEID+" .span-notelist-item-left").addClass("span-notelist-item-left-selected");
 	if($("#div-notelist-item-"+NOTEID).hasClass("div-notelist-item-subnote")){
 		$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").addClass("div-notelist-item-selected");
-		$("#div-notelist-item-"+NOTEID).parent().children(".notebook-opened").children(".span-notelist-item-left").addClass("span-notelist-item-left-selected");
 	}
 	NoteLoding=true;
 	$.post("include/note.php",{
@@ -386,14 +374,6 @@ function delNotebook(notebook){
 	});
 }
 
-function showNoteDelIcon(item){
-	// $(item).find(".i-notelist-item-del").show();
-}
-
-function hideNoteDelIcon(item){
-	$(item).find(".i-notelist-item-del").hide();
-}
-
 function showNotebookDelIcon(item){
 	if($(item).parent().children(".div-notelist-item").size()==2){
 		// $(item).find(".i-notelist-item-del").show();
@@ -476,8 +456,6 @@ function updateEditorShow(){
 
 		document.getElementById("editor-show-preprocess").innerHTML = marked(EditorAce.getValue());
 		Prism.highlightAll();
-		// MathJax.Hub.Process(document.getElementById("editor-show-preprocess"));
-		// MathJax.Hub.Update(document.getElementById("editor-show-preprocess"));
 
 		MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editor-show-preprocess"], function(){
 			document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML;
@@ -490,15 +468,6 @@ function updateEditorShow(){
 	}else{
 		EditorShowWaiting = true;
 	}
-
-	// MathJax.Hub.Reprocess(document.getElementById("editor-show"));
-	// MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editor-show-preprocess"], function(){
-	// 	document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
-	// });
-	// MathJax.Hub.Reprocess(document.getElementById("editor-show-preprocess"), function(){
-	// 	document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
-	// });
-	// document.getElementById("editor-show").innerHTML = document.getElementById("editor-show-preprocess").innerHTML
 
 }
 
@@ -559,11 +528,6 @@ function noteContextClick(operation){
 }
 
 
-
-// function showNotebookContext(){
-
-// }
-
 var EditorAce;
 var NoteLoding=false;
 $(document).ready(function(){
@@ -618,7 +582,6 @@ $(document).ready(function(){
 		});
 
 
-		// alert("hide");
 		if(doHide){
 			if(noteContextID){
 				$("#div-notelist-item-"+noteContextID).removeClass("div-notelist-item-contextmenu-show");
@@ -694,7 +657,6 @@ $(document).ready(function(){
 			return false;
 		}
 	});
-
 
 
 });
