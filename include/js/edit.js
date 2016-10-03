@@ -145,14 +145,14 @@ function updateList(){
 	theList.children().each(function(){
 		if( $(this).hasClass("notelist-item-single") ){
 			if($(this).attr("id")){
-				newList.push(parseInt( $(this).attr("id").substring(18) ));
+				newList.push(parseInt( $(this).attr("id").substring(14) ));
 			}
 		}
 		if( $(this).hasClass("notelist-folder") ){
 			tmp = new Array();
 			tmp.push( $(this).children(".notelist-item-notebook-title").text() );
 			$(this).children(".notelist-item-subnote").each(function(){
-				tmp.push(parseInt( $(this).attr("id").substring(18) ));
+				tmp.push(parseInt( $(this).attr("id").substring(14) ));
 			});
 			newList.push(tmp);
 		}

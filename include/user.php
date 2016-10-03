@@ -213,9 +213,9 @@
 			$list = json_encode_fix($list);
 			$sql->query("UPDATE note_users SET notebooks = '$list'
 				WHERE username = '$username'");
+			echo "ok";
 		}else{
 			echo "bad list";
-			return -1;
 		}
 	}
 
