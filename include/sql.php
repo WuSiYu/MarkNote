@@ -10,7 +10,7 @@
 	}
 
 	function checkTitle($theTitle){
-		return preg_match("/^(?!_|\\s\\')[A-Za-z0-9_\\x80-\\xff\\s\\']{1,256}$/",$theTitle);
+		return preg_match("/^(?!_|\\s\\')[A-Za-z0-9_\\.\\-\\x80-\\xff\\s\\']{1,256}$/",$theTitle);
 	}
 
 	function checkEmail($theEmail){
@@ -40,7 +40,7 @@
 
 
 	$sql = new mysqli($sql_host, $sql_user, $sql_passwd, $sql_name);
-	
+
 
 	if( $sql->connect_errno ){
 		?>
@@ -50,5 +50,3 @@
 		<?php
 		exit();
 	}
-
-
