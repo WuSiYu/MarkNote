@@ -1,4 +1,4 @@
-<?php 
+<?php
 	require_once dirname(__FILE__).'/include/user.php';
 	require_once dirname(__FILE__).'/include/note.php';
 
@@ -14,13 +14,13 @@
 			if(is_int($value)){
 				?>
 				<div id="div-notelist-item-<?php echo $value?>" class="div-notelist-item div-notelist-item-single" onmouseover="showNoteDelIcon(this)" onmouseout="hideNoteDelIcon(this)">
-					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" title="<?php echo getNoteTitle($note); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
+					<span class="span-notelist-item-left"></span><span class="span-notelist-item-text handle1" title="<?php echo getNoteTitle($value); ?>" onclick="loadNote(<?php echo $value?>);"><i class="fa fa-file-text" aria-hidden="true"></i><?php echo getNoteTitle($value); ?></span><i class="fa fa-times i-notelist-item-del" onclick="delNote(<?php echo $value; ?>);"></i>
 				</div>
 				<?php
 			}
 			if(is_array($value)){
 				?>
-				<div class="div-notelist-item-single" style="height: 1px;"></div>
+				<!-- <div class="div-notelist-item-single" style="height: 1px;"></div> -->
 
 				<div class="div-notelist-folder">
 					<i class="fa fa-angle-down fa-lg i-notelist-folder-arrow" aria-hidden="true"></i>
@@ -42,7 +42,7 @@
 			}
 		}
 		?>
-		<div class="div-notelist-item-single" style="height: 1px;"></div>
+		<!-- <div class="div-notelist-item-single" style="height: 1px;"></div> -->
 		<div class="div-notelist-item">
 			<span class="span-notelist-item-left"></span><span class="span-notelist-item-text" onclick="newNote();"><i class="fa fa-plus" aria-hidden="true"></i>New Note</span>
 		</div>
@@ -74,7 +74,7 @@
 	<script src="include/js/prism.js"></script>
 
 	<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css" rel="stylesheet">
-	<!-- <link href="//cdn.bootcss.com/prism/0.0.1/prism.min.css" rel="stylesheet"> -->
+	<link href="//cdn.bootcss.com/octicons/3.5.0/octicons.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="include/css/edit.css">
 	<link rel="stylesheet" type="text/css" href="include/css/prism.css">
 
@@ -99,6 +99,13 @@
 
 
 	<div id="content">
+		<div id="toolbar">
+			<div class="toolbar-icon" title="New Note" onclick="newNoteBelow()" style="padding-left: 17px;"><span class="octicon octicon-file-text" style="font-size: 19px;"></span></span></div>
+			<div class="toolbar-icon" title="New Notebook" onclick="newNotebook()"><span class="octicon octicon-file-directory"></span></div>
+			<div class="toolbar-icon" title="Save" onclick="saveNote()"><i class="fa fa-lg fa-floppy-o" aria-hidden="true"></i></div>
+			<div class="toolbar-icon" title="Search" onclick="EditorAce.config.loadModule('ace/ext/searchbox');" style="padding-left: 14px;"><span class="octicon octicon-search"></span></div>
+			<div class="toolbar-icon" title="Settings" onclick=""><span class="octicon octicon-gear"></span></div>
+		</div>
 	 	<div id="sidebar">
 	 		<div id="sidebar-status">Status: <span id="sidebar-status-icon">●</span> <span id="sidebar-status-text">page loding...</span></div>
 			<div id="sidebar-notelist">load</div>
@@ -120,7 +127,7 @@ Please select a __note__ in the list on the left.</div>
 		<!-- <div class="contextmenu-item" onclick="noteContextClick('share');">		<i class="fa fa-share-alt" aria-hidden="true"></i> Share</div> -->
 		<!-- <div class="contextmenu-item" onclick="noteContextClick('export');">	<i class="fa fa-external-link " aria-hidden="true"></i> Export</div> -->
 		<div class="contextmenu-item" onclick="noteContextClick('delete');">		<i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
-		<!-- <div class="contextmenu-item" onclick="noteContextClick('properties');">	<i class="fa fa-info-circle" aria-hidden="true"></i> Properties</div> -->
+		<div class="contextmenu-item" onclick="noteContextClick('properties');">	<i class="fa fa-info-circle" aria-hidden="true"></i> Properties</div>
 	</div>
 
 	<div id="contextmenu-2" class="contextmenu">
@@ -131,7 +138,24 @@ Please select a __note__ in the list on the left.</div>
 		<div class="contextmenu-item"><i class="fa fa-trash" aria-hidden="true"></i> Delete</div>
 	</div>
 
+	<div id="page-glass" onclick="hideProperties();"></div>
+	<div id="sidebar-properties">
+		<div id="sidebar-properties-header">
+			<i class="fa fa-file-text fa-3x" aria-hidden="true"></i>
+			<span id="sidebar-properties-header-notename">notename</span>
+			<span id="sidebar-properties-header-notetype">notetype</span>
+		</div>
+		<div id="sidebar-properties-body">
+			<span class="sidebar-properties-body-lable">Note name </span><span id="sidebar-properties-body-name"></span><br>
+			<span class="sidebar-properties-body-lable">Last modify </span><span id="sidebar-properties-body-lastmodify"></span><br>
+			<span class="sidebar-properties-body-lable">Last access </span><span id="sidebar-properties-body-lastaccess"></span><br>
+
+		</div>
+	</div>
+
 	<input id="float-input" type="text">
+
+	<div id="float-notsaved-lable">●</div>
 
 
 </body>

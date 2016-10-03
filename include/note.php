@@ -24,9 +24,21 @@
 				}
 			}
 
+			if( $_POST['action'] == 'newNoteBelow' ){
+				if( isset($_POST['id']) && $_POST['title'] && checkNoteUser($_POST['id'], $USERNAME) ){
+					echo newNoteBelow($USERNAME, $_POST['id'], $_POST['title']);
+				}
+			}
+
 			if( $_POST['action'] == 'getNote' ){
 				if( isset($_POST['id']) && checkNoteUser($_POST['id'], $USERNAME) ){
 					echo getNote($_POST['id']);
+				}
+			}
+
+			if( $_POST['action'] == 'getNoteSettings' ){
+				if( isset($_POST['id']) && checkNoteUser($_POST['id'], $USERNAME) ){
+					echo getNoteSettings($_POST['id']);
 				}
 			}
 
@@ -88,32 +100,46 @@
 		global $sql;
 		if(!checkUsername($username)) return -1;
 		if(!checkTitle($title)) return -1;
-		
+
 		$sql->query("INSERT INTO note_content (user, settings)
 			VALUES ('$username', '{\"title\" : \"$title\" }' )");
 		$id = $sql->insert_id;
 		addSingleNoteToUser($username, $id);
 		return $id;
-	}	
+	}
 
 	function newNotebook($username, $notebook){
 		if(!checkUsername($username)) return -1;
 		if(!checkTitle($notebook)) return -1;
 
 		addNotebookToUser($username, $notebook);
-	}	
+	}
 
 	function newSubnote($username, $notebook, $title='New Note'){
 		global $sql;
 		if(!checkUsername($username)) return -1;
 		if(!checkTitle($notebook)) return -1;
 		if(!checkTitle($title)) return -1;
-		
+
 		$sql->query("INSERT INTO note_content (user, settings)
 			VALUES ('$username', '{\"title\" : \"$title\" }' )");
 		$id = $sql->insert_id;
 		addNoteToNotebook($username, $notebook, $id);
 		return 'ok';
+	}
+
+	function newNoteBelow($username, $id, $title='New Note'){
+		global $sql, $USERNAME;
+		if(!checkID($id)) return -1;
+		if(!checkUsername($USERNAME)) return -1;
+
+		if( hasNote($id) ){
+			$sql->query("INSERT INTO note_content (user, settings)
+				VALUES ('$USERNAME', '{\"title\" : \"$title\" }' )");
+			$newNoteID = $sql->insert_id;
+			addNoteToUserBelow($USERNAME, $id, $newNoteID);
+			return 'ok';
+		}
 	}
 
 	function getNote($id){
@@ -130,6 +156,7 @@
 			$content = str_replace("&#61;", "=",$content);
 			$content = str_replace("&#63;", "?",$content);
 			$content = str_replace("&#92;", "\\",$content);
+			updateNoteAccessDate($id);
 			return $content;
 
 		}else{
@@ -163,11 +190,56 @@
 		}
 	}
 
+	function getNoteSettings($id){
+		global $sql;
+		if(!checkID($id)) return -1;
+
+		$sql_output = $sql->query("SELECT settings FROM note_content
+			WHERE ID = '$id'");
+		if( $sql_output->num_rows > 0 ){
+			return $sql_output->fetch_array()['settings'];
+		}else{
+			return false;
+		}
+	}
+
 	function checkNoteUser($id, $username){
 		if(!checkID($id)) return -1;
 		if(!checkUsername($username)) return -1;
 
 		return getNoteUser($id) == $username;
+	}
+
+	function updateNoteModifyDate($id){
+		global $sql;
+		if(!checkID($id)) return -1;
+
+		if( hasNote($id) ){
+			$sql_output = $sql->query("SELECT settings FROM note_content
+				WHERE ID = '$id'");
+			$noteSettings = json_decode($sql_output->fetch_array()['settings'], true);
+			$noteSettings['lastmodify'] = time();
+			$noteSettings = json_encode_fix($noteSettings);
+			$sql->query("UPDATE note_content SET settings = '$noteSettings'
+				WHERE ID = '$id'");
+			return 'ok';
+		}
+	}
+
+	function updateNoteAccessDate($id){
+		global $sql;
+		if(!checkID($id)) return -1;
+
+		if( hasNote($id) ){
+			$sql_output = $sql->query("SELECT settings FROM note_content
+				WHERE ID = '$id'");
+			$noteSettings = json_decode($sql_output->fetch_array()['settings'], true);
+			$noteSettings['lastaccess'] = time();
+			$noteSettings = json_encode_fix($noteSettings);
+			$sql->query("UPDATE note_content SET settings = '$noteSettings'
+				WHERE ID = '$id'");
+			return 'ok';
+		}
 	}
 
 	function saveNote($id, $content){
@@ -184,6 +256,7 @@
 
 			$sql->query("UPDATE note_content SET content = '$content'
 				WHERE ID = '$id'");
+			updateNoteModifyDate($id);
 			return 'ok';
 		}
 	}
@@ -199,7 +272,6 @@
 			$noteSettings = json_decode($sql_output->fetch_array()['settings'], true);
 			$noteSettings['title'] = $newname;
 			$noteSettings = json_encode_fix($noteSettings);
-			echo $noteSettings;
 			$sql->query("UPDATE note_content SET settings = '$noteSettings'
 				WHERE ID = '$id'");
 			return 'ok';
@@ -218,7 +290,7 @@
 				VALUES ('$USERNAME', '{\"title\" : \"$newTitle\" }' )");
 			$newNoteID = $sql->insert_id;
 			saveNote($newNoteID, getNote($id));
-			cloneNoteToUser($USERNAME, $id, $newNoteID);
+			addNoteToUserBelow($USERNAME, $id, $newNoteID);
 			return 'ok';
 		}
 	}

@@ -216,7 +216,7 @@
 		}
 	}
 
-	function cloneNoteToUser($username, $id, $newid){
+	function addNoteToUserBelow($username, $id, $newid){
 		global $sql;
 		if(!checkUsername($username)) return -1;
 		if(!checkID($id)) return -1;

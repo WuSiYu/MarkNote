@@ -1,5 +1,20 @@
 var NOTEID=0;
 
+function convertDate(unixTime){
+	// var date = new Date(unixTime*1000);
+	// Y = date.getFullYear() + '-';
+	// M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth()) + '-';
+	// D = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getDate + ' ';
+	// h = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getHours() + ':';
+	// m = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getMinutes() + ':';
+	// s = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getSeconds();
+	// return Y+M+D+h+m+s;
+
+	var unixTimestamp = new Date(unixTime * 1000);
+	return unixTimestamp.toLocaleString();
+}
+
+
 function doLayout(){
 	var winh=window.innerHeight
 		|| document.documentElement.clientHeight
@@ -10,14 +25,15 @@ function doLayout(){
 		|| document.body.clientWidth;
 
 	$("#content").height(winh-56);
+	$("#toolbar").height(winh-56);
 	$("#sidebar").height(winh-56);
 	$("#editor").height(winh-56);
 
-	$("#editor").width(winw-240);
+	$("#editor").width(winw-288);
 
 	document.getElementById("editor-move").style.left  = (winw-240)/2 + "px";
 	document.getElementById("editor-ace").style.width = (winw-240)/2 + "px";
-	document.getElementById("editor-show").style.width = (winw-240)/2 - 5 + "px";
+	document.getElementById("editor-show").style.width = (winw-240)/2 - 53 + "px";
 	document.getElementById("editor-show").style.marginLeft = (winw-240)/2 + 5 + "px";
 
 }
@@ -34,7 +50,7 @@ function loadNotelist(){
 		$("#sidebar-notelist").html(data);
 		var notelist = document.getElementById("sidebar-notelist");
 
-		// list 1: notes in lost
+		// list 1: notes in list
 		Sortable.create(notelist, {
 			group: {
 			  name: "notelist",
@@ -185,6 +201,22 @@ function newNotebook(){
 	});
 }
 
+function newNoteBelow(){
+	var newname = prompt();
+	if(newname == null){
+		return 1;
+	}
+
+	$.post("include/note.php",{
+		action:"newNoteBelow",
+		id:NOTEID,
+		title:newname
+	},
+	function(data,status){
+		loadNotelist();
+	});
+}
+
 function newSubnote(notebook){
 	var newname = prompt();
 	if(newname == null){
@@ -238,6 +270,18 @@ function loadNote(id){
 	});
 }
 
+function getNoteSettings(id){
+	updateStatusBar("#f1c40f", "Loading properties...");
+	$.post("include/note.php",{
+		action:"getNoteSettings",
+		id:id
+	},
+	function(data,status){
+		updateStatusBar("#0f2", "Properties loaded");
+		showProperties(id, data);
+	});
+}
+
 function renameNote(id){
 	var newname;
 	notebook = $("#div-notelist-item-"+id);
@@ -259,6 +303,7 @@ function renameNote(id){
 	});
 }
 
+
 var NoteAutosaving = false;
 var NoteAutosaveWaiting = false;
 function autosaveNote(){
@@ -271,7 +316,7 @@ function autosaveNote(){
 					NoteAutosaveWaiting = false;
 					autosaveNote();
 				}
-			}, 1500);
+			}, 500);
 			updateStatusBar("#f1c40f", "Saving...");
 			$.post("include/note.php",{
 				action:"saveNote",
@@ -280,6 +325,7 @@ function autosaveNote(){
 			},
 			function(data,status){
 				// alert("Status: " + status + data );
+				hideNotsaveLable();
 				updateStatusBar("#0f2", "Note saved");
 			});
 		}else{
@@ -289,16 +335,19 @@ function autosaveNote(){
 }
 
 function saveNote(){
-	updateStatusBar("#f1c40f", "Saving...");
-	$.post("include/note.php",{
-		action:"saveNote",
-		id:NOTEID,
-		content:EditorAce.getValue()
-	},
-	function(data,status){
-		// alert("Status: " + status + data );
-		updateStatusBar("#0f2", "Note saved");
-	});
+	if(NOTEID){
+		updateStatusBar("#f1c40f", "Saving...");
+		$.post("include/note.php",{
+			action:"saveNote",
+			id:NOTEID,
+			content:EditorAce.getValue()
+		},
+		function(data,status){
+			// alert("Status: " + status + data );
+			hideNotsaveLable();
+			updateStatusBar("#0f2", "Note saved");
+		});
+	}
 }
 
 function cloneNote(id){
@@ -365,6 +414,58 @@ function toggleNotebook(item){
 		$(item).parent().children("i").animate({rotation: 0});
 	}
 	$(item).toggleClass("notebook-opened");
+}
+
+function showProperties(id, notesettings){
+	var winh=window.innerHeight
+		|| document.documentElement.clientHeight
+		|| document.body.clientHeight;
+
+	var winw=window.innerWidth
+		|| document.documentElement.clientWidth
+		|| document.body.clientWidth;
+
+	notesettings = JSON.parse(notesettings);
+	$("#sidebar-properties-header-notename").html(notesettings['title']);
+	$("#sidebar-properties-header-notetype").html("Markdown Note");
+
+	$("#sidebar-properties-body-name").html(notesettings['title']);
+	$("#sidebar-properties-body-lastmodify").html(convertDate(notesettings['lastmodify']));
+	$("#sidebar-properties-body-lastaccess").html(convertDate(notesettings['lastaccess']));
+	// $("#sidebar-properties-body-lastmodify").html(notesettings['lastmodify']);
+	// $("#sidebar-properties-body-lastaccess").html(notesettings['lastaccess']);
+
+	$("#sidebar-properties").css("left", winw+'px');
+	$("#sidebar-properties").show(function(){
+		$("#sidebar-properties").animate({left: winw-300+'px'},200);
+		$("#page-glass").fadeIn(200);
+	});
+
+}
+
+function hideProperties(){
+	var winh=window.innerHeight
+		|| document.documentElement.clientHeight
+		|| document.body.clientHeight;
+
+	var winw=window.innerWidth
+		|| document.documentElement.clientWidth
+		|| document.body.clientWidth;
+	$("#sidebar-properties").animate({left: winw+'px'},200,function(){
+		$("#sidebar-properties").hide();
+	});
+	$("#page-glass").fadeOut(200);
+
+}
+
+function showNotsaveLable(){
+	if(NOTEID){
+		$("#float-notsaved-lable").show();
+	}
+}
+
+function hideNotsaveLable(){
+	$("#float-notsaved-lable").hide();
 }
 
 var EditorShowProcessing = false;
@@ -447,7 +548,7 @@ function noteContextClick(operation){
 			}
 			break;
 		case "properties":
-
+			getNoteSettings(noteContextID);
 			break;
 	}
 	$("#contextmenu-1").hide(150);
@@ -479,7 +580,7 @@ $(document).ready(function(){
 			// alert("Status: " + status + data );
 			loadNotelist();
 		});
-	});	
+	});
 
 	$("#btn-newnotebook").click(function(){
 		$.post("include/note.php",{
@@ -490,7 +591,7 @@ $(document).ready(function(){
 			// alert("Status: " + status + data );
 			loadNotelist();
 		});
-	});	
+	});
 
 	$("#btn-subnote").click(function(){
 		$.post("include/note.php",{
@@ -525,7 +626,7 @@ $(document).ready(function(){
 			}
 			$("#contextmenu-1").hide(150);
 		}
-	}; 
+	};
 
 	var oBox = document.getElementById("editor"), oLeft = document.getElementById("editor-ace"), oRight = document.getElementById("editor-show"), oMove = document.getElementById("editor-move");
 	oMove.onmousedown = function(e){
@@ -567,6 +668,7 @@ $(document).ready(function(){
 	EditorAce.getSession().on("change", function(e){
 		if(!NoteLoding){
 			updateEditorShow();
+			showNotsaveLable();
 			autosaveNote();
 		}
 	});
@@ -581,7 +683,7 @@ $(document).ready(function(){
 	$("#editor-ace-scrollbar").scroll(function(){
 		var t = $(this)[0].scrollTop; //获取编辑区滚动值
 
-		// 自动同步滚动,算法:
+		// 自动同步滚动算法:
 		// 预览区滚动值 = 编辑区滚动值 * [ (预览区总滚动高度 - 预览区显示高度) / (编辑区总滚动高度 - 编辑区显示高度) ]
 		document.getElementById("editor-show").scrollTop=t * (document.getElementById("editor-show").scrollHeight-document.getElementById("editor-show").offsetHeight) / (document.getElementById("editor-ace-scrollbar").scrollHeight-document.getElementById("editor-ace-scrollbar").offsetHeight);
 	});
