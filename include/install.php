@@ -106,6 +106,9 @@
 
 
 		<?php
+
+
+
 	}else{
 		if($_GET['step']=='2'){
 			?>
@@ -150,6 +153,8 @@
 
 			<?php
 		}
+
+
 
 		if($_GET['step']=='3'){
 			if( !file_exists("../.htaccess") && $_POST['enable-rewrite'] ){
@@ -218,7 +223,15 @@
 ?>';
 
 
-			file_put_contents('../config.php', $to_config_file);
+			$result = file_put_contents('../config.php', $to_config_file);
+			if(!$result){
+				?>
+				<p>无法写入配置文件，请检查你的设置。</p>
+				<p>Error: (<?php echo $sql->connect_errno.') '.$sql->connect_error; ?> </p>
+				<a class="btn" style="cursor:pointer" onclick="history.go(-1)">< 返回</a>
+				<?php
+				exit();
+			}
 			?>
 				<h2 class="underline" style="font-weight:100;margin:0;" >MarkNote安装向导</h2>
 				<p>安装已完成</p>
