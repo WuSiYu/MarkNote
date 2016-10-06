@@ -1,4 +1,5 @@
 <?php
+	/* 用户相关函数 */
 
 	require_once 'sql.php';
 
@@ -6,13 +7,11 @@
 
 	$FORCESTATUS = 0;
 
-	function checkUsername($username){
-		return true;
-	}
-
 
 	function hasUser($username){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT username FROM note_users
 			WHERE username = '$username'");
 		if( $sql_output->num_rows > 0 ){
@@ -25,12 +24,13 @@
 		global $sql, $USERNAME, $FORCESTATUS;
 
 		if($FORCESTATUS == 1) return true;
-		if($FORCESTATUS == 2) return false; 
+		if($FORCESTATUS == 2) return false;
 
 		if(!isset($_COOKIE['MarkNoteUser']) || !isset($_COOKIE['MarkNotePasswd']))
 			return false;
 
 		$username = $_COOKIE['MarkNoteUser'];
+		if(!checkUsername($username)) return -1;
 
 		$sql_output = $sql->query("SELECT passwd FROM note_users
 			WHERE username = '$username'");
@@ -49,12 +49,15 @@
 		}else{
 			return false;
 		}
-		
+
 	}
 
 	function register($username, $email, $passwd, $nickname){
 		global $sql;
-		//something
+		if(!checkUsername($username)) return -1;
+		if(!checkEmail($email)) return -1;
+		if(!checkTitle($nickname)) return -1;
+
 		if( hasUser($username) )
 			exit('Username already exist');
 		$passwd = md5('ffffffffff'.$passwd.'蛤蛤蛤');
@@ -64,6 +67,8 @@
 
 	function login($username, $passwd){
 		global $sql, $USERNAME, $FORCESTATUS;
+		if(!checkUsername($username)) return -1;
+
 		$sql_output = $sql->query("SELECT passwd FROM note_users
 			WHERE username = '$username'");
 		if( $sql_output->num_rows > 0 ){
@@ -87,6 +92,15 @@
 		}
 	}
 
+	function getUserEmail($username){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+
+		$sql_output = $sql->query("SELECT email FROM note_users
+			WHERE username = '$username'");
+		return $sql_output->fetch_array()['email'];
+	}
+
 	function logout(){
 		global $FORCESTATUS;
 		setcookie('MarkNoteUser', '', time()-100);
@@ -94,26 +108,202 @@
 		$FORCESTATUS = 2;
 	}
 
-	function addNoteBookToUser($username, $id, $notebook){
-		//
+	function addNotebookToUser($username, $notebook){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			if(!in_array(array($notebook), $theNotebooks)){
+				array_push($theNotebooks, array($notebook));
+			}else{
+				echo 'notebook name already exist';
+				return -1;
+			}
+		}else{
+			$theNotebooks = array(array($notebook));
+		}
+		echo 'ok';
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
+
 	}
 
-	function addNoteToNoteBook($username, $id, $notebook){
-		//
+	function addNoteToNotebook($username, $notebook, $id){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+		if(!checkID($id)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			foreach($theNotebooks as $key => $value) {
+				if (is_array($value) && $value[0] == $notebook){
+					array_push($theNotebooks[$key], $id);
+					echo 'ok';
+					break;
+				}
+			}
+		}else{
+			return -2;	//no such notebook
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
 	}
 
 	function addSingleNoteToUser($username, $id){
 		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+
 		$sql_output = $sql->query("SELECT notebooks FROM note_users
 			WHERE username = '$username'");
-		$notebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
-		if($notebooks)
-			array_push($notebooks, $id);
-		else
-			$notebooks = array($id);
-		$notebooks = json_encode($notebooks);
-		$sql->query("UPDATE note_users SET notebooks = '$notebooks'
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			array_push($theNotebooks, $id);
+		}else{
+			$theNotebooks = array($id);
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
 			WHERE username = '$username'");
 
 	}
 
+	function getUserNotebooks($username){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		return json_decode( $sql_output->fetch_array()['notebooks'] );
+	}
+
+	function getIDListFromNoteList($list){
+		$IDList = array();
+		foreach ($list as $value) {
+			if(is_int($value)){
+				$IDList[] = $value;
+			}
+			if(is_array($value)){
+				foreach ($value as $value2) {
+					if(is_int($value2)){
+						$IDList[] = $value2;
+					}
+				}
+			}
+		}
+		sort($IDList);
+		return $IDList;
+	}
+
+	function updatetUserNotebooks($username, $list){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+
+		$oldList = getUserNotebooks($username);
+		if( getIDListFromNoteList($oldList) == getIDListFromNoteList($list) ){
+			$list = json_encode_fix($list);
+			$sql->query("UPDATE note_users SET notebooks = '$list'
+				WHERE username = '$username'");
+			echo "ok";
+		}else{
+			echo "bad list";
+		}
+	}
+
+	function addNoteToUserBelow($username, $id, $newid){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+		if(!checkID($newid)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			foreach($theNotebooks as $key => $value) {
+				if( is_int($value) && $value == $id ){
+					array_splice($theNotebooks, $key+1, 0, $newid);
+					echo 'ok';
+					break;
+				}
+				if( is_array($value) ){
+					foreach($value as $key2 => $note) {
+						if( is_int($note) && $note == $id){
+							array_splice($theNotebooks[$key], $key2+1, 0, $newid);
+							echo 'ok';
+							break 2;
+						}
+					}
+				}
+			}
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
+	}
+
+	function removeNoteFromUser($username, $id){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkID($id)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			foreach($theNotebooks as $key => $value) {
+				if( is_int($value) && $value == $id ){
+					array_splice($theNotebooks, $key, 1);
+					echo 'ok';
+					break;
+				}
+				if( is_array($value) ){
+					foreach($value as $key2 => $note) {
+						if( is_int($note) && $note == $id){
+							array_splice($theNotebooks[$key], $key2, 1);
+							echo 'ok';
+							break 2;
+						}
+					}
+				}
+			}
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
+	}
+
+	function removeNotebookFromUser($username, $notebook){
+		global $sql;
+		if(!checkUsername($username)) return -1;
+		if(!checkTitle($notebook)) return -1;
+
+		$sql_output = $sql->query("SELECT notebooks FROM note_users
+			WHERE username = '$username'");
+		$theNotebooks = json_decode( $sql_output->fetch_array()['notebooks'] );
+		if($theNotebooks){
+			foreach($theNotebooks as $key => $value) {
+				if( is_array($value) && $value[0] == $notebook ){
+					if( count($value) == 1 ){
+						array_splice($theNotebooks, $key, 1);
+						echo 'ok';
+					}else{
+						echo 'notebook not empty';
+					}
+					break;
+				}
+			}
+		}
+		$theNotebooks = json_encode_fix($theNotebooks);
+		$sql->query("UPDATE note_users SET notebooks = '$theNotebooks'
+			WHERE username = '$username'");
+	}

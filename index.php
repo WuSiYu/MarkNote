@@ -9,8 +9,6 @@
 		exit();
 	}
 
-
-
 	require 'include/user.php';
 
 	if( isset($_GET['type']) ){
@@ -19,24 +17,31 @@
 		$type = 'home';
 	}
 
-	echo 'index.php<br/>type='.$type.'<br/>';
+	// echo 'index.php<br/>type='.$type.'<br/>';
 
 
 	if( $type == 'user' ){
+		// echo 'load '.$type.' page ---> ';
 		require 'user.php';
 	}
 
 	if( $type == 'notebook' ){
+		// echo 'load '.$type.' page ---> ';
 		require 'notebook.php';
 	}
 
 	if( $type == 'note' ){
+		// echo 'load '.$type.' page ---> ';
 		require 'note.php';
 	}
 
 	if( $type == 'home' ){
-		if(hasLogin())
+		if(hasLogin()){
+			// echo 'load '.$type.' page ---> ';
 			require 'edit.php';
-		else
+		}
+		else{
+			// echo 'load '.$type.' page ---> ';
 			require 'login.php';
+		}
 	}
