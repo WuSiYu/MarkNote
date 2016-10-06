@@ -121,6 +121,8 @@ h1,h2,h3{
 	width: 48px;
 	height: 100%;
 	background-color: #1D1D1D;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .toolbar-icon{
