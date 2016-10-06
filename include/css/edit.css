@@ -240,7 +240,8 @@ h1,h2,h3{
 }
 
 #editor-ace{
-	font-size: 14px;
+	font: 14px 'Source Code Pro', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+	line-height: 1.3;
 }
 
 .ace_scroller{
