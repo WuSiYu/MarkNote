@@ -1,15 +1,6 @@
 var NOTEID=0;
 
 function convertDate(unixTime){
-	// var date = new Date(unixTime*1000);
-	// Y = date.getFullYear() + '-';
-	// M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth()) + '-';
-	// D = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getDate + ' ';
-	// h = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getHours() + ':';
-	// m = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getMinutes() + ':';
-	// s = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()) : date.getMonth())date.getSeconds();
-	// return Y+M+D+h+m+s;
-
 	var unixTimestamp = new Date(unixTime * 1000);
 	var text = unixTimestamp.toLocaleString();
 	if(text == "Invalid Date"){
@@ -496,7 +487,7 @@ function showNoteContext(item, event){
 		"top" : e.clientY+'px',
 		"left" : e.clientX+'px'
 	});
-	noteContextID = parseInt($(item).attr("id").substring(18));
+	noteContextID = parseInt($(item).attr("id").substring(14));
 	$(item).addClass("notelist-item-contextmenu-show");
 }
 
